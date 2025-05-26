@@ -47,7 +47,7 @@ export default async function CoursesPage() {
         </div>
 
         <Button asChild>
-          <Link href="/courses/new">
+          <Link href="dashboard/courses/create">
             <PlusCircle className="mr-2 h-5 w-5" />
             Create New Course
           </Link>

@@ -9,6 +9,7 @@ interface CourseCardProps {
     videos: (Video & {
       progress?: VideoProgress[];
     })[];
+    completionPercentage?: number;
   };
 }
 
@@ -16,9 +17,9 @@ const CourseCard: React.FC<CourseCardProps> = ({ course }) => {
   const completedVideos = course.videos.filter(
     (video) => video.progress?.[0]?.completed
   ).length;
-  const completionPercentage = Math.round(
-    (completedVideos / course.videos.length) * 100
-  );
+  const completionPercentage =
+    course.completionPercentage ??
+    Math.round((completedVideos / course.videos.length) * 100);
 
   return (
     <div className="bg-card text-card-foreground overflow-hidden rounded-lg border shadow-sm transition-all hover:shadow-md">
@@ -47,7 +48,7 @@ const CourseCard: React.FC<CourseCardProps> = ({ course }) => {
 
         <div className="mt-4 flex justify-between">
           <Button asChild variant="default">
-            <Link href={`/courses/${course.id}`}>
+            <Link href={`/dashboard/courses/${course.id}`}>
               View
               <ArrowRight className="ml-1 h-4 w-4" />
             </Link>

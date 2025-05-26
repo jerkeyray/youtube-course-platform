@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
-import { fetchPlaylistDetails } from "@/lib/youtube";
 import { z } from "zod";
 
 const updateCourseSchema = z.object({
@@ -14,8 +13,8 @@ export async function PATCH(
   { params }: { params: { id: string } }
 ) {
   try {
-    const session = await auth();
-    if (!session?.userId) {
+    const { userId } = await auth();
+    if (!userId) {
       return NextResponse.json(
         { error: "You must be logged in to update a course" },
         { status: 401 }
@@ -32,7 +31,7 @@ export async function PATCH(
       return NextResponse.json({ error: "Course not found" }, { status: 404 });
     }
 
-    if (course.userId !== session.userId) {
+    if (course.userId !== userId) {
       return NextResponse.json(
         { error: "You don't have permission to update this course" },
         { status: 403 }
@@ -73,8 +72,8 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const session = await auth();
-    if (!session?.userId) {
+    const { userId } = await auth();
+    if (!userId) {
       return NextResponse.json(
         { error: "You must be logged in to delete a course" },
         { status: 401 }
@@ -91,7 +90,7 @@ export async function DELETE(
       return NextResponse.json({ error: "Course not found" }, { status: 404 });
     }
 
-    if (course.userId !== session.userId) {
+    if (course.userId !== userId) {
       return NextResponse.json(
         { error: "You don't have permission to delete this course" },
         { status: 403 }
