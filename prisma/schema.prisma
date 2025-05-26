@@ -3,6 +3,99 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// User model (synced from Clerk)
+model User {
+  id            String         @id // Clerk user ID
+  email         String?        @unique
+  name          String?
+  image         String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  courses       Course[]       @relation("UserCourses")
+  videoProgress VideoProgress[]
+  certificates  Certificate[]
+  bookmarks     Bookmark[]
+  watchLater    WatchLater[]
+}
+
+// Course model (YouTube playlist with deadline)
+model Course {
+  id          String       @id @default(cuid())
+  title       String
+  playlistId  String
+  deadline    DateTime?    // User-set deadline
+  userId      String
+  user        User         @relation("UserCourses", fields: [userId], references: [id])
+  videos      Video[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  certificates Certificate[]
+}
+
+// Video model (individual YouTube videos)
+model Video {
+  id          String          @id @default(cuid())
+  title       String
+  videoId     String          // YouTube video ID
+  order       Int             // Order in playlist
+  courseId    String
+  course      Course          @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  progress    VideoProgress[]
+  bookmarks   Bookmark[]
+  watchLater  WatchLater[]
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+}
+
+// VideoProgress model (track completion)
+model VideoProgress {
+  id        String    @id @default(cuid())
+  userId    String
+  videoId   String
+  completed Boolean   @default(false)
+  updatedAt DateTime  @updatedAt
+  user      User      @relation(fields: [userId], references: [id])
+  video     Video     @relation(fields: [videoId], references: [id])
+  @@unique([userId, videoId])
+}
+
+// Bookmark model (bookmarked videos)
+model Bookmark {
+  id        String   @id @default(cuid())
+  userId    String
+  videoId   String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+  video     Video    @relation(fields: [videoId], references: [id])
+  @@unique([userId, videoId])
+}
+
+// WatchLater model (watch later videos)
+model WatchLater {
+  id        String   @id @default(cuid())
+  userId    String
+  videoId   String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+  video     Video    @relation(fields: [videoId], references: [id])
+  @@unique([userId, videoId])
+}
+
+// Certificate model (course completion)
+model Certificate {
+  id        String   @id @default(cuid())
+  userId    String
+  courseId  String
+  imageUrl  String?  // URL to PNG/PDF in Supabase Storage
+  shared    Boolean  @default(false) // Shared on X
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id])
+  course    Course   @relation(fields: [courseId], references: [id])
+  @@unique([userId, courseId])
 }
