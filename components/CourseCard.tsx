@@ -3,20 +3,8 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import {
-  ArrowRight,
-  CheckCircle,
-  MoreVertical,
-  Pencil,
-  Trash2,
-} from "lucide-react";
+import { ArrowRight, CheckCircle, Trash2 } from "lucide-react";
 import { Course, Video, VideoProgress } from "@prisma/client";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { DeleteCourseDialog } from "./DeleteCourseDialog";
@@ -64,28 +52,14 @@ const CourseCard: React.FC<CourseCardProps> = ({ course }) => {
         <div className="p-6">
           <div className="mb-2 flex items-center justify-between">
             <h2 className="truncate text-xl font-bold">{course.title}</h2>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon">
-                  <MoreVertical className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem asChild>
-                  <Link href={`/dashboard/courses/${course.id}/edit`}>
-                    <Pencil className="mr-2 h-4 w-4" />
-                    Edit Course
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  className="text-destructive focus:text-destructive"
-                  onClick={() => setIsDeleteDialogOpen(true)}
-                >
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  Delete Course
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+              onClick={() => setIsDeleteDialogOpen(true)}
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
           </div>
           <p className="text-muted-foreground mb-2">
             {course.videos.length} videos
@@ -110,10 +84,10 @@ const CourseCard: React.FC<CourseCardProps> = ({ course }) => {
             </div>
           </div>
 
-          <div className="mt-4 flex justify-between">
-            <Button asChild variant="default">
+          <div className="mt-4">
+            <Button asChild variant="default" className="w-full">
               <Link href={`/dashboard/courses/${course.id}`}>
-                View
+                View Course
                 <ArrowRight className="ml-1 h-4 w-4" />
               </Link>
             </Button>
