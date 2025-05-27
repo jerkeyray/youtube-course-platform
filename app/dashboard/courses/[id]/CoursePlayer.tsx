@@ -14,7 +14,6 @@ import {
   Bookmark,
 } from "lucide-react";
 import { toast } from "sonner";
-import { AddBookmarkDialog } from "@/components/AddBookmarkDialog";
 
 type CourseWithProgress = Course & {
   videos: (Video & {
@@ -39,7 +38,9 @@ export default function CoursePlayer({ course }: CoursePlayerProps) {
   const [watchLaterVideos, setWatchLaterVideos] = useState<Set<string>>(
     new Set()
   );
-  const [isBookmarkDialogOpen, setIsBookmarkDialogOpen] = useState(false);
+  const [bookmarkedVideos, setBookmarkedVideos] = useState<Set<string>>(
+    new Set()
+  );
 
   const handleVideoProgress = useCallback(
     async (videoId: string) => {
@@ -115,29 +116,42 @@ export default function CoursePlayer({ course }: CoursePlayerProps) {
     [watchLaterVideos]
   );
 
-  const handleAddBookmark = async (note: string) => {
-    try {
-      const response = await fetch("/api/bookmarks", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          videoId: currentVideo.id,
-          note,
-        }),
-      });
+  const handleBookmark = useCallback(
+    async (videoId: string) => {
+      try {
+        const isBookmarked = bookmarkedVideos.has(videoId);
+        const response = await fetch("/api/bookmarks", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            videoId,
+          }),
+        });
 
-      if (!response.ok) {
-        throw new Error("Failed to add bookmark");
+        if (!response.ok) {
+          throw new Error("Failed to update bookmark status");
+        }
+
+        setBookmarkedVideos((prev) => {
+          const newSet = new Set(prev);
+          if (isBookmarked) {
+            newSet.delete(videoId);
+            toast.success("Removed from bookmarks");
+          } else {
+            newSet.add(videoId);
+            toast.success("Added to bookmarks");
+          }
+          return newSet;
+        });
+      } catch (error) {
+        console.error("Error updating bookmark status:", error);
+        toast.error("Failed to update bookmark status");
       }
-
-      toast.success("Bookmark added successfully");
-    } catch (error) {
-      console.error("Error adding bookmark:", error);
-      throw error;
-    }
-  };
+    },
+    [bookmarkedVideos]
+  );
 
   const handlePreviousVideo = useCallback(() => {
     setCurrentVideoIndex((prev) => (prev > 0 ? prev - 1 : prev));
@@ -215,12 +229,18 @@ export default function CoursePlayer({ course }: CoursePlayerProps) {
                 </Button>
 
                 <Button
-                  onClick={() => setIsBookmarkDialogOpen(true)}
-                  variant="outline"
+                  onClick={() => handleBookmark(currentVideo.id)}
+                  variant={
+                    bookmarkedVideos.has(currentVideo.id)
+                      ? "default"
+                      : "outline"
+                  }
                   className="flex items-center gap-2"
                 >
                   <Bookmark className="h-4 w-4" />
-                  Add Bookmark
+                  {bookmarkedVideos.has(currentVideo.id)
+                    ? "Bookmarked"
+                    : "Bookmark"}
                 </Button>
 
                 <div className="flex gap-2">
@@ -299,6 +319,12 @@ export default function CoursePlayer({ course }: CoursePlayerProps) {
                             Later
                           </div>
                         )}
+                        {bookmarkedVideos.has(video.id) && (
+                          <div className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium border border-gray-200">
+                            <Bookmark className="h-2 w-2 mr-1" />
+                            Bookmarked
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -308,13 +334,6 @@ export default function CoursePlayer({ course }: CoursePlayerProps) {
           </div>
         </Card>
       </div>
-
-      <AddBookmarkDialog
-        isOpen={isBookmarkDialogOpen}
-        onClose={() => setIsBookmarkDialogOpen(false)}
-        onConfirm={handleAddBookmark}
-        videoTitle={currentVideo.title}
-      />
     </div>
   );
 }

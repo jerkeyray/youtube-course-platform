@@ -4,12 +4,16 @@ import React from "react";
 import Link from "next/link";
 import ActivityHeatmap from "@/components/ActivityHeatmap";
 import CourseCard from "@/components/CourseCard";
+import StreakDisplay from "@/components/StreakDisplay";
 
 interface Course {
   id: string;
   title: string;
+  playlistId: string;
   deadline: Date | null;
+  userId: string;
   createdAt: Date;
+  updatedAt: Date;
   videos: any[];
   completionPercentage?: number;
 }
@@ -31,10 +35,15 @@ export default function DashboardClient({
   return (
     <main className="container py-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold">Dashboard</h1>
-        <p className="text-muted-foreground mt-1">
-          Track your learning progress
-        </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold">Dashboard</h1>
+            <p className="text-muted-foreground mt-1">
+              Track your learning progress
+            </p>
+          </div>
+          <StreakDisplay />
+        </div>
       </div>
 
       <div className="grid gap-6 mb-8">
