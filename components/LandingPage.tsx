@@ -21,7 +21,7 @@ export default function LandingPage() {
       {/* Hero Section */}
       <section className="min-h-[90vh] px-8 py-24 text-center flex flex-col justify-center items-center">
         <h1 className="text-6xl md:text-8xl font-extrabold leading-tight max-w-5xl mb-8">
-          Learn Smarter with Yudoku
+          The Youtube Course Experience Platform
         </h1>
         <p className="text-xl md:text-3xl text-gray-700 max-w-3xl mb-10">
           Transform YouTube playlists into structured, distraction-free learning

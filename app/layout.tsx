@@ -6,8 +6,8 @@ import { Toaster } from "sonner";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
-  title: "Course Platform",
-  description: "Track your YouTube course progress and get certificates",
+  title: "Yudoku",
+  description: "The Youtube Course Experience Platform",
 };
 
 export default function RootLayout({

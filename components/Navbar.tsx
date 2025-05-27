@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import { UserButton, useUser } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
@@ -15,6 +17,9 @@ export function Navbar() {
       <div className="flex items-center gap-x-3">
         {isSignedIn ? (
           <div className="flex items-center gap-x-4">
+            <Button variant="ghost" asChild>
+              <Link href="/dashboard">Dashboard</Link>
+            </Button>
             <div className="flex flex-col items-end">
               <p className="text-sm font-medium">
                 {user?.firstName} {user?.lastName}

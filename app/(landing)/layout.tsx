@@ -8,7 +8,7 @@ export default function LandingLayout({
   return (
     <div className="h-full">
       <Navbar />
-      {children}
+      <main className="h-full pt-16">{children}</main>
     </div>
   );
 }
