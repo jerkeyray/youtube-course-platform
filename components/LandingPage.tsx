@@ -21,24 +21,17 @@ export default function LandingPage() {
   return (
     <div className="bg-white text-black">
       {/* Hero Section */}
-      <section className="relative bg-gray-100 py-24 px-8 text-center">
-        <BackgroundPaths title="Yudoku - Learn Smarter" />
-        <div className="relative z-10 max-w-4xl mx-auto">
-          <h1 className="text-5xl md:text-7xl font-bold mb-6">
-            Distraction-Free Learning with Yudoku
-          </h1>
-          <p className="text-xl md:text-2xl mb-8 text-gray-700">
-            Transform YouTube playlists into structured courses and track your
-            learning progress.
-          </p>
-          <Button
-            size="lg"
-            className="text-xl px-8 py-5 bg-black text-white font-bold hover:bg-gray-800"
-            asChild
-          >
-            <Link href={getStartedLink}>Get Started</Link>
-          </Button>
-        </div>
+      <section className="min-h-[90vh] px-8 py-24 text-center flex flex-col justify-center items-center">
+        <h1 className="text-6xl md:text-8xl font-extrabold leading-tight max-w-5xl mb-8">
+          The Youtube Course Experience Platform
+        </h1>
+        <p className="text-xl md:text-3xl text-gray-700 max-w-3xl mb-10">
+          Transform YouTube playlists into structured, distraction-free learning
+          experiences.
+        </p>
+        <Button size="lg" className="text-xl px-8 py-5" asChild>
+          <Link href={getStartedLink}>Get Started</Link>
+        </Button>
       </section>
 
       {/* Features Section */}
