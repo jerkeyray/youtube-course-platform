@@ -1,13 +1,15 @@
-import { ClerkProvider } from "@clerk/nextjs";
+import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { Toaster } from "sonner";
+import { ClerkProvider } from "@clerk/nextjs";
+import Providers from "./providers";
 
 const inter = Inter({ subsets: ["latin"] });
 
-export const metadata = {
-  title: "Yudoku",
-  description: "The Youtube Course Experience Platform",
+export const metadata: Metadata = {
+  title: "Yudoku - YouTube Course Platform",
+  description:
+    "Transform YouTube playlists into structured learning experiences",
 };
 
 export default function RootLayout({
@@ -19,8 +21,7 @@ export default function RootLayout({
     <ClerkProvider>
       <html lang="en">
         <body className={inter.className}>
-          {children}
-          <Toaster />
+          <Providers>{children}</Providers>
         </body>
       </html>
     </ClerkProvider>

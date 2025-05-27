@@ -1,25 +1,45 @@
+"use client";
+
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { DashboardSidebar } from "@/components/DashboardSidebar";
 import { MobileNav } from "@/components/MobileNav";
+import { DashboardSidebarToggle } from "@/components/DashboardSidebarToggle";
+import { useState } from "react";
+import { cn } from "@/lib/utils";
 
-export default async function DashboardLayout({
+export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { userId } = await auth();
-
-  if (!userId) {
-    redirect("/sign-in");
-  }
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   return (
     <div className="h-full relative">
-      <div className="hidden h-full md:flex md:w-72 md:flex-col md:fixed md:inset-y-0 z-[80] bg-background">
-        <DashboardSidebar />
+      <div
+        className={cn(
+          "hidden h-full md:flex md:flex-col md:fixed md:inset-y-0 z-[80] bg-[#111827] transition-all duration-300",
+          isCollapsed ? "md:w-16" : "md:w-64"
+        )}
+      >
+        <div className="flex items-center h-14 px-4">
+          <DashboardSidebarToggle
+            isCollapsed={isCollapsed}
+            onToggle={() => setIsCollapsed(!isCollapsed)}
+          />
+          {!isCollapsed && (
+            <h1 className="text-xl font-bold text-white ml-2">Yudoku</h1>
+          )}
+        </div>
+        <DashboardSidebar isCollapsed={isCollapsed} />
       </div>
-      <main className="md:pl-72">
+      <main
+        className={cn(
+          "transition-all duration-300",
+          isCollapsed ? "md:pl-16" : "md:pl-64"
+        )}
+      >
         <div className="h-full p-8">
           <div className="md:hidden mb-4">
             <MobileNav />
