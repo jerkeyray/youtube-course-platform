@@ -1,79 +1,61 @@
 import React from "react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { PlusCircle } from "lucide-react";
-import CourseCard from "@/components/CourseCard";
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { PrismaClient } from "@prisma/client";
+import DashboardClient from "./DashboardClient";
 
-async function getCourses(userId: string) {
-  return await prisma.course.findMany({
+interface Course {
+  id: string;
+  title: string;
+  deadline: Date | null;
+  createdAt: Date;
+  videos: any[];
+  completionPercentage?: number;
+}
+
+interface Activity {
+  date: string;
+  completed: boolean;
+}
+
+async function getCourses(userId: string): Promise<Course[]> {
+  const courses = await prisma.course.findMany({
     where: { userId },
+    orderBy: { createdAt: "desc" },
     include: {
       videos: {
         include: {
-          progress: {
-            where: {
-              userId,
-            },
-          },
-        },
-        orderBy: {
-          order: "asc",
+          progress: true,
         },
       },
     },
-    orderBy: {
-      createdAt: "desc",
-    },
   });
+  return courses;
 }
 
-export default async function CoursesPage() {
-  const { userId } = await auth();
+async function getActivities(userId: string): Promise<Activity[]> {
+  const activities = await (
+    prisma as PrismaClient & { userActivity: any }
+  ).userActivity.findMany({
+    where: { userId },
+    orderBy: { date: "desc" },
+    take: 365,
+  });
+  return activities;
+}
 
+export default async function DashboardPage() {
+  const { userId } = await auth();
   if (!userId) {
     redirect("/sign-in");
   }
 
-  const courses = await getCourses(userId);
+  const [courses, activities] = await Promise.all([
+    getCourses(userId),
+    getActivities(userId),
+  ]);
 
-  return (
-    <main className="container py-8">
-      <div className="mb-8 flex flex-col justify-between gap-4 md:flex-row md:items-center">
-        <div>
-          <h1 className="text-3xl font-bold">Your Courses</h1>
-        </div>
-
-        <Button asChild>
-          <Link href="dashboard/courses/create">
-            <PlusCircle className="mr-2 h-5 w-5" />
-            Create New Course
-          </Link>
-        </Button>
-      </div>
-
-      {courses.length === 0 ? (
-        <div className="rounded-lg border bg-card p-8 text-center">
-          <h2 className="mb-2 text-xl font-medium">No courses yet</h2>
-          <p className="mb-4 text-muted-foreground">
-            Create your first course to get started
-          </p>
-          <Button asChild>
-            <Link href="/courses/new">
-              <PlusCircle className="mr-2 h-5 w-5" />
-              Create Your First Course
-            </Link>
-          </Button>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {courses.map((course) => (
-            <CourseCard key={course.id} course={course} />
-          ))}
-        </div>
-      )}
-    </main>
-  );
+  return <DashboardClient courses={courses} activities={activities} />;
 }
