@@ -5,8 +5,16 @@ import { useState, useCallback } from "react";
 import { Course, Video, VideoProgress } from "@prisma/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Check, ChevronLeft, ChevronRight, Clock, Play } from "lucide-react";
+import {
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  Clock,
+  Play,
+  Bookmark,
+} from "lucide-react";
 import { toast } from "sonner";
+import { AddBookmarkDialog } from "@/components/AddBookmarkDialog";
 
 type CourseWithProgress = Course & {
   videos: (Video & {
@@ -31,6 +39,7 @@ export default function CoursePlayer({ course }: CoursePlayerProps) {
   const [watchLaterVideos, setWatchLaterVideos] = useState<Set<string>>(
     new Set()
   );
+  const [isBookmarkDialogOpen, setIsBookmarkDialogOpen] = useState(false);
 
   const handleVideoProgress = useCallback(
     async (videoId: string) => {
@@ -106,6 +115,30 @@ export default function CoursePlayer({ course }: CoursePlayerProps) {
     [watchLaterVideos]
   );
 
+  const handleAddBookmark = async (note: string) => {
+    try {
+      const response = await fetch("/api/bookmarks", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          videoId: currentVideo.id,
+          note,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to add bookmark");
+      }
+
+      toast.success("Bookmark added successfully");
+    } catch (error) {
+      console.error("Error adding bookmark:", error);
+      throw error;
+    }
+  };
+
   const handlePreviousVideo = useCallback(() => {
     setCurrentVideoIndex((prev) => (prev > 0 ? prev - 1 : prev));
   }, []);
@@ -179,6 +212,15 @@ export default function CoursePlayer({ course }: CoursePlayerProps) {
                   {watchLaterVideos.has(currentVideo.id)
                     ? "Watch Later"
                     : "Save for Later"}
+                </Button>
+
+                <Button
+                  onClick={() => setIsBookmarkDialogOpen(true)}
+                  variant="outline"
+                  className="flex items-center gap-2"
+                >
+                  <Bookmark className="h-4 w-4" />
+                  Add Bookmark
                 </Button>
 
                 <div className="flex gap-2">
@@ -266,6 +308,13 @@ export default function CoursePlayer({ course }: CoursePlayerProps) {
           </div>
         </Card>
       </div>
+
+      <AddBookmarkDialog
+        isOpen={isBookmarkDialogOpen}
+        onClose={() => setIsBookmarkDialogOpen(false)}
+        onConfirm={handleAddBookmark}
+        videoTitle={currentVideo.title}
+      />
     </div>
   );
 }
