@@ -5,13 +5,24 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { CalendarIcon } from "lucide-react";
+import { format, parse } from "date-fns";
+import { cn } from "@/lib/utils";
 
 export default function CreateCourse() {
   const router = useRouter();
   const { userId } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+  const [deadline, setDeadline] = useState<Date | undefined>(undefined);
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const [dateInput, setDateInput] = useState("");
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -25,7 +36,7 @@ export default function CreateCourse() {
     const data = {
       title: formData.get("title") as string,
       playlistUrl: formData.get("playlistUrl") as string,
-      description: formData.get("description") as string,
+      deadline: deadline?.toISOString(),
     };
 
     try {
@@ -52,13 +63,35 @@ export default function CreateCourse() {
     }
   };
 
+  const handleDateSelect = (date: Date | undefined) => {
+    setDeadline(date);
+    setDateInput(date ? format(date, "MM/dd/yyyy") : "");
+    setIsCalendarOpen(false);
+  };
+
+  const handleDateInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setDateInput(value);
+
+    try {
+      const parsedDate = parse(value, "MM/dd/yyyy", new Date());
+      if (!isNaN(parsedDate.getTime()) && parsedDate > new Date()) {
+        setDeadline(parsedDate);
+      } else {
+        setDeadline(undefined);
+      }
+    } catch {
+      setDeadline(undefined);
+    }
+  };
+
   return (
     <div className="container max-w-2xl py-8">
       <h1 className="mb-8 text-3xl font-bold">Create New Course</h1>
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="space-y-2">
           <label htmlFor="title" className="text-sm font-medium">
-            Course Title
+            Course Title (This is gonna be on the completion certificate)
           </label>
           <Input
             id="title"
@@ -84,15 +117,44 @@ export default function CreateCourse() {
         </div>
 
         <div className="space-y-2">
-          <label htmlFor="description" className="text-sm font-medium">
-            Description (Optional)
+          <label htmlFor="deadline" className="text-sm font-medium">
+            Completion Deadline (Optional)
           </label>
-          <Textarea
-            id="description"
-            name="description"
-            placeholder="Enter course description"
-            className="w-full"
-          />
+          <div className="relative">
+            <Input
+              id="deadline"
+              type="text"
+              value={dateInput}
+              onChange={handleDateInputChange}
+              placeholder="MM/DD/YYYY"
+              className="w-full pr-10"
+            />
+            <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-0 top-0 h-full px-3"
+                >
+                  <CalendarIcon className="h-4 w-4" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="end">
+                <Calendar
+                  mode="single"
+                  selected={deadline}
+                  onSelect={handleDateSelect}
+                  initialFocus
+                  disabled={(date: Date) => date < new Date()}
+                  className="rounded-md border"
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Enter date manually (MM/DD/YYYY) or click the calendar icon
+          </p>
         </div>
 
         <Button type="submit" className="w-full" disabled={isLoading}>
