@@ -1,9 +1,90 @@
-import React from 'react'
+"use client";
 
-const page = () => {
-  return (
-    <div>page</div>
-  )
+import React from "react";
+import { useQuery } from "@tanstack/react-query";
+import { toast } from "sonner";
+import VideoCard from "@/components/VideoCard";
+
+interface Video {
+  id: string;
+  title: string;
+  thumbnailUrl: string;
+  duration: string;
+  youtubeId: string;
+  courseTitle: string;
 }
 
-export default page
+async function getWatchLaterVideos() {
+  const response = await fetch("/api/watch-later");
+  if (!response.ok) {
+    throw new Error("Failed to fetch watch later videos");
+  }
+  const data = await response.json();
+  return data.videos as Video[];
+}
+
+export default function WatchLaterPage() {
+  const {
+    data: videos = [],
+    isLoading,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: ["watch-later"],
+    queryFn: getWatchLaterVideos,
+  });
+
+  if (error) {
+    toast.error("Failed to load watch later videos");
+    return (
+      <main className="container py-8">
+        <div className="rounded-lg border bg-card p-8 text-center">
+          <h2 className="mb-2 text-xl font-medium">Error loading videos</h2>
+          <p className="mb-4 text-muted-foreground">
+            Please try refreshing the page
+          </p>
+        </div>
+      </main>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <main className="container py-8">
+        <div className="flex items-center justify-center h-[50vh]">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>
+      </main>
+    );
+  }
+
+  return (
+    <main className="container py-8">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold">Watch Later</h1>
+        <p className="text-muted-foreground mt-1">
+          Videos you've saved to watch later
+        </p>
+      </div>
+
+      {videos.length === 0 ? (
+        <div className="rounded-lg border bg-card p-8 text-center">
+          <h2 className="mb-2 text-xl font-medium">No videos in watch later</h2>
+          <p className="text-muted-foreground">
+            Add videos to your watch later list while browsing courses
+          </p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {videos.map((video) => (
+            <VideoCard
+              key={video.id}
+              video={video}
+              onRemove={() => refetch()}
+            />
+          ))}
+        </div>
+      )}
+    </main>
+  );
+}

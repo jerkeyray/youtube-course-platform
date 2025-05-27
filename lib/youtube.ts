@@ -114,3 +114,43 @@ export async function getPlaylistVideos(playlistUrl: string) {
     throw new Error("Failed to fetch playlist videos");
   }
 }
+
+export async function getVideoDetails(videoId: string) {
+  try {
+    const response = await youtube.videos.list({
+      key: process.env.YOUTUBE_API_KEY,
+      part: ["contentDetails"],
+      id: [videoId],
+    });
+
+    if (!response.data.items?.[0]) {
+      throw new Error("Video not found");
+    }
+
+    const duration = response.data.items[0].contentDetails?.duration;
+    if (!duration) {
+      throw new Error("Duration not found");
+    }
+
+    // Convert ISO 8601 duration to MM:SS format
+    const match = duration.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
+    if (!match) {
+      throw new Error("Invalid duration format");
+    }
+
+    const hours = match[1] ? parseInt(match[1]) : 0;
+    const minutes = match[2] ? parseInt(match[2]) : 0;
+    const seconds = match[3] ? parseInt(match[3]) : 0;
+
+    const totalSeconds = hours * 3600 + minutes * 60 + seconds;
+    const formattedMinutes = Math.floor(totalSeconds / 60);
+    const formattedSeconds = totalSeconds % 60;
+
+    return `${formattedMinutes}:${formattedSeconds
+      .toString()
+      .padStart(2, "0")}`;
+  } catch (error) {
+    console.error("Error fetching video details:", error);
+    return "0:00";
+  }
+}
