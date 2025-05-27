@@ -1,34 +1,48 @@
 import Link from "next/link";
-import { auth } from "@clerk/nextjs/server";
-import UserMenu from "@/components/user-menu";
+import { UserButton, useUser } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 
-export default async function Navbar() {
-  const { userId } = await auth();
+export function Navbar() {
+  const { user, isSignedIn } = useUser();
 
   return (
-    <nav className="sticky top-0 z-50 w-full bg-background/70 backdrop-blur">
-      <div className="container flex h-16 items-center justify-between px-4">
-        <Link href="/" className="text-2xl font-bold" aria-label="Yuco Home">
-          Yudoku
+    <div className="fixed w-full z-50 flex justify-between items-center py-2 px-4 border-b border-primary/10 bg-background h-16">
+      <div className="flex items-center">
+        <Link href="/" className="flex items-center">
+          <h1 className="text-2xl font-bold">Course Platform</h1>
         </Link>
-        <div className="flex items-center gap-4">
-          {userId && (
-            <div className="hidden md:flex gap-4">
-              <Link href="/dashboard" className="text-sm hover:underline">
-                Dashboard
-              </Link>
-            </div>
-          )}
-          {userId ? (
-            <UserMenu />
-          ) : (
-            <Button asChild variant="outline">
-              <Link href="/sign-in">Login</Link>
-            </Button>
-          )}
-        </div>
       </div>
-    </nav>
+      <div className="flex items-center gap-x-3">
+        {isSignedIn ? (
+          <div className="flex items-center gap-x-4">
+            <div className="flex flex-col items-end">
+              <p className="text-sm font-medium">
+                {user?.firstName} {user?.lastName}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {user?.emailAddresses[0]?.emailAddress}
+              </p>
+            </div>
+            <UserButton
+              afterSignOutUrl="/"
+              appearance={{
+                elements: {
+                  avatarBox: "h-10 w-10",
+                },
+              }}
+            />
+          </div>
+        ) : (
+          <>
+            <Button variant="ghost" asChild>
+              <Link href="/sign-in">Sign In</Link>
+            </Button>
+            <Button asChild>
+              <Link href="/sign-up">Get Started</Link>
+            </Button>
+          </>
+        )}
+      </div>
+    </div>
   );
 }
