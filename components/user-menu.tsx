@@ -71,7 +71,7 @@ export default function UserMenu() {
           <div className="mb-2 border-b px-2 pb-2">
             <div className="font-medium">{user.fullName ?? "User"}</div>
             <div className="truncate text-sm text-muted-foreground">
-              {user.primaryEmailAddress?.emailAddress ?? "No email"}
+              {user.primaryEmailAddress?.emailAddress}
             </div>
           </div>
           <Button

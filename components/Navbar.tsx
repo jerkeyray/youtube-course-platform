@@ -11,7 +11,7 @@ export default async function Navbar() {
     <nav className="sticky top-0 z-50 w-full bg-background/70 backdrop-blur">
       <div className="container flex h-16 items-center justify-between px-4">
         <Link href="/" className="text-2xl font-bold" aria-label="Yuco Home">
-          Yuco
+          Yukoda
         </Link>
         <div className="flex items-center gap-4">
           <div className="hidden md:flex gap-4">
