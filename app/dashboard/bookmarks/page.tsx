@@ -1,105 +1,89 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useAuth } from "@clerk/nextjs";
-import { Bookmark, Video } from "@prisma/client";
-import { format } from "date-fns";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import React from "react";
+import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Trash2 } from "lucide-react";
-import Link from "next/link";
+import VideoCard from "@/components/VideoCard";
 
-interface BookmarkWithVideo extends Bookmark {
-  video: Video;
-  note: string | null;
+interface Video {
+  id: string;
+  title: string;
+  thumbnailUrl: string;
+  duration: string;
+  youtubeId: string;
+  courseTitle: string;
+  courseId: string;
+}
+
+async function getBookmarks() {
+  const response = await fetch("/api/bookmarks");
+  if (!response.ok) {
+    throw new Error("Failed to fetch bookmarks");
+  }
+  return response.json() as Promise<Video[]>;
 }
 
 export default function BookmarksPage() {
-  const { userId } = useAuth();
-  const [bookmarks, setBookmarks] = useState<BookmarkWithVideo[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const {
+    data: videos = [],
+    isLoading,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: ["bookmarks"],
+    queryFn: getBookmarks,
+  });
 
-  useEffect(() => {
-    if (userId) {
-      fetchBookmarks();
-    }
-  }, [userId]);
-
-  const fetchBookmarks = async () => {
-    try {
-      const response = await fetch("/api/bookmarks");
-      if (!response.ok) throw new Error("Failed to fetch bookmarks");
-      const data = await response.json();
-      setBookmarks(data);
-    } catch (error) {
-      toast.error("Failed to load bookmarks");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleDeleteBookmark = async (bookmarkId: string) => {
-    try {
-      const response = await fetch(`/api/bookmarks/${bookmarkId}`, {
-        method: "DELETE",
-      });
-      if (!response.ok) throw new Error("Failed to delete bookmark");
-      setBookmarks(bookmarks.filter((b) => b.id !== bookmarkId));
-      toast.success("Bookmark deleted");
-    } catch (error) {
-      toast.error("Failed to delete bookmark");
-    }
-  };
+  if (error) {
+    toast.error("Failed to load bookmarks");
+    return (
+      <main className="container py-8">
+        <div className="rounded-lg border bg-card p-8 text-center">
+          <h2 className="mb-2 text-xl font-medium">Error loading bookmarks</h2>
+          <p className="mb-4 text-muted-foreground">
+            Please try refreshing the page
+          </p>
+        </div>
+      </main>
+    );
+  }
 
   if (isLoading) {
-    return <div>Loading bookmarks...</div>;
+    return (
+      <main className="container py-8">
+        <div className="flex items-center justify-center h-[50vh]">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>
+      </main>
+    );
   }
 
   return (
-    <div className="container py-8">
-      <h1 className="mb-8 text-3xl font-bold">My Bookmarks</h1>
-      {bookmarks.length === 0 ? (
-        <div className="text-center text-muted-foreground">
-          No bookmarks yet. Add bookmarks while watching videos!
+    <main className="container py-8">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold">My Bookmarks</h1>
+        <p className="text-muted-foreground mt-1">Videos you've bookmarked</p>
+      </div>
+
+      {videos.length === 0 ? (
+        <div className="rounded-lg border bg-card p-8 text-center">
+          <h2 className="mb-2 text-xl font-medium">No bookmarks yet</h2>
+          <p className="text-muted-foreground">
+            Add bookmarks while watching videos
+          </p>
         </div>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {bookmarks.map((bookmark) => (
-            <Card key={bookmark.id}>
-              <CardHeader>
-                <CardTitle className="line-clamp-2">
-                  <Link
-                    href={`/dashboard/courses/${bookmark.video.courseId}?video=${bookmark.videoId}`}
-                    className="hover:underline"
-                  >
-                    {bookmark.video.title}
-                  </Link>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {bookmark.note && (
-                  <p className="mb-4 text-sm text-muted-foreground">
-                    {bookmark.note}
-                  </p>
-                )}
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">
-                    {format(new Date(bookmark.createdAt), "MMM d, yyyy")}
-                  </span>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => handleDeleteBookmark(bookmark.id)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {videos.map((video) => (
+            <VideoCard
+              key={video.id}
+              video={video}
+              onRemove={() => refetch()}
+              type="bookmark"
+            />
           ))}
         </div>
       )}
-    </div>
+    </main>
   );
 }

@@ -12,20 +12,38 @@ export async function DELETE(
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    const bookmark = await prisma.bookmark.findUnique({
-      where: { id: params.id },
+    const youtubeId = params.id;
+
+    // First find the video by YouTube ID
+    const video = await prisma.video.findFirst({
+      where: {
+        videoId: youtubeId,
+      },
+    });
+
+    if (!video) {
+      return new NextResponse("Video not found", { status: 404 });
+    }
+
+    // Then find and delete the bookmark
+    const bookmark = await prisma.bookmark.findFirst({
+      where: {
+        userId,
+        videoId: video.id,
+      },
     });
 
     if (!bookmark) {
       return new NextResponse("Bookmark not found", { status: 404 });
     }
 
-    if (bookmark.userId !== userId) {
-      return new NextResponse("Unauthorized", { status: 401 });
-    }
-
     await prisma.bookmark.delete({
-      where: { id: params.id },
+      where: {
+        userId_videoId: {
+          userId,
+          videoId: video.id,
+        },
+      },
     });
 
     return new NextResponse(null, { status: 204 });
