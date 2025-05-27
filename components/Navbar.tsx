@@ -11,7 +11,7 @@ export function Navbar() {
     <div className="fixed w-full z-50 flex justify-between items-center py-2 px-4 border-b border-primary/10 bg-background h-16">
       <div className="flex items-center">
         <Link href="/" className="flex items-center">
-          <h1 className="text-2xl font-bold">Course Platform</h1>
+          <h1 className="text-2xl font-bold">Yudoku</h1>
         </Link>
       </div>
       <div className="flex items-center gap-x-3">
