@@ -3,7 +3,6 @@ import { auth } from "@clerk/nextjs/server";
 import UserMenu from "@/components/user-menu";
 import { Button } from "@/components/ui/button";
 
-
 export default async function Navbar() {
   const { userId } = await auth();
 
@@ -14,11 +13,13 @@ export default async function Navbar() {
           Yukoda
         </Link>
         <div className="flex items-center gap-4">
-          <div className="hidden md:flex gap-4">
-            <Link href="/dashboard" className="text-sm hover:underline">
-              Dashboard
-            </Link>
-          </div>
+          {userId && (
+            <div className="hidden md:flex gap-4">
+              <Link href="/dashboard" className="text-sm hover:underline">
+                Dashboard
+              </Link>
+            </div>
+          )}
           {userId ? (
             <UserMenu />
           ) : (
