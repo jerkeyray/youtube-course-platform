@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
+import { getVideoDetails } from "@/lib/youtube";
 
 export async function GET() {
   try {
@@ -11,11 +12,42 @@ export async function GET() {
 
     const bookmarks = await prisma.bookmark.findMany({
       where: { userId },
-      include: { video: true },
+      include: {
+        video: {
+          select: {
+            id: true,
+            title: true,
+            videoId: true,
+            course: {
+              select: {
+                id: true,
+                title: true,
+              },
+            },
+          },
+        },
+      },
       orderBy: { createdAt: "desc" },
     });
 
-    return NextResponse.json(bookmarks);
+    // Transform the data to match our VideoCard interface
+    const videos = await Promise.all(
+      bookmarks.map(async (bookmark) => {
+        const duration = await getVideoDetails(bookmark.video.videoId);
+        return {
+          id: bookmark.video.id,
+          title: bookmark.video.title,
+          thumbnailUrl: `https://img.youtube.com/vi/${bookmark.video.videoId}/hqdefault.jpg`,
+          duration,
+          youtubeId: bookmark.video.videoId,
+          courseTitle: bookmark.video.course.title,
+          courseId: bookmark.video.course.id,
+          note: bookmark.note,
+        };
+      })
+    );
+
+    return NextResponse.json(videos);
   } catch (error) {
     console.error("[BOOKMARKS_GET]", error);
     return new NextResponse("Internal Error", { status: 500 });

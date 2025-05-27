@@ -21,6 +21,7 @@ model User {
   certificates  Certificate[]
   bookmarks     Bookmark[]
   watchLater    WatchLater[]
+  activities    UserActivity[]
 }
 
 // Course model (YouTube playlist with deadline)
@@ -99,4 +100,16 @@ model Certificate {
   user      User     @relation(fields: [userId], references: [id])
   course    Course   @relation(fields: [courseId], references: [id])
   @@unique([userId, courseId])
+}
+
+// UserActivity model (track daily activity and streaks)
+model UserActivity {
+  id        String   @id @default(cuid())
+  userId    String
+  date      String   // Changed to String for yyyy-MM-dd
+  completed Boolean  @default(false)
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@unique([userId, date])
 }
