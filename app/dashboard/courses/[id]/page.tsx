@@ -22,11 +22,9 @@ export default async function CoursePage({
     redirect("/sign-in");
   }
 
-  const courseId = await Promise.resolve(params.id);
-
   const course = await prisma.course.findUnique({
     where: {
-      id: courseId,
+      id: params.id,
       userId,
     },
     include: {
