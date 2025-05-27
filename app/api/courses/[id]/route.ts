@@ -7,62 +7,85 @@ import { prisma } from "@/lib/prisma";
 import type { Prisma } from "@prisma/client";
 
 export async function DELETE(
-  request: NextRequest,
+  request: Request,
   { params }: { params: { id: string } }
 ) {
-  const { userId } = await auth();
-  if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const courseId = params.id;
-
-  // Verify the course belongs to the user
-  const course = await prisma.course.findUnique({
-    where: { id: courseId },
-  });
-
-  if (!course) {
-    return NextResponse.json({ error: "Course not found" }, { status: 404 });
-  }
-
-  if (course.userId !== userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
   try {
-    // Delete all related records first
+    const { userId } = await auth();
+
+    if (!userId) {
+      return new NextResponse("Unauthorized", { status: 401 });
+    }
+
+    const courseId = params.id;
+
+    // Verify course ownership
+    const course = await prisma.course.findUnique({
+      where: {
+        id: courseId,
+        userId,
+      },
+    });
+
+    if (!course) {
+      return new NextResponse("Course not found", { status: 404 });
+    }
+
+    // Delete course and all related data in a transaction
     await prisma.$transaction(async (tx) => {
-      // Get all video IDs for the course
-      const courseVideos = await tx.video.findMany({
-        where: { courseId },
-        select: { id: true },
+      // First delete all bookmarks for videos in this course
+      await tx.bookmark.deleteMany({
+        where: {
+          video: {
+            courseId,
+          },
+        },
       });
 
-      const videoIds = courseVideos.map((video: { id: string }) => video.id);
+      // Delete all watch later entries for videos in this course
+      await tx.watchLater.deleteMany({
+        where: {
+          video: {
+            courseId,
+          },
+        },
+      });
 
-      if (videoIds.length > 0) {
-        // Delete all video progress for these videos
-        await tx.videoProgress.deleteMany({
-          where: { videoId: { in: videoIds } },
-        });
-      }
+      // Delete all video progress for videos in this course
+      await tx.videoProgress.deleteMany({
+        where: {
+          video: {
+            courseId,
+          },
+        },
+      });
+
+      // Delete all certificates for this course
+      await tx.certificate.deleteMany({
+        where: {
+          courseId,
+        },
+      });
 
       // Delete all videos for this course
       await tx.video.deleteMany({
-        where: { courseId },
+        where: {
+          courseId,
+        },
       });
 
-      // Finally, delete the course itself
+      // Finally delete the course
       await tx.course.delete({
-        where: { id: courseId },
+        where: {
+          id: courseId,
+        },
       });
     });
 
-    return NextResponse.json({ success: true });
+    return new NextResponse(null, { status: 204 });
   } catch (error) {
-    console.error("Error deleting course:", error);
-    return NextResponse.json({ error: "Server error" }, { status: 500 });
+    console.error("[COURSE_DELETE]", error);
+    return new NextResponse("Internal error", { status: 500 });
   }
 }
 
