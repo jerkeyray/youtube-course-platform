@@ -204,38 +204,38 @@ export default function ProfilePage() {
 
   return (
     <div className="bg-gradient-to-br from-slate-50 via-white to-blue-50 min-h-screen">
-      <main className="container py-8">
+      <main className="container py-3 md:py-8">
         <div className="max-w-5xl mx-auto">
-          <div className="grid gap-8 md:grid-cols-3">
+          <div className="grid gap-3 md:gap-8 md:grid-cols-3">
             {/* Profile Card */}
             <Card className="md:col-span-2 border-0 shadow-xl bg-gradient-to-br from-blue-50 to-indigo-50 hover:shadow-2xl transition-all duration-300">
-              <CardContent className="p-8 space-y-8">
-                <div className="flex items-center gap-8">
+              <CardContent className="p-3 md:p-8 space-y-4 md:space-y-8">
+                <div className="flex flex-col md:flex-row items-center md:items-start gap-3 md:gap-8">
                   {clerkUser.imageUrl ? (
-                    <div className="relative h-32 w-32 overflow-hidden rounded-full ring-4 ring-white shadow-xl">
+                    <div className="relative h-20 w-20 md:h-32 md:w-32 overflow-hidden rounded-full ring-4 ring-white shadow-xl">
                       <Image
                         src={clerkUser.imageUrl}
                         alt={clerkUser.fullName || "Profile"}
                         fill
                         className="object-cover"
-                        sizes="128px"
+                        sizes="(max-width: 768px) 80px, 128px"
                         quality={100}
                         priority
                       />
                     </div>
                   ) : (
-                    <div className="h-32 w-32 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white text-4xl font-bold shadow-xl">
+                    <div className="h-20 w-20 md:h-32 md:w-32 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white text-2xl md:text-4xl font-bold shadow-xl">
                       {clerkUser.fullName?.[0]?.toUpperCase() || "U"}
                     </div>
                   )}
-                  <div className="space-y-2">
-                    <h2 className="text-3xl font-bold text-gray-900">
+                  <div className="space-y-1 md:space-y-2 text-center md:text-left">
+                    <h2 className="text-xl md:text-3xl font-bold text-gray-900">
                       {clerkUser.fullName || "User"}
                     </h2>
-                    <p className="text-gray-600 text-lg">
+                    <p className="text-gray-600 text-sm md:text-lg">
                       {clerkUser.primaryEmailAddress?.emailAddress}
                     </p>
-                    <p className="text-gray-500">
+                    <p className="text-gray-500 text-xs md:text-base">
                       Joined{" "}
                       {format(
                         new Date(profileData.user.createdAt),
@@ -245,8 +245,8 @@ export default function ProfilePage() {
                   </div>
                 </div>
 
-                <div className="space-y-3">
-                  <label className="text-lg font-medium text-gray-900">
+                <div className="space-y-2 md:space-y-3">
+                  <label className="text-sm md:text-lg font-medium text-gray-900">
                     Bio
                   </label>
                   {isEditing ? (
@@ -254,22 +254,22 @@ export default function ProfilePage() {
                       value={bio}
                       onChange={(e) => setBio(e.target.value)}
                       placeholder="Tell us about yourself..."
-                      className="min-h-[120px] text-lg rounded-xl border-2 focus:border-blue-500 transition-all duration-300"
+                      className="min-h-[100px] md:min-h-[120px] text-sm md:text-lg rounded-xl border-2 focus:border-blue-500 transition-all duration-300"
                     />
                   ) : (
-                    <p className="text-gray-600 text-lg">
+                    <p className="text-gray-600 text-sm md:text-lg">
                       {bio || "No bio yet. Click edit to add one!"}
                     </p>
                   )}
                 </div>
 
-                <div className="flex gap-4">
+                <div className="flex flex-col sm:flex-row gap-3 md:gap-4">
                   {isEditing ? (
                     <>
                       <Button
                         onClick={() => updateProfileMutation.mutate(bio)}
                         disabled={updateProfileMutation.isPending}
-                        className="flex-1 py-6 text-lg rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 transition-all duration-300"
+                        className="flex-1 py-2 md:py-6 text-sm md:text-lg rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 transition-all duration-300"
                       >
                         {updateProfileMutation.isPending ? (
                           <div className="flex items-center gap-2">
@@ -283,7 +283,7 @@ export default function ProfilePage() {
                       <Button
                         variant="outline"
                         onClick={() => setIsEditing(false)}
-                        className="py-6 text-lg rounded-xl"
+                        className="py-2 md:py-6 text-sm md:text-lg rounded-xl"
                       >
                         Cancel
                       </Button>
@@ -292,9 +292,9 @@ export default function ProfilePage() {
                     <Button
                       variant="outline"
                       onClick={() => setIsEditing(true)}
-                      className="w-full py-6 text-lg rounded-xl gap-2 hover:shadow-lg transition-all duration-300"
+                      className="w-full py-2 md:py-6 text-sm md:text-lg rounded-xl gap-2 hover:shadow-lg transition-all duration-300"
                     >
-                      <Edit2 className="h-5 w-5" />
+                      <Edit2 className="h-4 w-4 md:h-5 md:w-5" />
                       Edit Profile
                     </Button>
                   )}
@@ -304,51 +304,59 @@ export default function ProfilePage() {
 
             {/* Stats Card */}
             <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-blue-50 hover:shadow-2xl transition-all duration-300">
-              <CardHeader>
-                <div className="flex items-center gap-2 mb-2">
-                  <Star className="h-5 w-5 text-blue-500" />
-                  <CardTitle className="text-2xl font-bold text-gray-900">
+              <CardHeader className="p-3 md:p-6">
+                <div className="flex items-center gap-2 mb-1 md:mb-2">
+                  <Star className="h-4 w-4 md:h-5 md:w-5 text-blue-500" />
+                  <CardTitle className="text-lg md:text-2xl font-bold text-gray-900">
                     Learning Stats
                   </CardTitle>
                 </div>
               </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 gap-6">
+              <CardContent className="p-3 md:p-6">
+                <div className="grid grid-cols-2 gap-3 md:gap-6">
                   {[
                     {
-                      icon: <Flame className="h-5 w-5 text-orange-500" />,
+                      icon: (
+                        <Flame className="h-4 w-4 md:h-5 md:w-5 text-orange-500" />
+                      ),
                       label: "Current Streak",
                       value: `${profileData.streak.currentStreak} days`,
                     },
                     {
-                      icon: <Trophy className="h-5 w-5 text-yellow-500" />,
+                      icon: (
+                        <Trophy className="h-4 w-4 md:h-5 md:w-5 text-yellow-500" />
+                      ),
                       label: "Longest Streak",
                       value: `${profileData.streak.longestStreak} days`,
                     },
                     {
-                      icon: <CheckCircle className="h-5 w-5 text-green-500" />,
+                      icon: (
+                        <CheckCircle className="h-4 w-4 md:h-5 md:w-5 text-green-500" />
+                      ),
                       label: "Courses Completed",
                       value:
                         profileData.user.completedCourses?.length.toString() ||
                         "0",
                     },
                     {
-                      icon: <Clock className="h-5 w-5 text-blue-500" />,
+                      icon: (
+                        <Clock className="h-4 w-4 md:h-5 md:w-5 text-blue-500" />
+                      ),
                       label: "Watch Time",
                       value: `${profileData.activity.totalWatchTime}h`,
                     },
                   ].map((stat, index) => (
                     <div
                       key={index}
-                      className="bg-white/50 rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-300"
+                      className="bg-white/50 rounded-xl p-2 md:p-4 shadow-sm hover:shadow-md transition-all duration-300"
                     >
-                      <div className="flex items-center gap-2 mb-2">
+                      <div className="flex items-center gap-1 md:gap-2 mb-1 md:mb-2">
                         {stat.icon}
-                        <span className="text-sm font-medium text-gray-600">
+                        <span className="text-xs md:text-sm font-medium text-gray-600">
                           {stat.label}
                         </span>
                       </div>
-                      <p className="text-2xl font-bold text-gray-900">
+                      <p className="text-base md:text-2xl font-bold text-gray-900">
                         {stat.value}
                       </p>
                     </div>
@@ -359,42 +367,42 @@ export default function ProfilePage() {
           </div>
 
           {/* Completed Courses */}
-          <Card className="mt-8 border-0 shadow-xl bg-gradient-to-br from-white to-blue-50 hover:shadow-2xl transition-all duration-300">
-            <CardHeader>
-              <div className="flex items-center gap-2 mb-2">
-                <BookOpen className="h-5 w-5 text-blue-500" />
-                <CardTitle className="text-2xl font-bold text-gray-900">
+          <Card className="mt-3 md:mt-8 border-0 shadow-xl bg-gradient-to-br from-white to-blue-50 hover:shadow-2xl transition-all duration-300">
+            <CardHeader className="p-3 md:p-6">
+              <div className="flex items-center gap-2 mb-1 md:mb-2">
+                <BookOpen className="h-4 w-4 md:h-5 md:w-5 text-blue-500" />
+                <CardTitle className="text-lg md:text-2xl font-bold text-gray-900">
                   Completed Courses
                 </CardTitle>
               </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-3 md:p-6">
               {profileData.user.completedCourses?.length === 0 ? (
-                <div className="text-center py-12">
-                  <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                    <Target className="h-8 w-8 text-white" />
+                <div className="text-center py-6 md:py-12">
+                  <div className="w-10 h-10 md:w-16 md:h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-3 md:mb-4">
+                    <Target className="h-5 w-5 md:h-8 md:w-8 text-white" />
                   </div>
-                  <p className="text-gray-600 text-lg">
+                  <p className="text-gray-600 text-sm md:text-lg">
                     No completed courses yet. Start your learning journey today!
                   </p>
                 </div>
               ) : (
-                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                <div className="grid gap-3 md:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
                   {profileData.user.completedCourses?.map((course) => (
                     <Card
                       key={course.id}
                       className="bg-gradient-to-br from-blue-50 to-indigo-50 border-0 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
                     >
-                      <CardContent className="p-6">
-                        <div className="flex items-center gap-4">
-                          <div className="h-14 w-14 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg">
-                            <BookOpen className="h-7 w-7 text-white" />
+                      <CardContent className="p-3 md:p-6">
+                        <div className="flex items-center gap-2 md:gap-4">
+                          <div className="h-8 w-8 md:h-14 md:w-14 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg">
+                            <BookOpen className="h-4 w-4 md:h-7 md:w-7 text-white" />
                           </div>
                           <div>
-                            <h3 className="font-bold text-lg text-gray-900">
+                            <h3 className="font-bold text-sm md:text-lg text-gray-900">
                               {course.title}
                             </h3>
-                            <p className="text-gray-600">
+                            <p className="text-gray-600 text-xs md:text-base">
                               Completed{" "}
                               {format(
                                 new Date(course.completedAt),

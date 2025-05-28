@@ -70,23 +70,18 @@ export function DashboardSidebar({ isCollapsed }: DashboardSidebarProps) {
               key={route.href}
               href={route.href}
               className={cn(
-                "text-sm group flex p-3 w-full justify-start font-medium cursor-pointer hover:text-white hover:bg-white/10 rounded-lg transition-all duration-300",
+                "text-sm group flex p-3 w-full font-medium cursor-pointer hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200 ease-in-out",
                 pathname === route.href
                   ? "text-white bg-white/10"
                   : "text-zinc-400",
-                isCollapsed && "justify-center"
+                isCollapsed ? "justify-center" : "justify-start"
               )}
             >
-              <div
-                className={cn(
-                  "flex items-center gap-x-3",
-                  isCollapsed ? "justify-center" : "flex-1"
-                )}
-              >
+              <div className="flex items-center gap-x-3">
                 <route.icon className={cn("h-5 w-5 shrink-0", route.color)} />
                 <span
                   className={cn(
-                    "transition-all duration-300",
+                    "transition-all duration-200 ease-in-out whitespace-nowrap",
                     isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"
                   )}
                 >
@@ -99,7 +94,7 @@ export function DashboardSidebar({ isCollapsed }: DashboardSidebarProps) {
       </div>
       <div
         className={cn(
-          "mt-auto px-2 py-4 border-t border-white/10",
+          "mt-auto px-2 py-4 border-t border-white/10 transition-all duration-200 ease-in-out",
           isCollapsed && "flex justify-center"
         )}
       >
@@ -113,8 +108,8 @@ export function DashboardSidebar({ isCollapsed }: DashboardSidebarProps) {
                 },
               }}
             />
-            <div className="flex flex-col">
-              <p className="text-sm font-medium text-white">
+            <div className="flex flex-col transition-all duration-200 ease-in-out">
+              <p className="text-sm font-medium">
                 {user?.firstName} {user?.lastName}
               </p>
               <p className="text-xs text-zinc-400">

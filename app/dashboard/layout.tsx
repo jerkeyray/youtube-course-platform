@@ -21,8 +21,8 @@ export default function DashboardLayout({
       {/* Desktop Sidebar */}
       <div
         className={cn(
-          "hidden h-full md:flex md:flex-col md:fixed md:inset-y-0 z-[80] bg-[#111827] transition-all duration-300",
-          isCollapsed ? "md:w-16" : "md:w-64"
+          "hidden h-full md:flex md:flex-col md:fixed md:inset-y-0 z-[80] bg-[#111827] transition-all duration-200 ease-in-out",
+          isCollapsed ? "md:w-16" : "md:w-52"
         )}
       >
         <div className="flex items-center h-14 px-4">
@@ -33,7 +33,7 @@ export default function DashboardLayout({
           {!isCollapsed && (
             <Link
               href="/"
-              className="text-xl font-bold text-white ml-2 hover:text-gray-300 transition"
+              className="text-xl font-bold text-white ml-2 hover:text-gray-300 transition-opacity duration-200 ease-in-out"
             >
               Yudoku
             </Link>
@@ -50,8 +50,8 @@ export default function DashboardLayout({
       {/* Main Content */}
       <main
         className={cn(
-          "transition-all duration-300",
-          isCollapsed ? "md:pl-16" : "md:pl-64"
+          "transition-all duration-200 ease-in-out",
+          isCollapsed ? "md:pl-16" : "md:pl-52"
         )}
       >
         <div className="h-full p-4 md:p-8">
