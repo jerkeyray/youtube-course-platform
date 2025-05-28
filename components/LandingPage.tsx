@@ -29,10 +29,10 @@ export default function LandingPage() {
           </div>
 
           <h1 className="text-6xl md:text-8xl font-bold leading-[1.05] tracking-tight bg-gradient-to-r from-gray-900 via-blue-800 to-purple-800 bg-clip-text text-transparent">
-            Learn from YouTube
+            The YouTube Course 
             <br />
             <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              without distractions
+              Experience Platform
             </span>
           </h1>
 
@@ -63,20 +63,6 @@ export default function LandingPage() {
             </Button>
           </div>
 
-          <div className="pt-12 flex items-center justify-center gap-8 text-sm text-gray-500">
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-              <span>100% Free</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-              <span>No Ads</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-              <span>Privacy First</span>
-            </div>
-          </div>
         </div>
       </section>
 
