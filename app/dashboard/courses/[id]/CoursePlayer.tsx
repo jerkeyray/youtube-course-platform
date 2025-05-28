@@ -44,8 +44,18 @@ export default function CoursePlayer({ course }: CoursePlayerProps) {
 
   const handleVideoProgress = useCallback(
     async (videoId: string) => {
+      const isCompleted = watchedVideos.has(videoId);
+      // Optimistically update UI
+      setWatchedVideos((prev) => {
+        const newSet = new Set(prev);
+        if (isCompleted) {
+          newSet.delete(videoId);
+        } else {
+          newSet.add(videoId);
+        }
+        return newSet;
+      });
       try {
-        const isCompleted = watchedVideos.has(videoId);
         const response = await fetch(`/api/videos/${videoId}/progress`, {
           method: "POST",
           headers: {
@@ -59,19 +69,22 @@ export default function CoursePlayer({ course }: CoursePlayerProps) {
         if (!response.ok) {
           throw new Error("Failed to update video progress");
         }
-
+        toast.success(
+          isCompleted
+            ? "Video marked as not completed"
+            : "Video marked as completed"
+        );
+      } catch (error) {
+        // Revert optimistic update
         setWatchedVideos((prev) => {
           const newSet = new Set(prev);
           if (isCompleted) {
-            newSet.delete(videoId);
-            toast.success("Video marked as not completed");
-          } else {
             newSet.add(videoId);
-            toast.success("Video marked as completed");
+          } else {
+            newSet.delete(videoId);
           }
           return newSet;
         });
-      } catch (error) {
         console.error("Error updating video progress:", error);
         toast.error("Failed to update video progress");
       }
@@ -81,34 +94,38 @@ export default function CoursePlayer({ course }: CoursePlayerProps) {
 
   const handleWatchLater = useCallback(
     async (videoId: string) => {
+      const isWatchLater = watchLaterVideos.has(videoId);
+      if (isWatchLater) {
+        toast.info("Already in Watch Later");
+        return;
+      }
+      // Optimistically update UI
+      setWatchLaterVideos((prev) => {
+        const newSet = new Set(prev);
+        newSet.add(videoId);
+        return newSet;
+      });
       try {
-        const isWatchLater = watchLaterVideos.has(videoId);
         const response = await fetch(`/api/videos/${videoId}/watch-later`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            watchLater: !isWatchLater,
+            watchLater: true,
           }),
         });
 
         if (!response.ok) {
           throw new Error("Failed to update watch later status");
         }
-
+        toast.success("Added to watch later");
+      } catch (error) {
         setWatchLaterVideos((prev) => {
           const newSet = new Set(prev);
-          if (isWatchLater) {
-            newSet.delete(videoId);
-            toast.success("Removed from watch later");
-          } else {
-            newSet.add(videoId);
-            toast.success("Added to watch later");
-          }
+          newSet.delete(videoId);
           return newSet;
         });
-      } catch (error) {
         console.error("Error updating watch later status:", error);
         toast.error("Failed to update watch later status");
       }
@@ -117,35 +134,36 @@ export default function CoursePlayer({ course }: CoursePlayerProps) {
   );
 
   const handleBookmark = useCallback(
-    async (videoId: string) => {
+    async (videoId: string, youtubeId: string) => {
+      const isBookmarked = bookmarkedVideos.has(videoId);
+      if (isBookmarked) {
+        toast.info("Already bookmarked");
+        return;
+      }
+      setBookmarkedVideos((prev) => {
+        const newSet = new Set(prev);
+        newSet.add(videoId);
+        return newSet;
+      });
       try {
-        const isBookmarked = bookmarkedVideos.has(videoId);
         const response = await fetch("/api/bookmarks", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({
-            videoId,
-          }),
+          body: JSON.stringify({ videoId }),
         });
 
         if (!response.ok) {
           throw new Error("Failed to update bookmark status");
         }
-
+        toast.success("Added to bookmarks");
+      } catch (error) {
         setBookmarkedVideos((prev) => {
           const newSet = new Set(prev);
-          if (isBookmarked) {
-            newSet.delete(videoId);
-            toast.success("Removed from bookmarks");
-          } else {
-            newSet.add(videoId);
-            toast.success("Added to bookmarks");
-          }
+          newSet.delete(videoId);
           return newSet;
         });
-      } catch (error) {
         console.error("Error updating bookmark status:", error);
         toast.error("Failed to update bookmark status");
       }
@@ -223,13 +241,13 @@ export default function CoursePlayer({ course }: CoursePlayerProps) {
                   className="flex items-center gap-2"
                 >
                   <Clock className="h-4 w-4" />
-                  {watchLaterVideos.has(currentVideo.id)
-                    ? "Watch Later"
-                    : "Save for Later"}
+                  Watch Later
                 </Button>
 
                 <Button
-                  onClick={() => handleBookmark(currentVideo.id)}
+                  onClick={() =>
+                    handleBookmark(currentVideo.id, currentVideo.videoId)
+                  }
                   variant={
                     bookmarkedVideos.has(currentVideo.id)
                       ? "default"
@@ -238,9 +256,7 @@ export default function CoursePlayer({ course }: CoursePlayerProps) {
                   className="flex items-center gap-2"
                 >
                   <Bookmark className="h-4 w-4" />
-                  {bookmarkedVideos.has(currentVideo.id)
-                    ? "Bookmarked"
-                    : "Bookmark"}
+                  Bookmark
                 </Button>
 
                 <div className="flex gap-2">

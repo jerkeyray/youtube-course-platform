@@ -52,11 +52,19 @@ export default function VideoCard({
         }),
       });
 
+      if (response.status === 404) {
+        toast.info(`Already removed from ${type}`);
+        if (onRemove) {
+          onRemove();
+        }
+        return;
+      }
+
       if (!response.ok) {
         throw new Error(`Failed to remove from ${type}`);
       }
 
-      toast.success(`Removed from ${type}`);
+      toast.success(`Successfully removed from ${type}`);
       if (onRemove) {
         onRemove();
       }
