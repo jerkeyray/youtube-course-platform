@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
@@ -13,7 +13,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { CalendarIcon, ArrowLeft, Youtube } from "lucide-react";
-import { format, parse } from "date-fns";
+import { format, parse, isValid, isBefore } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
@@ -25,6 +25,11 @@ export default function CreateCourse() {
   const [deadline, setDeadline] = useState<Date | undefined>(undefined);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [dateInput, setDateInput] = useState("");
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -66,9 +71,14 @@ export default function CreateCourse() {
   };
 
   const handleDateSelect = (date: Date | undefined) => {
-    setDeadline(date);
-    setDateInput(date ? format(date, "MM/dd/yyyy") : "");
-    setIsCalendarOpen(false);
+    if (date) {
+      setDeadline(date);
+      setDateInput(format(date, "MM/dd/yyyy"));
+      setIsCalendarOpen(false);
+    } else {
+      setDeadline(undefined);
+      setDateInput("");
+    }
   };
 
   const handleDateInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -152,43 +162,31 @@ export default function CreateCourse() {
                   Completion Deadline
                 </label>
                 <p className="text-xs text-muted-foreground mb-2">
-                  Set a target date to complete the course (optional)
+                  Set a target date to complete the course (optional,
+                  MM/DD/YYYY)
                 </p>
-                <div className="relative">
-                  <Input
-                    id="deadline"
-                    type="text"
-                    value={dateInput}
-                    onChange={handleDateInputChange}
-                    placeholder="MM/DD/YYYY"
-                    className="w-full pr-10"
-                  />
-                  <Popover
-                    open={isCalendarOpen}
-                    onOpenChange={setIsCalendarOpen}
-                  >
-                    <PopoverTrigger asChild>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="absolute right-0 top-0 h-full px-3"
-                      >
-                        <CalendarIcon className="h-4 w-4" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="end">
-                      <Calendar
-                        mode="single"
-                        selected={deadline}
-                        onSelect={handleDateSelect}
-                        initialFocus
-                        disabled={(date: Date) => date < new Date()}
-                        className="rounded-md border"
-                      />
-                    </PopoverContent>
-                  </Popover>
-                </div>
+                <Input
+                  id="deadline"
+                  type="text"
+                  value={dateInput}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setDateInput(val);
+                    if (!val) {
+                      setDeadline(undefined);
+                      return;
+                    }
+                    const parsed = parse(val, "MM/dd/yyyy", new Date());
+                    if (isValid(parsed) && !isBefore(parsed, new Date())) {
+                      setDeadline(parsed);
+                    } else {
+                      setDeadline(undefined);
+                    }
+                  }}
+                  placeholder="MM/DD/YYYY"
+                  className="w-full"
+                  autoComplete="off"
+                />
               </div>
 
               <Button type="submit" className="w-full" disabled={isLoading}>

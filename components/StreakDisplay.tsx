@@ -17,9 +17,10 @@ export default function StreakDisplay() {
         const response = await fetch("/api/user/streak");
         if (!response.ok) throw new Error("Failed to fetch streak");
         const data = await response.json();
-        setStreak(data.streakCount);
+        setStreak(data.currentStreak || 0);
       } catch (error) {
         console.error("Error fetching streak:", error);
+        setStreak(0);
       } finally {
         setIsLoading(false);
       }
@@ -40,7 +41,9 @@ export default function StreakDisplay() {
   return (
     <div className="flex items-center gap-2 text-sm text-muted-foreground">
       <Flame className="h-4 w-4 text-orange-500" />
-      <span>{streak} day streak</span>
+      <span>
+        {streak} day{streak !== 1 ? "s" : ""} streak
+      </span>
     </div>
   );
 }

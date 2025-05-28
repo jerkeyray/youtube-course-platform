@@ -113,12 +113,14 @@ export default function DashboardClient({
             Continue learning from where you left off
           </p>
         </div>
-        <Link
-          href="/dashboard/courses/create"
-          className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-        >
-          Add New Course
-        </Link>
+        {courses.length > 0 && (
+          <Link
+            href="/dashboard/courses/create"
+            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+          >
+            Add New Course
+          </Link>
+        )}
       </div>
 
       {courses.length === 0 ? (
@@ -129,7 +131,7 @@ export default function DashboardClient({
           </p>
           <Link
             href="/dashboard/courses/create"
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+            className="inline-flex items-center justify-center rounded-md bg-primary px-6 py-3 text-base font-medium text-primary-foreground transition-colors hover:bg-primary/90 shadow-lg hover:shadow-xl transform hover:scale-105"
           >
             Add New Course
           </Link>
