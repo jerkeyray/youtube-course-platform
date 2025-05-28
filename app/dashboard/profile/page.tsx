@@ -8,6 +8,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import Image from "next/image";
+import { Loader } from "@/components/ui/loader";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Trophy,
   BookOpen,
@@ -15,8 +17,6 @@ import {
   Edit2,
   CheckCircle,
   Flame,
-  Loader2,
-  Zap,
   Star,
   Target,
 } from "lucide-react";
@@ -48,92 +48,81 @@ interface ProfileData {
   completedCourses: CompletedCourse[];
 }
 
+interface ProfileResponse {
+  user: {
+    id: string;
+    name: string | null;
+    email: string | null;
+    image: string | null;
+    bio: string | null;
+    createdAt: string;
+    completedCourses: CompletedCourse[];
+  };
+  streak: {
+    currentStreak: number;
+    longestStreak: number;
+  };
+  activity: {
+    totalWatchTime: number;
+  };
+}
+
+async function fetchProfileData(): Promise<ProfileResponse> {
+  const userResponse = await fetch("/api/profile");
+  if (!userResponse.ok) {
+    throw new Error(`Failed to fetch user data: ${userResponse.status}`);
+  }
+  const userData = await userResponse.json();
+
+  const streakResponse = await fetch("/api/user/streak");
+  if (!streakResponse.ok) {
+    throw new Error(`Failed to fetch streak data: ${streakResponse.status}`);
+  }
+  const streakData = await streakResponse.json();
+
+  const activityResponse = await fetch("/api/activity");
+  if (!activityResponse.ok) {
+    throw new Error(
+      `Failed to fetch activity data: ${activityResponse.status}`
+    );
+  }
+  const activityData = await activityResponse.json();
+
+  return {
+    user: userData,
+    streak: streakData,
+    activity: activityData,
+  };
+}
+
 export default function ProfilePage() {
   const { userId, isLoaded: isAuthLoaded } = useAuth();
   const { user: clerkUser, isLoaded: isClerkLoaded } = useUser();
   const [isEditing, setIsEditing] = useState(false);
   const [bio, setBio] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [profileData, setProfileData] = useState<ProfileData | null>(null);
-  const [isLoadingProfile, setIsLoadingProfile] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
+  const {
+    data: profileData,
+    isLoading: isLoadingProfile,
+    error,
+  } = useQuery({
+    queryKey: ["profile", userId],
+    queryFn: fetchProfileData,
+    enabled: !!userId && !!clerkUser,
+    staleTime: 1000 * 60 * 5, // Consider data fresh for 5 minutes
+    gcTime: 1000 * 60 * 30, // Keep data in cache for 30 minutes
+  });
+
+  // Set initial bio when profile data is loaded
   useEffect(() => {
-    const fetchProfileData = async () => {
-      if (!isAuthLoaded || !isClerkLoaded) return;
-
-      try {
-        setIsLoadingProfile(true);
-        setError(null);
-        console.log("Fetching profile data...");
-
-        // Fetch user data from Supabase
-        const userResponse = await fetch("/api/profile");
-        if (!userResponse.ok) {
-          throw new Error(`Failed to fetch user data: ${userResponse.status}`);
-        }
-        const userData = await userResponse.json();
-
-        // Fetch streak data
-        const streakResponse = await fetch("/api/user/streak");
-        if (!streakResponse.ok) {
-          throw new Error(
-            `Failed to fetch streak data: ${streakResponse.status}`
-          );
-        }
-        const streakData = await streakResponse.json();
-
-        // Fetch activity data
-        const activityResponse = await fetch("/api/activity");
-        if (!activityResponse.ok) {
-          throw new Error(
-            `Failed to fetch activity data: ${activityResponse.status}`
-          );
-        }
-        const activityData = await activityResponse.json();
-
-        // Combine all data
-        const combinedData: ProfileData = {
-          user: {
-            id: clerkUser?.id || "",
-            name: clerkUser?.fullName || null,
-            email: clerkUser?.primaryEmailAddress?.emailAddress || null,
-            image: clerkUser?.imageUrl || null,
-            createdAt: userData.createdAt,
-          },
-          stats: {
-            currentStreak: streakData.currentStreak || 0,
-            longestStreak: streakData.longestStreak || 0,
-            coursesCompleted: userData.completedCourses?.length || 0,
-            totalWatchTime: activityData.totalWatchTime || 0,
-          },
-          completedCourses: userData.completedCourses || [],
-        };
-
-        console.log("Profile data received:", combinedData);
-        setProfileData(combinedData);
-        setBio(userData.bio || "");
-      } catch (error) {
-        console.error("Error fetching profile:", error);
-        setError("Failed to load profile data. Please try again later.");
-        toast.error("Failed to load profile data");
-      } finally {
-        setIsLoadingProfile(false);
-      }
-    };
-
-    if (userId && clerkUser) {
-      console.log("User data available, fetching profile...");
-      fetchProfileData();
-    } else if (isAuthLoaded && isClerkLoaded) {
-      console.log("No user data available after auth loaded");
-      setIsLoadingProfile(false);
+    if (profileData?.user.bio) {
+      setBio(profileData.user.bio);
     }
-  }, [userId, clerkUser, isAuthLoaded, isClerkLoaded]);
+  }, [profileData?.user.bio]);
 
-  const handleSaveProfile = async () => {
-    setIsLoading(true);
-    try {
+  const updateProfileMutation = useMutation({
+    mutationFn: async (bio: string) => {
       const response = await fetch("/api/profile", {
         method: "PATCH",
         headers: {
@@ -146,67 +135,41 @@ export default function ProfilePage() {
         throw new Error("Failed to update profile");
       }
 
-      const updatedData = await response.json();
-      setProfileData((prev) =>
-        prev
-          ? {
-              ...prev,
-              user: {
-                ...prev.user,
-                bio: updatedData.bio,
-              },
-            }
-          : null
-      );
-
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
       toast.success("Profile updated successfully");
       setIsEditing(false);
-    } catch (error) {
+    },
+    onError: (error) => {
       console.error("Error updating profile:", error);
       toast.error("Failed to update profile");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    },
+  });
 
   if (!isAuthLoaded || !isClerkLoaded) {
-    return (
-      <main className="container py-8">
-        <div className="max-w-5xl mx-auto">
-          <div className="flex items-center justify-center h-[50vh]">
-            <div className="flex flex-col items-center gap-4">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              <p className="text-muted-foreground">Loading authentication...</p>
-            </div>
-          </div>
-        </div>
-      </main>
-    );
+    return <Loader size="lg" />;
   }
 
   if (isLoadingProfile) {
-    return (
-      <main className="container py-8">
-        <div className="max-w-5xl mx-auto">
-          <div className="flex items-center justify-center h-[50vh]">
-            <div className="flex flex-col items-center gap-4">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              <p className="text-muted-foreground">Loading profile data...</p>
-            </div>
-          </div>
-        </div>
-      </main>
-    );
+    return <Loader size="lg" />;
   }
 
   if (error) {
     return (
       <main className="container py-8">
         <div className="max-w-5xl mx-auto">
-          <div className="flex items-center justify-center h-[50vh]">
-            <div className="text-center">
-              <p className="text-destructive mb-4">{error}</p>
-              <Button onClick={() => window.location.reload()}>
+          <div className="flex items-center justify-center min-h-[60vh]">
+            <div className="text-center space-y-4">
+              <p className="text-destructive text-lg">
+                {error instanceof Error ? error.message : "An error occurred"}
+              </p>
+              <Button
+                onClick={() =>
+                  queryClient.invalidateQueries({ queryKey: ["profile"] })
+                }
+              >
                 Try Again
               </Button>
             </div>
@@ -216,16 +179,20 @@ export default function ProfilePage() {
     );
   }
 
-  if (!profileData) {
+  if (!profileData || !clerkUser) {
     return (
       <main className="container py-8">
         <div className="max-w-5xl mx-auto">
-          <div className="flex items-center justify-center h-[50vh]">
-            <div className="text-center">
-              <p className="text-muted-foreground mb-4">
+          <div className="flex items-center justify-center min-h-[60vh]">
+            <div className="text-center space-y-4">
+              <p className="text-muted-foreground text-lg">
                 No profile data available
               </p>
-              <Button onClick={() => window.location.reload()}>
+              <Button
+                onClick={() =>
+                  queryClient.invalidateQueries({ queryKey: ["profile"] })
+                }
+              >
                 Refresh Page
               </Button>
             </div>
@@ -239,43 +206,16 @@ export default function ProfilePage() {
     <div className="bg-gradient-to-br from-slate-50 via-white to-blue-50 min-h-screen">
       <main className="container py-8">
         <div className="max-w-5xl mx-auto">
-          {/* Profile Header */}
-          <div className="mb-12">
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-5xl font-bold tracking-tight bg-gradient-to-r from-gray-900 via-blue-800 to-purple-800 bg-clip-text text-transparent">
-                  Profile
-                </h1>
-                <p className="text-xl text-gray-600 mt-2">
-                  Manage your profile and view your learning stats
-                </p>
-              </div>
-              <Button
-                variant="outline"
-                onClick={() => setIsEditing(!isEditing)}
-                className="gap-2 rounded-full px-6 py-6 text-lg hover:shadow-lg transition-all duration-300"
-              >
-                <Edit2 className="h-5 w-5" />
-                {isEditing ? "Cancel" : "Edit Profile"}
-              </Button>
-            </div>
-          </div>
-
           <div className="grid gap-8 md:grid-cols-3">
             {/* Profile Card */}
             <Card className="md:col-span-2 border-0 shadow-xl bg-gradient-to-br from-blue-50 to-indigo-50 hover:shadow-2xl transition-all duration-300">
-              <CardHeader>
-                <CardTitle className="text-2xl font-bold text-gray-900">
-                  Profile Information
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-8">
-                <div className="flex items-center gap-6">
-                  {profileData.user.image ? (
+              <CardContent className="p-8 space-y-8">
+                <div className="flex items-center gap-8">
+                  {clerkUser.imageUrl ? (
                     <div className="relative h-32 w-32 overflow-hidden rounded-full ring-4 ring-white shadow-xl">
                       <Image
-                        src={profileData.user.image}
-                        alt={profileData.user.name || "Profile"}
+                        src={clerkUser.imageUrl}
+                        alt={clerkUser.fullName || "Profile"}
                         fill
                         className="object-cover"
                         sizes="128px"
@@ -285,17 +225,17 @@ export default function ProfilePage() {
                     </div>
                   ) : (
                     <div className="h-32 w-32 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white text-4xl font-bold shadow-xl">
-                      {profileData.user.name?.[0]?.toUpperCase() || "U"}
+                      {clerkUser.fullName?.[0]?.toUpperCase() || "U"}
                     </div>
                   )}
-                  <div>
+                  <div className="space-y-2">
                     <h2 className="text-3xl font-bold text-gray-900">
-                      {profileData.user.name || "User"}
+                      {clerkUser.fullName || "User"}
                     </h2>
                     <p className="text-gray-600 text-lg">
-                      {profileData.user.email}
+                      {clerkUser.primaryEmailAddress?.emailAddress}
                     </p>
-                    <p className="text-gray-500 mt-2">
+                    <p className="text-gray-500">
                       Joined{" "}
                       {format(
                         new Date(profileData.user.createdAt),
@@ -323,22 +263,42 @@ export default function ProfilePage() {
                   )}
                 </div>
 
-                {isEditing && (
-                  <Button
-                    onClick={handleSaveProfile}
-                    disabled={isLoading}
-                    className="w-full py-6 text-lg rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 transition-all duration-300"
-                  >
-                    {isLoading ? (
-                      <>
-                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                        Saving...
-                      </>
-                    ) : (
-                      "Save Changes"
-                    )}
-                  </Button>
-                )}
+                <div className="flex gap-4">
+                  {isEditing ? (
+                    <>
+                      <Button
+                        onClick={() => updateProfileMutation.mutate(bio)}
+                        disabled={updateProfileMutation.isPending}
+                        className="flex-1 py-6 text-lg rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 transition-all duration-300"
+                      >
+                        {updateProfileMutation.isPending ? (
+                          <div className="flex items-center gap-2">
+                            <Loader size="sm" className="text-white" />
+                            <span>Saving...</span>
+                          </div>
+                        ) : (
+                          "Save Changes"
+                        )}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={() => setIsEditing(false)}
+                        className="py-6 text-lg rounded-xl"
+                      >
+                        Cancel
+                      </Button>
+                    </>
+                  ) : (
+                    <Button
+                      variant="outline"
+                      onClick={() => setIsEditing(true)}
+                      className="w-full py-6 text-lg rounded-xl gap-2 hover:shadow-lg transition-all duration-300"
+                    >
+                      <Edit2 className="h-5 w-5" />
+                      Edit Profile
+                    </Button>
+                  )}
+                </div>
               </CardContent>
             </Card>
 
@@ -358,22 +318,24 @@ export default function ProfilePage() {
                     {
                       icon: <Flame className="h-5 w-5 text-orange-500" />,
                       label: "Current Streak",
-                      value: `${profileData.stats.currentStreak} days`,
+                      value: `${profileData.streak.currentStreak} days`,
                     },
                     {
                       icon: <Trophy className="h-5 w-5 text-yellow-500" />,
                       label: "Longest Streak",
-                      value: `${profileData.stats.longestStreak} days`,
+                      value: `${profileData.streak.longestStreak} days`,
                     },
                     {
                       icon: <CheckCircle className="h-5 w-5 text-green-500" />,
                       label: "Courses Completed",
-                      value: profileData.stats.coursesCompleted.toString(),
+                      value:
+                        profileData.user.completedCourses?.length.toString() ||
+                        "0",
                     },
                     {
                       icon: <Clock className="h-5 w-5 text-blue-500" />,
                       label: "Watch Time",
-                      value: `${profileData.stats.totalWatchTime}h`,
+                      value: `${profileData.activity.totalWatchTime}h`,
                     },
                   ].map((stat, index) => (
                     <div
@@ -407,7 +369,7 @@ export default function ProfilePage() {
               </div>
             </CardHeader>
             <CardContent>
-              {profileData.completedCourses.length === 0 ? (
+              {profileData.user.completedCourses?.length === 0 ? (
                 <div className="text-center py-12">
                   <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
                     <Target className="h-8 w-8 text-white" />
@@ -418,7 +380,7 @@ export default function ProfilePage() {
                 </div>
               ) : (
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                  {profileData.completedCourses.map((course) => (
+                  {profileData.user.completedCourses?.map((course) => (
                     <Card
                       key={course.id}
                       className="bg-gradient-to-br from-blue-50 to-indigo-50 border-0 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
