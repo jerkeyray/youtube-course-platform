@@ -22,8 +22,8 @@ export async function GET() {
       take: 365,
     });
 
-    // Calculate streak
-    let streakCount = 0;
+    // Calculate current streak
+    let currentStreak = 0;
     const today = new Date();
     const yesterday = subDays(today, 1);
 
@@ -36,29 +36,63 @@ export async function GET() {
     );
 
     if (!hasActivityToday && !hasActivityYesterday) {
-      return NextResponse.json({ streakCount: 0 });
-    }
+      currentStreak = 0;
+    } else {
+      // Start counting streak from the most recent activity
+      let currentDate = hasActivityToday ? today : yesterday;
+      currentStreak = 1;
 
-    // Start counting streak from the most recent activity
-    let currentDate = hasActivityToday ? today : yesterday;
-    streakCount = 1;
+      // Count consecutive days
+      for (let i = 1; i < activities.length; i++) {
+        const prevDate = subDays(currentDate, 1);
+        const hasActivity = activities.some((activity) =>
+          isSameDay(new Date(activity.date), prevDate)
+        );
 
-    // Count consecutive days
-    for (let i = 1; i < activities.length; i++) {
-      const prevDate = subDays(currentDate, 1);
-      const hasActivity = activities.some((activity) =>
-        isSameDay(new Date(activity.date), prevDate)
-      );
-
-      if (hasActivity) {
-        streakCount++;
-        currentDate = prevDate;
-      } else {
-        break;
+        if (hasActivity) {
+          currentStreak++;
+          currentDate = prevDate;
+        } else {
+          break;
+        }
       }
     }
 
-    return NextResponse.json({ streakCount });
+    // Calculate longest streak
+    let longestStreak = 0;
+    let tempStreak = 0;
+    let prevDate: Date | null = null;
+
+    // Sort activities by date ascending for longest streak calculation
+    const sortedActivities = [...activities].sort(
+      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+    );
+
+    for (const activity of sortedActivities) {
+      const currentDate = new Date(activity.date);
+
+      if (prevDate) {
+        const daysDiff = Math.floor(
+          (currentDate.getTime() - prevDate.getTime()) / (1000 * 60 * 60 * 24)
+        );
+
+        if (daysDiff === 1) {
+          tempStreak++;
+        } else {
+          tempStreak = 1;
+        }
+      } else {
+        tempStreak = 1;
+      }
+
+      longestStreak = Math.max(longestStreak, tempStreak);
+      prevDate = currentDate;
+    }
+
+    return NextResponse.json({
+      currentStreak,
+      longestStreak,
+    });
   } catch (error) {
     console.error("[STREAK_GET]", error);
     return new NextResponse("Internal Error", { status: 500 });

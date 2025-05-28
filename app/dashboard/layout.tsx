@@ -2,6 +2,7 @@
 
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { DashboardSidebar } from "@/components/DashboardSidebar";
 import { MobileNav } from "@/components/MobileNav";
 import { DashboardSidebarToggle } from "@/components/DashboardSidebarToggle";
@@ -29,7 +30,12 @@ export default function DashboardLayout({
             onToggle={() => setIsCollapsed(!isCollapsed)}
           />
           {!isCollapsed && (
-            <h1 className="text-xl font-bold text-white ml-2">Yudoku</h1>
+            <Link
+              href="/"
+              className="text-xl font-bold text-white ml-2 hover:text-gray-300 transition"
+            >
+              Yudoku
+            </Link>
           )}
         </div>
         <DashboardSidebar isCollapsed={isCollapsed} />

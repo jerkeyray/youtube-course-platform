@@ -10,6 +10,7 @@ export async function GET() {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
+    // Get activities
     const activities = await prisma.userActivity.findMany({
       where: {
         userId,
@@ -20,7 +21,24 @@ export async function GET() {
       take: 365, // Get last year of activity
     });
 
-    return NextResponse.json(activities);
+    // Get total watch time from video progress
+    const videoProgress = await prisma.videoProgress.findMany({
+      where: {
+        userId,
+        completed: true,
+      },
+      include: {
+        video: true,
+      },
+    });
+
+    // Calculate total watch time (assuming each video is 1 hour for now)
+    const totalWatchTime = videoProgress.length;
+
+    return NextResponse.json({
+      activities,
+      totalWatchTime,
+    });
   } catch (error) {
     console.error("[ACTIVITY_GET]", error);
     return new NextResponse("Internal Error", { status: 500 });

@@ -17,7 +17,7 @@ export function MobileNav() {
         </Button>
       </SheetTrigger>
       <SheetContent side="left" className="p-0">
-        <DashboardSidebar />
+        <DashboardSidebar isCollapsed={false} />
       </SheetContent>
     </Sheet>
   );
