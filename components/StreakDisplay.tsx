@@ -19,134 +19,137 @@ const streakMessages: StreakMessages = {
   "0": [
     {
       message:
-        "Zero days? The Yudoku Yeti's puking at your laziness. Start a course, you slug! 😖",
-      shareText: "Starting my Yudoku streak from nothing. Bet I'll crush it.",
+        "0 days? That Udemy course you bought in 2022 is still waiting. So is your future. 📉",
+      shareText: "Starting from rock bottom. No excuses now.",
     },
     {
       message:
-        "No streak? The Yudoku Yeti's burning your couch. Learn now, deadbeat! 😖",
-      shareText: "Zero days on Yudoku. Gotta dodge the Yeti's stink-eye.",
+        "Zero? You binge Netflix but can't finish a 10-min lesson? Disgraceful. 🍿🧠",
+      shareText: "Zero-day streak. Time to stop pretending to be productive.",
     },
     {
       message:
-        "Zilch? You're the Yudoku Yeti's biggest letdown. Study, you wreck! 😿",
-      shareText: "From zero to Yudoku king. Watch this.",
+        "Still 0? You're one TED Talk away from delusion. Watch a real course, clown. 🎭",
+      shareText: "No streak yet. I’m finally doing something real.",
     },
     {
       message:
-        "Zero? The Yudoku Yeti's stealing your snacks. Get to work, flop! 😤",
-      shareText: "Yudoku streak at zero. Time to shut the Yeti up.",
+        "0 days. Your brain's buffering while your career's stuck on a 404. 🧠💀",
+      shareText: "Day zero. Time to load something useful.",
     },
   ],
   "1-6": [
     {
       message:
-        "{streak} days? The Yudoku Yeti's snoring. Move faster, you turtle! 😾",
-      shareText: "{streak} days on Yudoku. Just warming up.",
+        "{streak} days? Cool. Still not enough to explain anything without Googling. 🫠",
+      shareText: "{streak}-day streak. Baby steps away from cluelessness.",
     },
     {
       message:
-        "{streak} days? The Yudoku Yeti bets you'll quit. Prove it wrong, chump! 😒",
-      shareText: "{streak}-day Yudoku streak. I'm not backing down.",
+        "{streak} days in, and you're still afraid of the 'Advanced' tab. Push harder. 📚",
+      shareText: "{streak} days of learning. Fear of progress decreasing.",
     },
     {
       message:
-        "Only {streak} days? The Yudoku Yeti's mocking you. Get serious, goof! 😖",
-      shareText: "{streak} days of Yudoku. The Yeti's got nothing on me.",
+        "{streak} days? You’ve outlasted your last gym phase. Keep showing up. 🏋️‍♂️",
+      shareText: "{streak}-day streak. I'm doing better than my New Year's goals.",
     },
     {
       message:
-        "{streak} days? The Yudoku Yeti's embarrassed for you. Hustle, slob! 😼",
-      shareText: "{streak}-day streak on Yudoku. Get ready for more.",
+        "{streak} days? Better than nothing, but your brain still autoplays distractions. 🤡",
+      shareText: "{streak} days in. Let's see how far this goes.",
     },
   ],
   "7-9": [
     {
       message:
-        "{streak} days? The Yudoku Yeti's barely awake. Don't bomb it, dweeb! 💪",
-      shareText: "{streak} days on Yudoku. I'm starting to roll.",
+        "{streak} days? You’re approaching dangerous levels of actual commitment. 🔥",
+      shareText: "{streak} days strong. Finally sticking to something.",
     },
     {
       message:
-        "{streak} days? The Yudoku Yeti's not impressed yet. I'm not done yet! 😤",
-      shareText: "{streak}-day Yudoku streak. No stopping now.",
+        "{streak} days? Your attention span’s evolving. TikTok’s losing. 📉",
+      shareText: "{streak}-day streak. Learning over doomscrolling.",
     },
     {
       message:
-        "{streak} days? The Yudoku Yeti's seen better. Step up, loser! 😼",
-      shareText: "{streak} days of Yudoku. I'm outpacing the Yeti.",
+        "{streak} days? Your old self just rage-quit. Keep going, killer. 💀📘",
+      shareText: "{streak}-day streak. Feels illegal to be this focused.",
     },
     {
       message:
-        "{streak} days? The Yudoku Yeti's itching to roast you. Don't slip! 😤",
-      shareText: "{streak}-day streak on Yudoku. Yeti's got no chance.",
+        "{streak} days? Not bad. But your course tab is still next to YouTube. Be careful. 🕵️‍♂️",
+      shareText: "{streak} days of learning. I might actually finish something.",
     },
   ],
   "10": [
     {
       message:
-        "10 days! The Yudoku Yeti's almost impressed. Don't choke, hotshot! 😎",
-      shareText: "10 days of Yudoku. I'm running this game.",
+        "10 days?! That’s longer than most tech bootcamps' refund window. 😎",
+      shareText: "10-day streak. No refund needed, I’m locked in.",
     },
     {
       message:
-        "10 days? The Yudoku Yeti didn't think you'd last. Keep going, freak! 😤",
-      shareText: "10-day Yudoku streak. The Yeti's impressed.",
+        "10 days of showing up? Your procrastination demon is on life support. 🫀⚔️",
+      shareText: "Day 10. Procrastination’s taking Ls.",
     },
     {
       message:
-        "10 days! The Yudoku Yeti's giving side-eye. Stay tough, or get burned! 😈",
-      shareText: "10 days on Yudoku. I'm owning it.",
+        "10 days? Finally learning instead of pretending to be productive on Notion. 📓",
+      shareText: "10 days of actual learning. Sorry, aesthetic dashboards.",
     },
     {
-      message: "10 days? The Yudoku Yeti's stunned. Don't flake now, boss! 😏",
-      shareText: "10-day streak on Yudoku. Yeti's eating my dust.",
+      message:
+        "10 days? You're officially more disciplined than 90% of Twitter gurus. 📉",
+      shareText: "10-day streak. No threads, just learning.",
     },
   ],
   "11-29": [
     {
       message:
-        "{streak} days? The Yudoku Yeti's nervous. Don't crash, you beast! 😤",
-      shareText: "{streak}-day Yudoku streak. I'm unstoppable.",
-    },
-    {
-      message: "{streak} days? The Yudoku Yeti's hiding. You're a menace! 😈",
-      shareText: "{streak} days on Yudoku. I'm the Yeti's nightmare.",
+        "{streak} days? You’ve broken past tutorial attention span. Welcome to the real grind. ⚙️",
+      shareText: "{streak}-day streak. I don’t just start—I finish.",
     },
     {
       message:
-        "{streak} days? You're scaring the Yudoku Yeti. Don't quit, terror! 😼",
-      shareText: "{streak}-day streak on Yudoku. Yeti's outmatched.",
+        "{streak} days? Your self-doubt’s googling 'how to handle success'. 💻",
+      shareText: "{streak} days into my course journey. Brain’s sweating.",
     },
     {
       message:
-        "{streak} days? The Yudoku Yeti's toast. Stay savage, you animal! 💪",
-      shareText: "{streak} days of Yudoku. I'm crushing it.",
+        "{streak} days? You’re officially smarter than whoever named 'JavaScript'. ☕",
+      shareText: "{streak} days strong. Clarity approaching.",
+    },
+    {
+      message:
+        "{streak} days? At this point, even your chair respects you. 🪑💯",
+      shareText: "{streak} days in. Me and the grind are friends now.",
     },
   ],
   "30+": [
     {
       message:
-        "{streak} days?! The Yudoku Yeti's unemployed. You're a god, jerk! 😏",
-      shareText: "{streak} days of Yudoku. I'm the king of this.",
+        "{streak} days?! That’s not a streak—that’s a personality. You beast. 🧠🔥",
+      shareText: "{streak}-day streak. Learning is now my religion.",
     },
     {
       message:
-        "{streak} days? The Yudoku Yeti's retired. You're a tyrant, freak! 😤",
-      shareText: "{streak}-day Yudoku streak. I'm a legend.",
+        "{streak} days? You just lapped your past self and stole their dreams. 🎯",
+      shareText: "{streak} days of pure focus. Nothing fake here.",
     },
     {
       message:
-        "{streak} days?! The Yudoku Yeti's irrelevant. Rule forever, monster! 😎",
-      shareText: "{streak} days on Yudoku. I'm rewriting the rules.",
+        "{streak} days? The algorithm can’t even distract you anymore. You broke free. 🚫📱",
+      shareText: "{streak} days in. I’m immune to noise.",
     },
     {
       message:
-        "{streak} days? The Yudoku Yeti's extinct. You're unstoppable, creep! 😼",
-      shareText: "{streak}-day streak on Yudoku. I'm the boss.",
+        "{streak} days? You’re a machine. Course platforms are scared of how much you're learning. 🤖",
+      shareText: "{streak} days strong. I might actually be unstoppable now.",
     },
   ],
 };
+
 
 // Randomly select a message from the range
 function getStreakMessage(streak: number) {
