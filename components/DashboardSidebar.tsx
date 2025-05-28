@@ -114,7 +114,7 @@ export function DashboardSidebar({ isCollapsed }: DashboardSidebarProps) {
               }}
             />
             <div className="flex flex-col">
-              <p className="text-sm font-medium">
+              <p className="text-sm font-medium text-white">
                 {user?.firstName} {user?.lastName}
               </p>
               <p className="text-xs text-zinc-400">

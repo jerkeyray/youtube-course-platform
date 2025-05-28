@@ -18,6 +18,7 @@ export default function DashboardLayout({
 
   return (
     <div className="h-full relative">
+      {/* Desktop Sidebar */}
       <div
         className={cn(
           "hidden h-full md:flex md:flex-col md:fixed md:inset-y-0 z-[80] bg-[#111827] transition-all duration-300",
@@ -40,16 +41,21 @@ export default function DashboardLayout({
         </div>
         <DashboardSidebar isCollapsed={isCollapsed} />
       </div>
+
+      {/* Mobile Navigation */}
+      <div className="md:hidden">
+        <MobileNav />
+      </div>
+
+      {/* Main Content */}
       <main
         className={cn(
           "transition-all duration-300",
           isCollapsed ? "md:pl-16" : "md:pl-64"
         )}
       >
-        <div className="h-full p-8">
-          <div className="md:hidden mb-4">
-            <MobileNav />
-          </div>
+        <div className="h-full p-4 md:p-8">
+          <div className="md:hidden h-14" /> {/* Spacer for mobile nav */}
           {children}
         </div>
       </main>
