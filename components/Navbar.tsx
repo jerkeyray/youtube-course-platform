@@ -1,11 +1,12 @@
-"use client";
+"use client"
 
-import Link from "next/link";
-import { UserButton, useUser } from "@clerk/nextjs";
-import { Button } from "@/components/ui/button";
+import Link from "next/link"
+import { UserButton, useUser } from "@clerk/nextjs"
+import { Button } from "@/components/ui/button"
+import { ModeToggle } from "@/components/mode-toggle"
 
 export function Navbar() {
-  const { user, isSignedIn } = useUser();
+  const { user, isSignedIn } = useUser()
 
   return (
     <div className="fixed w-full z-50 flex justify-between items-center py-2 px-4 border-b border-primary/10 bg-background h-16">
@@ -15,6 +16,7 @@ export function Navbar() {
         </Link>
       </div>
       <div className="flex items-center gap-x-3">
+        <ModeToggle />
         {isSignedIn ? (
           <div className="flex items-center gap-x-4">
             <Button variant="ghost" asChild>
@@ -24,9 +26,7 @@ export function Navbar() {
               <p className="text-sm font-medium">
                 {user?.firstName} {user?.lastName}
               </p>
-              <p className="text-xs text-muted-foreground">
-                {user?.emailAddresses[0]?.emailAddress}
-              </p>
+              <p className="text-xs text-muted-foreground">{user?.emailAddresses[0]?.emailAddress}</p>
             </div>
             <UserButton
               afterSignOutUrl="/"
@@ -49,5 +49,5 @@ export function Navbar() {
         )}
       </div>
     </div>
-  );
+  )
 }
