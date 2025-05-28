@@ -1,10 +1,10 @@
 // components/CoursePlayer.tsx
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Course, Video, VideoProgress } from "@prisma/client";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Check,
   ChevronLeft,
@@ -12,8 +12,16 @@ import {
   Clock,
   Play,
   Bookmark,
+  Pencil,
+  Save,
+  X,
 } from "lucide-react";
 import { toast } from "sonner";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Loader } from "@/components/ui/loader";
+import { Textarea } from "@/components/ui/textarea";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 type CourseWithProgress = Course & {
   videos: (Video & {
@@ -41,6 +49,10 @@ export default function CoursePlayer({ course }: CoursePlayerProps) {
   const [bookmarkedVideos, setBookmarkedVideos] = useState<Set<string>>(
     new Set()
   );
+  const [showNoteEditor, setShowNoteEditor] = useState(false);
+  const [noteContent, setNoteContent] = useState("");
+  const [noteTitle, setNoteTitle] = useState("");
+  const queryClient = useQueryClient();
 
   const handleVideoProgress = useCallback(
     async (videoId: string) => {
@@ -183,6 +195,58 @@ export default function CoursePlayer({ course }: CoursePlayerProps) {
 
   const currentVideo = course.videos[currentVideoIndex];
 
+  // Fetch note for current video only when editor is opened
+  const { data: note, isLoading: isNoteLoading } = useQuery({
+    queryKey: ["note", currentVideo.id],
+    queryFn: async () => {
+      const response = await fetch(`/api/notes?videoId=${currentVideo.id}`);
+      if (!response.ok) throw new Error("Failed to fetch note");
+      return response.json();
+    },
+    enabled: showNoteEditor,
+    staleTime: 1000 * 60 * 5, // Consider data fresh for 5 minutes
+  });
+
+  // Save note mutation
+  const saveNoteMutation = useMutation({
+    mutationFn: async ({
+      content,
+      title,
+    }: {
+      content: string;
+      title: string;
+    }) => {
+      const response = await fetch("/api/notes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          videoId: currentVideo.id,
+          courseId: course.id,
+          content,
+          title,
+        }),
+      });
+      if (!response.ok) throw new Error("Failed to save note");
+      return response.json();
+    },
+    onSuccess: () => {
+      toast.success("Note saved successfully");
+      setShowNoteEditor(false);
+      queryClient.invalidateQueries({ queryKey: ["note", currentVideo.id] });
+    },
+    onError: () => {
+      toast.error("Failed to save note");
+    },
+  });
+
+  // Set note content when note changes
+  useEffect(() => {
+    if (note) {
+      setNoteContent(note.content || "");
+      setNoteTitle(note.title || "");
+    }
+  }, [note]);
+
   if (!course.videos.length) {
     return (
       <div className="py-8 text-center">
@@ -278,6 +342,97 @@ export default function CoursePlayer({ course }: CoursePlayerProps) {
                   </Button>
                 </div>
               </div>
+            </div>
+          </Card>
+
+          {/* Notes Section */}
+          <Card className="p-6">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold">Notes</h3>
+                {!showNoteEditor && (
+                  <Button
+                    onClick={() => setShowNoteEditor(true)}
+                    variant="outline"
+                    size="sm"
+                    className="flex items-center gap-2"
+                  >
+                    <Pencil className="h-4 w-4" />
+                    {note?.content ? "Edit Note" : "Create Note"}
+                  </Button>
+                )}
+              </div>
+
+              {showNoteEditor ? (
+                <div className="space-y-4">
+                  <input
+                    type="text"
+                    value={noteTitle}
+                    onChange={(e) => setNoteTitle(e.target.value)}
+                    placeholder="Note title (optional)"
+                    className="w-full rounded-md border px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  <Textarea
+                    value={noteContent}
+                    onChange={(e) => setNoteContent(e.target.value)}
+                    placeholder="Write your notes here... (Markdown supported)"
+                    className="min-h-[200px] font-mono text-sm resize-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={() =>
+                        saveNoteMutation.mutate({
+                          content: noteContent,
+                          title: noteTitle,
+                        })
+                      }
+                      disabled={saveNoteMutation.isPending}
+                      className="flex-1"
+                    >
+                      {saveNoteMutation.isPending ? (
+                        <div className="flex items-center gap-2">
+                          <Loader size="sm" className="text-white" />
+                          <span>Saving...</span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          <Save className="h-4 w-4" />
+                          <span>Save Note</span>
+                        </div>
+                      )}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => setShowNoteEditor(false)}
+                      className="flex-1"
+                    >
+                      <div className="flex items-center gap-2">
+                        <X className="h-4 w-4" />
+                        <span>Cancel</span>
+                      </div>
+                    </Button>
+                  </div>
+                </div>
+              ) : isNoteLoading ? (
+                <div className="flex justify-center py-8">
+                  <Loader size="lg" />
+                </div>
+              ) : note?.content ? (
+                <div className="prose prose-sm max-w-none rounded-lg border bg-white p-4 shadow-sm">
+                  {note.title && (
+                    <h4 className="text-lg font-medium text-gray-900 mb-2">
+                      {note.title}
+                    </h4>
+                  )}
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                    {note.content}
+                  </ReactMarkdown>
+                </div>
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  <p>No notes yet. Click the button above to add some!</p>
+                </div>
+              )}
             </div>
           </Card>
         </div>

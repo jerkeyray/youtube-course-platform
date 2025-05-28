@@ -1,6 +1,6 @@
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 import CoursePlayer from "./CoursePlayer";
 import type { Course, Video, VideoProgress } from "@prisma/client";
 
@@ -11,45 +11,51 @@ type CourseWithProgress = Course & {
   completionPercentage: number;
 };
 
-export default async function CoursePage({
-  params,
-}: {
-  params: { id: string };
-}) {
+interface CoursePageProps {
+  params: {
+    id: string;
+  };
+}
+
+export default async function CoursePage({ params }: CoursePageProps) {
   const { userId } = await auth();
 
   if (!userId) {
-    redirect("/sign-in");
+    return redirect("/");
   }
 
-  const course = await prisma.course.findUnique({
+  const courseId = params.id;
+
+  const course = await db.course.findUnique({
     where: {
-      id: params.id,
+      id: courseId,
       userId,
     },
     include: {
       videos: {
-        include: {
-          progress: {
-            where: { userId },
-          },
-        },
         orderBy: {
           order: "asc",
+        },
+        include: {
+          progress: {
+            where: {
+              userId,
+            },
+          },
         },
       },
     },
   });
 
   if (!course) {
-    redirect("/dashboard/courses");
+    return redirect("/");
   }
 
-  // Calculate completion percentage
   const totalVideos = course.videos.length;
   const completedVideos = course.videos.filter((video) =>
     video.progress.some((p) => p.completed)
   ).length;
+
   const completionPercentage =
     totalVideos > 0 ? Math.round((completedVideos / totalVideos) * 100) : 0;
 

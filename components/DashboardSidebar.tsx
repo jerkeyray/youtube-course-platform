@@ -4,7 +4,14 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
-import { LayoutDashboard, BookOpen, Bookmark, Clock, User } from "lucide-react";
+import {
+  LayoutDashboard,
+  BookOpen,
+  Bookmark,
+  Clock,
+  User,
+  Pencil,
+} from "lucide-react";
 import { UserButton, useUser } from "@clerk/nextjs";
 
 const routes = [
@@ -19,6 +26,12 @@ const routes = [
     icon: BookOpen,
     href: "/dashboard/mycourses",
     color: "text-violet-500",
+  },
+  {
+    label: "Notes",
+    icon: Pencil,
+    href: "/dashboard/notes",
+    color: "text-emerald-500",
   },
   {
     label: "Bookmarks",
@@ -57,7 +70,7 @@ export function DashboardSidebar({ isCollapsed }: DashboardSidebarProps) {
               key={route.href}
               href={route.href}
               className={cn(
-                "text-sm group flex p-3 w-full justify-start font-medium cursor-pointer hover:text-white hover:bg-white/10 rounded-lg transition",
+                "text-sm group flex p-3 w-full justify-start font-medium cursor-pointer hover:text-white hover:bg-white/10 rounded-lg transition-all duration-300",
                 pathname === route.href
                   ? "text-white bg-white/10"
                   : "text-zinc-400",
@@ -66,14 +79,19 @@ export function DashboardSidebar({ isCollapsed }: DashboardSidebarProps) {
             >
               <div
                 className={cn(
-                  "flex items-center",
-                  isCollapsed ? "flex-1 justify-center" : "flex-1"
+                  "flex items-center gap-x-3",
+                  isCollapsed ? "justify-center" : "flex-1"
                 )}
               >
-                <route.icon
-                  className={cn("h-5 w-5", !isCollapsed && "mr-3", route.color)}
-                />
-                {!isCollapsed && route.label}
+                <route.icon className={cn("h-5 w-5 shrink-0", route.color)} />
+                <span
+                  className={cn(
+                    "transition-all duration-300",
+                    isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"
+                  )}
+                >
+                  {route.label}
+                </span>
               </div>
             </Link>
           ))}
