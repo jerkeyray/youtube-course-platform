@@ -78,6 +78,7 @@ export async function GET() {
       name: user.name,
       email: user.email,
       image: user.image,
+      bio: user.bio,
       createdAt: user.createdAt,
       completedCourses: completedCourses.map((course) => ({
         id: course.id,
@@ -104,7 +105,7 @@ export async function PATCH(req: Request) {
     const user = await prisma.user.update({
       where: { id: userId },
       data: {
-        name: bio, // Using name field for bio since we don't have a bio field
+        bio: bio,
       },
     });
 

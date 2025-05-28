@@ -79,14 +79,13 @@ export default function VideoCard({
   return (
     <div
       className={cn(
-        "group relative overflow-hidden rounded-lg border bg-card transition-all hover:shadow-md flex flex-col",
-        "h-[340px]" // Fixed height for consistency
+        "group relative overflow-hidden rounded-lg border bg-card transition-all hover:shadow-md flex flex-col w-full max-w-xs mx-auto"
       )}
       onClick={() =>
         router.push(`/dashboard/courses/${video.courseId}?video=${video.id}`)
       }
     >
-      <div className="relative aspect-video flex-shrink-0">
+      <div className="relative aspect-[16/9] flex-shrink-0">
         <Image
           src={imgSrc}
           alt={video.title}
@@ -105,7 +104,7 @@ export default function VideoCard({
           {video.duration}
         </div>
       </div>
-      <div className="p-3 flex flex-col flex-grow justify-between min-h-0">
+      <div className="p-3 md:p-4 flex flex-col flex-grow justify-between min-h-0">
         <div>
           <h3 className="font-medium text-base mb-1 line-clamp-2 min-h-[2.5rem]">
             {video.title}
