@@ -1,20 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { CalendarIcon, ArrowLeft, Youtube } from "lucide-react";
+import { ArrowLeft, Youtube } from "lucide-react";
 import { format, parse, isValid, isBefore } from "date-fns";
-import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
 
@@ -23,13 +16,7 @@ export default function CreateCourse() {
   const { userId } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [deadline, setDeadline] = useState<Date | undefined>(undefined);
-  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [dateInput, setDateInput] = useState("");
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -67,33 +54,6 @@ export default function CreateCourse() {
       );
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const handleDateSelect = (date: Date | undefined) => {
-    if (date) {
-      setDeadline(date);
-      setDateInput(format(date, "MM/dd/yyyy"));
-      setIsCalendarOpen(false);
-    } else {
-      setDeadline(undefined);
-      setDateInput("");
-    }
-  };
-
-  const handleDateInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setDateInput(value);
-
-    try {
-      const parsedDate = parse(value, "MM/dd/yyyy", new Date());
-      if (!isNaN(parsedDate.getTime()) && parsedDate > new Date()) {
-        setDeadline(parsedDate);
-      } else {
-        setDeadline(undefined);
-      }
-    } catch {
-      setDeadline(undefined);
     }
   };
 

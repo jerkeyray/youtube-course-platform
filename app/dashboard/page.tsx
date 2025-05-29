@@ -9,8 +9,11 @@ import DashboardClient from "./DashboardClient";
 interface Course {
   id: string;
   title: string;
+  playlistId: string;
+  userId: string;
   deadline: Date | null;
   createdAt: Date;
+  updatedAt: Date;
   videos: any[];
   completionPercentage?: number;
 }

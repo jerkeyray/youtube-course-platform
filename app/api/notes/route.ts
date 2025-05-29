@@ -29,12 +29,16 @@ export async function POST(req: Request) {
       return new NextResponse("Course not found", { status: 404 });
     }
 
+    const existingNote = await db.note.findFirst({
+      where: {
+        userId,
+        videoId,
+      },
+    });
+
     const note = await db.note.upsert({
       where: {
-        userId_videoId: {
-          userId,
-          videoId,
-        },
+        id: existingNote?.id ?? "",
       },
       update: {
         content,
@@ -72,12 +76,10 @@ export async function GET(req: Request) {
       return new NextResponse("Video ID is required", { status: 400 });
     }
 
-    const note = await db.note.findUnique({
+    const note = await db.note.findFirst({
       where: {
-        userId_videoId: {
-          userId,
-          videoId,
-        },
+        userId,
+        videoId,
       },
       include: {
         video: {

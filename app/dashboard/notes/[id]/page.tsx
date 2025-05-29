@@ -1,7 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, BookOpen, Clock } from "lucide-react";
 import Link from "next/link";
@@ -44,6 +44,10 @@ export default async function NotePage({ params }: NotePageProps) {
   });
 
   if (!note) {
+    return redirect("/dashboard/notes");
+  }
+
+  if (!note.course) {
     return redirect("/dashboard/notes");
   }
 

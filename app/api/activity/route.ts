@@ -52,7 +52,7 @@ export async function POST() {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    const today = startOfDay(new Date());
+    const today = startOfDay(new Date()).toISOString().split("T")[0];
 
     // Check if activity already exists for today
     const existingActivity = await prisma.userActivity.findUnique({

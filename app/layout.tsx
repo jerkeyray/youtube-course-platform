@@ -9,6 +9,7 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Yudoku",
+  icons: "/favicon.ico",
   description:
     "Transform YouTube playlists into structured learning experiences",
 };

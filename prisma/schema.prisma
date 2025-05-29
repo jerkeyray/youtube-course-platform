@@ -77,6 +77,7 @@ model Bookmark {
   id        String   @id @default(cuid())
   userId    String
   videoId   String
+  note      String?  // Optional note for the bookmark
   createdAt DateTime @default(now())
   user      User     @relation(fields: [userId], references: [id])
   video     Video    @relation(fields: [videoId], references: [id])
@@ -133,6 +134,7 @@ model Note {
   video     Video?   @relation(fields: [videoId], references: [id])
   course    Course?  @relation(fields: [courseId], references: [id])
 
+  @@unique([userId, videoId])
   @@index([userId])
   @@index([videoId])
   @@index([courseId])
