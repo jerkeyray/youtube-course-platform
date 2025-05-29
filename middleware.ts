@@ -19,9 +19,24 @@ interface UserMetadata {
 
 export default clerkMiddleware(
   async (auth, req) => {
+    // Log the incoming request details immediately
+    console.log("🔍 Request details:", {
+      url: req.url,
+      method: req.method,
+      headers: Object.fromEntries(req.headers.entries()),
+      nextUrl: req.nextUrl?.toString(),
+    });
+
     try {
       // Get auth information - now properly awaited
-      const { userId, getToken, sessionClaims } = await auth();
+      const authResult = await auth();
+      console.log("🔑 Auth result:", {
+        hasUserId: !!authResult.userId,
+        hasSessionClaims: !!authResult.sessionClaims,
+        hasGetToken: !!authResult.getToken,
+      });
+
+      const { userId, getToken, sessionClaims } = authResult;
 
       // Debugging: Log request details
       if (process.env.NODE_ENV === "development") {
@@ -32,11 +47,13 @@ export default clerkMiddleware(
 
       // Check 1: Allow public routes without authentication
       if (isPublicRoute(req)) {
+        console.log("✅ Public route access:", req.url);
         return NextResponse.next();
       }
 
       // Check 2: Ensure user is authenticated for protected routes
       if (!userId && isProtectedRoute(req)) {
+        console.log("🔒 Protected route access denied:", req.url);
         // Redirect unauthenticated users to sign-in page
         const signInUrl = new URL("/sign-in", req.url);
         signInUrl.searchParams.set("redirect_url", req.url);
@@ -48,6 +65,7 @@ export default clerkMiddleware(
         const metadata = sessionClaims?.metadata as UserMetadata | undefined;
         const role = metadata?.role;
         if (role !== "admin") {
+          console.log("👮 Admin route access denied:", req.url);
           // Redirect non-admin users to homepage or unauthorized page
           return NextResponse.redirect(new URL("/unauthorized", req.url));
         }
@@ -55,27 +73,57 @@ export default clerkMiddleware(
 
       // Check 4: Ensure JWT token is valid for API routes
       if (req.nextUrl.pathname.startsWith("/api")) {
-        const token = await getToken();
-        if (!token) {
+        try {
+          const token = await getToken();
+          if (!token) {
+            console.log("🔑 API route access denied - no token:", req.url);
+            return NextResponse.json(
+              { error: "Unauthorized: No valid token" },
+              { status: 401 }
+            );
+          }
+        } catch (tokenError) {
+          console.error("🔑 Token error:", tokenError);
           return NextResponse.json(
-            { error: "Unauthorized: No valid token" },
+            { error: "Token validation failed" },
             { status: 401 }
           );
         }
       }
 
       // Allow the request to proceed if all checks pass
+      console.log("✅ Request allowed:", req.url);
       return NextResponse.next();
     } catch (error) {
-      // Log any errors that occur during middleware execution
-      console.error("Middleware error:", error);
+      // Enhanced error logging
+      console.error("❌ Middleware error details:", {
+        error:
+          error instanceof Error
+            ? {
+                message: error.message,
+                stack: error.stack,
+                name: error.name,
+              }
+            : error,
+        url: req.url,
+        method: req.method,
+        headers: Object.fromEntries(req.headers.entries()),
+      });
 
       // For development, return error details
       if (process.env.NODE_ENV === "development") {
         return NextResponse.json(
           {
             error: "Middleware error",
-            details: error instanceof Error ? error.message : "Unknown error",
+            details:
+              error instanceof Error
+                ? {
+                    message: error.message,
+                    name: error.name,
+                    stack: error.stack,
+                  }
+                : "Unknown error",
+            url: req.url,
           },
           { status: 500 }
         );
