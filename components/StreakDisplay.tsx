@@ -7,6 +7,20 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
+interface SerializedActivity {
+  id: string;
+  userId: string;
+  date: string;
+  completed: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface StreakDisplayProps {
+  activities: SerializedActivity[];
+  className?: string;
+}
+
 // Define streak message ranges with Duolingo-inspired, offensive, Yudoku Yeti text
 interface StreakMessage {
   message: string;
@@ -30,7 +44,7 @@ const streakMessages: StreakMessages = {
     {
       message:
         "Still 0? You're one TED Talk away from delusion. Watch a real course, clown. 🎭",
-      shareText: "No streak yet. I’m finally doing something real.",
+      shareText: "No streak yet. I'm finally doing something real.",
     },
     {
       message:
@@ -51,8 +65,9 @@ const streakMessages: StreakMessages = {
     },
     {
       message:
-        "{streak} days? You’ve outlasted your last gym phase. Keep showing up. 🏋️‍♂️",
-      shareText: "{streak}-day streak. I'm doing better than my New Year's goals.",
+        "{streak} days? You've outlasted your last gym phase. Keep showing up. 🏋️‍♂️",
+      shareText:
+        "{streak}-day streak. I'm doing better than my New Year's goals.",
     },
     {
       message:
@@ -63,12 +78,12 @@ const streakMessages: StreakMessages = {
   "7-9": [
     {
       message:
-        "{streak} days? You’re approaching dangerous levels of actual commitment. 🔥",
+        "{streak} days? You're approaching dangerous levels of actual commitment. 🔥",
       shareText: "{streak} days strong. Finally sticking to something.",
     },
     {
       message:
-        "{streak} days? Your attention span’s evolving. TikTok’s losing. 📉",
+        "{streak} days? Your attention span's evolving. TikTok's losing. 📉",
       shareText: "{streak}-day streak. Learning over doomscrolling.",
     },
     {
@@ -79,19 +94,20 @@ const streakMessages: StreakMessages = {
     {
       message:
         "{streak} days? Not bad. But your course tab is still next to YouTube. Be careful. 🕵️‍♂️",
-      shareText: "{streak} days of learning. I might actually finish something.",
+      shareText:
+        "{streak} days of learning. I might actually finish something.",
     },
   ],
   "10": [
     {
       message:
-        "10 days?! That’s longer than most tech bootcamps' refund window. 😎",
-      shareText: "10-day streak. No refund needed, I’m locked in.",
+        "10 days?! That's longer than most tech bootcamps' refund window. 😎",
+      shareText: "10-day streak. No refund needed, I'm locked in.",
     },
     {
       message:
         "10 days of showing up? Your procrastination demon is on life support. 🫀⚔️",
-      shareText: "Day 10. Procrastination’s taking Ls.",
+      shareText: "Day 10. Procrastination's taking Ls.",
     },
     {
       message:
@@ -107,17 +123,17 @@ const streakMessages: StreakMessages = {
   "11-29": [
     {
       message:
-        "{streak} days? You’ve broken past tutorial attention span. Welcome to the real grind. ⚙️",
-      shareText: "{streak}-day streak. I don’t just start—I finish.",
+        "{streak} days? You've broken past tutorial attention span. Welcome to the real grind. ⚙️",
+      shareText: "{streak}-day streak. I don't just start—I finish.",
     },
     {
       message:
-        "{streak} days? Your self-doubt’s googling 'how to handle success'. 💻",
-      shareText: "{streak} days into my course journey. Brain’s sweating.",
+        "{streak} days? Your self-doubt's googling 'how to handle success'. 💻",
+      shareText: "{streak} days into my course journey. Brain's sweating.",
     },
     {
       message:
-        "{streak} days? You’re officially smarter than whoever named 'JavaScript'. ☕",
+        "{streak} days? You're officially smarter than whoever named 'JavaScript'. ☕",
       shareText: "{streak} days strong. Clarity approaching.",
     },
     {
@@ -129,7 +145,7 @@ const streakMessages: StreakMessages = {
   "30+": [
     {
       message:
-        "{streak} days?! That’s not a streak—that’s a personality. You beast. 🧠🔥",
+        "{streak} days?! That's not a streak—that's a personality. You beast. 🧠��",
       shareText: "{streak}-day streak. Learning is now my religion.",
     },
     {
@@ -139,17 +155,16 @@ const streakMessages: StreakMessages = {
     },
     {
       message:
-        "{streak} days? The algorithm can’t even distract you anymore. You broke free. 🚫📱",
-      shareText: "{streak} days in. I’m immune to noise.",
+        "{streak} days? The algorithm can't even distract you anymore. You broke free. 🚫📱",
+      shareText: "{streak} days in. I'm immune to noise.",
     },
     {
       message:
-        "{streak} days? You’re a machine. Course platforms are scared of how much you're learning. 🤖",
+        "{streak} days? You're a machine. Course platforms are scared of how much you're learning. 🤖",
       shareText: "{streak} days strong. I might actually be unstoppable now.",
     },
   ],
 };
-
 
 // Randomly select a message from the range
 function getStreakMessage(streak: number) {
@@ -169,38 +184,82 @@ function getStreakMessage(streak: number) {
   };
 }
 
-interface StreakSectionProps {
-  className?: string;
-}
-
-export function StreakSection({ className }: StreakSectionProps) {
+export function StreakDisplay({ activities, className }: StreakDisplayProps) {
   const { user, isLoaded } = useUser();
   const [streak, setStreak] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Fetch streak from API
-  const fetchStreak = useCallback(async () => {
-    if (!user) return;
+  // Calculate streak from activities
+  const calculateStreak = useCallback(() => {
+    if (!activities.length) {
+      setStreak(0);
+      setIsLoading(false);
+      return;
+    }
 
     try {
-      const response = await fetch("/api/user/streak");
-      if (!response.ok) throw new Error("Failed to fetch streak");
-      const data = await response.json();
-      setStreak(data.currentStreak || 0);
+      const today = new Date();
+      const yesterday = new Date(today);
+      yesterday.setDate(yesterday.getDate() - 1);
+
+      // Sort activities by date descending
+      const sortedActivities = [...activities]
+        .filter((a) => a.completed)
+        .sort(
+          (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+        );
+
+      // Check if user has activity today or yesterday
+      const hasActivityToday = sortedActivities.some(
+        (activity) =>
+          new Date(activity.date).toDateString() === today.toDateString()
+      );
+      const hasActivityYesterday = sortedActivities.some(
+        (activity) =>
+          new Date(activity.date).toDateString() === yesterday.toDateString()
+      );
+
+      if (!hasActivityToday && !hasActivityYesterday) {
+        setStreak(0);
+      } else {
+        // Start counting streak from the most recent activity
+        let currentDate = hasActivityToday ? today : yesterday;
+        let currentStreak = 1;
+
+        // Count consecutive days
+        for (let i = 1; i < sortedActivities.length; i++) {
+          const prevDate = new Date(currentDate);
+          prevDate.setDate(prevDate.getDate() - 1);
+
+          const hasActivity = sortedActivities.some(
+            (activity) =>
+              new Date(activity.date).toDateString() === prevDate.toDateString()
+          );
+
+          if (hasActivity) {
+            currentStreak++;
+            currentDate = prevDate;
+          } else {
+            break;
+          }
+        }
+
+        setStreak(currentStreak);
+      }
     } catch (error) {
-      console.error("Error fetching streak:", error);
+      console.error("Error calculating streak:", error);
       setStreak(0);
-      toast.error("Streak fetch failed. Zero it is, you slouch!");
+      toast.error("Failed to calculate streak. Zero it is, you slouch!");
     } finally {
       setIsLoading(false);
     }
-  }, [user]);
+  }, [activities]);
 
   useEffect(() => {
     if (isLoaded && user) {
-      fetchStreak();
+      calculateStreak();
     }
-  }, [isLoaded, user, fetchStreak]);
+  }, [isLoaded, user, calculateStreak]);
 
   if (!isLoaded || isLoading) {
     return (
@@ -238,4 +297,4 @@ export function StreakSection({ className }: StreakSectionProps) {
   );
 }
 
-export default StreakSection;
+export default StreakDisplay;

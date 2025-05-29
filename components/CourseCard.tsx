@@ -4,29 +4,52 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, CheckCircle, Trash2 } from "lucide-react";
-import { Course, Video, VideoProgress } from "@prisma/client";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { DeleteCourseDialog } from "./DeleteCourseDialog";
 
+interface SerializedVideo {
+  id: string;
+  title: string;
+  videoId: string;
+  order: number;
+  createdAt: string;
+  updatedAt: string;
+  progress: Array<{
+    id: string;
+    userId: string;
+    videoId: string;
+    completed: boolean;
+    updatedAt: string;
+  }>;
+}
+
+interface SerializedCourse {
+  id: string;
+  title: string;
+  playlistId: string;
+  userId: string;
+  deadline: string | null;
+  createdAt: string;
+  updatedAt: string;
+  videos: SerializedVideo[];
+}
+
 interface CourseCardProps {
-  course: Course & {
-    videos: (Video & {
-      progress?: VideoProgress[];
-    })[];
-    completionPercentage?: number;
-  };
+  course: SerializedCourse;
 }
 
 const CourseCard: React.FC<CourseCardProps> = ({ course }) => {
   const router = useRouter();
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+
   const completedVideos = course.videos.filter(
     (video) => video.progress?.[0]?.completed
   ).length;
-  const completionPercentage =
-    course.completionPercentage ??
-    Math.round((completedVideos / course.videos.length) * 100);
+
+  const completionPercentage = Math.round(
+    (completedVideos / course.videos.length) * 100
+  );
 
   const handleDelete = async () => {
     try {

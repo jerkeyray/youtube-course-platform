@@ -3,13 +3,17 @@
 import React from "react";
 import { format, subDays, startOfDay } from "date-fns";
 
-interface ActivityData {
-  date: string; // yyyy-MM-dd
+interface SerializedActivity {
+  id: string;
+  userId: string;
+  date: string;
   completed: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 
 interface ActivityHeatmapProps {
-  activities: ActivityData[];
+  activities: SerializedActivity[];
 }
 
 const ACTIVE_COLOR = "bg-green-500";
