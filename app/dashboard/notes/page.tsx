@@ -1,4 +1,4 @@
-import { auth } from "@clerk/nextjs/server";
+import { auth } from "@/lib/auth-compat";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import NotesList from "./notes-list";
@@ -7,7 +7,7 @@ export default async function NotesPage() {
   const { userId } = await auth();
 
   if (!userId) {
-    return redirect("/");
+    return redirect("/sign-in");
   }
 
   const notes = await db.note.findMany({

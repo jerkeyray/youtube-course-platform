@@ -1,8 +1,7 @@
-import React from "react";
-import { auth } from "@clerk/nextjs/server";
+import { auth } from "@/auth";
 import { redirect } from "next/navigation";
-import { prisma } from "@/lib/prisma";
 import DashboardClient from "./DashboardClient";
+import { prisma } from "@/lib/prisma";
 
 interface SerializedCourse {
   id: string;
@@ -108,25 +107,69 @@ async function getActivities(userId: string): Promise<SerializedActivity[]> {
 }
 
 export default async function DashboardPage() {
-  try {
-    const { userId } = await auth();
-    if (!userId) {
-      redirect("/sign-in");
-    }
+  const session = await auth();
 
-    const [courses, activities] = await Promise.all([
-      getCourses(userId),
-      getActivities(userId),
-    ]);
-
-    return <DashboardClient courses={courses} activities={activities} />;
-  } catch (error) {
-    console.error("Dashboard page error:", error);
-    // In production, redirect to error page
-    if (process.env.NODE_ENV === "production") {
-      redirect("/error");
-    }
-    // In development, throw error for better debugging
-    throw error;
+  if (!session?.user?.id) {
+    redirect("/api/auth/signin");
   }
+
+  // Fetch user's courses and activities
+  const courses = await prisma.course.findMany({
+    where: {
+      userId: session.user.id,
+    },
+    include: {
+      videos: {
+        include: {
+          progress: {
+            where: {
+              userId: session.user.id,
+            },
+          },
+        },
+        orderBy: {
+          order: "asc",
+        },
+      },
+    },
+  });
+
+  const activities = await prisma.userActivity.findMany({
+    where: {
+      userId: session.user.id,
+    },
+    orderBy: {
+      date: "desc",
+    },
+  });
+
+  // Serialize the data to match the expected types
+  const serializedCourses = courses.map((course) => ({
+    ...course,
+    deadline: course.deadline?.toISOString() || null,
+    createdAt: course.createdAt.toISOString(),
+    updatedAt: course.updatedAt.toISOString(),
+    videos: course.videos.map((video) => ({
+      ...video,
+      createdAt: video.createdAt.toISOString(),
+      updatedAt: video.updatedAt.toISOString(),
+      progress: video.progress.map((p) => ({
+        ...p,
+        updatedAt: p.updatedAt.toISOString(),
+      })),
+    })),
+  }));
+
+  const serializedActivities = activities.map((activity) => ({
+    ...activity,
+    createdAt: activity.createdAt.toISOString(),
+    updatedAt: activity.updatedAt.toISOString(),
+  }));
+
+  return (
+    <DashboardClient
+      courses={serializedCourses}
+      activities={serializedActivities}
+    />
+  );
 }

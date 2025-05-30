@@ -2,7 +2,7 @@
 
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { auth } from "@clerk/nextjs/server";
+import { auth } from "@/lib/auth-compat";
 import { prisma } from "@/lib/prisma";
 import { extractPlaylistId, fetchPlaylistDetails } from "@/lib/youtube";
 import type { Course, Video, VideoProgress } from "@prisma/client";

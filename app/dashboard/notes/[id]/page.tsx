@@ -1,7 +1,7 @@
-import { auth } from "@clerk/nextjs/server";
+import { auth } from "@/lib/auth-compat";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
-import { Card, CardContent} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, BookOpen, Clock } from "lucide-react";
 import Link from "next/link";

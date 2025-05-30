@@ -1,17 +1,14 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { ClerkProvider } from "@clerk/nextjs";
-import { Providers } from "./providers";
+import { Providers } from "@/components/Providers";
 import { Toaster } from "@/components/ui/sonner";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Yudoku",
-  icons: "/favicon.ico",
-  description:
-    "Transform YouTube playlists into structured learning experiences",
+  title: "Yudoku - YouTube Course Platform",
+  description: "Track your progress through YouTube courses",
 };
 
 export default function RootLayout({
@@ -20,13 +17,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <ClerkProvider>
-      <html lang="en">
-        <body className={inter.className}>
-          <Providers>{children}</Providers>
-          <Toaster />
-        </body>
-      </html>
-    </ClerkProvider>
+    <html lang="en">
+      <body className={inter.className}>
+        <Providers>{children}</Providers>
+        <Toaster />
+      </body>
+    </html>
   );
 }

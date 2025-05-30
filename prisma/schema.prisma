@@ -8,15 +8,19 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-// User model (synced from Clerk)
+// User model (Auth.js + existing functionality)
 model User {
-  id            String         @id // Clerk user ID
-  email         String?        @unique
+  id            String          @id @default(cuid())
   name          String?
+  email         String?         @unique  // Made optional for existing NULL values
+  emailVerified DateTime?
   image         String?
   bio           String?        // User's bio
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
+  accounts      Account[]
+  sessions      Session[]
+  authenticator Authenticator[]
+  
+  // Existing relations
   courses       Course[]       @relation("UserCourses")
   videoProgress VideoProgress[]
   certificates  Certificate[]
@@ -24,6 +28,64 @@ model User {
   watchLater    WatchLater[]
   activities    UserActivity[]
   notes         Note[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Auth.js models
+model Account {
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+ 
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+ 
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+ 
+  @@id([provider, providerAccountId])
+}
+
+model Session {
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+ 
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+ 
+  @@id([identifier, token])
+}
+
+model Authenticator {
+  id                String  @id @default(cuid())
+  credentialID      String  @unique
+  userId            String
+  publicKey         String
+  counter           Int
+  credentialDeviceType String
+  credentialBackedUp Boolean
+  transports        String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, credentialID])
 }
 
 // Course model (YouTube playlist with deadline)
@@ -62,13 +124,15 @@ model Video {
 
 // VideoProgress model (track completion)
 model VideoProgress {
-  id        String    @id @default(cuid())
+  id        String   @id @default(cuid())
   userId    String
   videoId   String
-  completed Boolean   @default(false)
-  updatedAt DateTime  @updatedAt
-  user      User      @relation(fields: [userId], references: [id])
-  video     Video     @relation(fields: [videoId], references: [id])
+  completed Boolean  @default(false)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  video     Video    @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@unique([userId, videoId])
 }
 
@@ -77,10 +141,12 @@ model Bookmark {
   id        String   @id @default(cuid())
   userId    String
   videoId   String
-  note      String?  // Optional note for the bookmark
+  note      String?  // Optional note for bookmarks
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  video     Video    @relation(fields: [videoId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id])
-  video     Video    @relation(fields: [videoId], references: [id])
+  updatedAt DateTime @default(now()) @updatedAt  // Added default value for existing rows
+
   @@unique([userId, videoId])
 }
 
@@ -89,9 +155,11 @@ model WatchLater {
   id        String   @id @default(cuid())
   userId    String
   videoId   String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  video     Video    @relation(fields: [videoId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id])
-  video     Video    @relation(fields: [videoId], references: [id])
+  updatedAt DateTime @default(now()) @updatedAt  // Added default value for existing rows
+
   @@unique([userId, videoId])
 }
 
@@ -100,12 +168,11 @@ model Certificate {
   id        String   @id @default(cuid())
   userId    String
   courseId  String
-  imageUrl  String?  // URL to PNG/PDF in Supabase Storage
-  shared    Boolean  @default(false) // Shared on X
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  user      User     @relation(fields: [userId], references: [id])
-  course    Course   @relation(fields: [courseId], references: [id])
+
   @@unique([userId, courseId])
 }
 
@@ -113,29 +180,28 @@ model Certificate {
 model UserActivity {
   id        String   @id @default(cuid())
   userId    String
-  date      String   // Changed to String for yyyy-MM-dd
+  date      String   // Keep as String to maintain existing data format
   completed Boolean  @default(false)
-  user      User     @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
   @@unique([userId, date])
 }
 
+// Note model
 model Note {
   id        String   @id @default(cuid())
+  userId    String
+  videoId   String
+  courseId  String
   title     String?
   content   String
-  userId    String
-  videoId   String?
-  courseId  String?
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  video     Video    @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  video     Video?   @relation(fields: [videoId], references: [id])
-  course    Course?  @relation(fields: [courseId], references: [id])
 
   @@unique([userId, videoId])
-  @@index([userId])
-  @@index([videoId])
-  @@index([courseId])
 }

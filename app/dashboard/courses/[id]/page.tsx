@@ -1,4 +1,4 @@
-import { auth } from "@clerk/nextjs/server";
+import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import CoursePlayer from "./CoursePlayer";
@@ -18,9 +18,9 @@ interface CoursePageProps {
 }
 
 export default async function CoursePage({ params }: CoursePageProps) {
-  const { userId } = await auth();
+  const session = await auth();
 
-  if (!userId) {
+  if (!session?.user?.id) {
     return redirect("/");
   }
 
@@ -29,7 +29,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
   const course = await db.course.findUnique({
     where: {
       id: courseId,
-      userId,
+      userId: session.user.id,
     },
     include: {
       videos: {
@@ -39,7 +39,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
         include: {
           progress: {
             where: {
-              userId,
+              userId: session.user.id,
             },
           },
         },

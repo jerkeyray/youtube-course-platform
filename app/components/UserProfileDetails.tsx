@@ -1,32 +1,40 @@
-import { User } from "@clerk/nextjs/server";
+"use client";
+
+import { useSession } from "next-auth/react";
 import Image from "next/image";
+import { format } from "date-fns";
 
 interface UserProfileDetailsProps {
-  user: User;
+  createdAt: string;
 }
 
-export function UserProfileDetails({ user }: UserProfileDetailsProps) {
+export function UserProfileDetails({ createdAt }: UserProfileDetailsProps) {
+  const { data: session } = useSession();
+
+  if (!session?.user) {
+    return null;
+  }
+
   return (
-    <div className="flex items-center gap-6 rounded-lg border bg-card p-6">
-      <div className="relative h-24 w-24 overflow-hidden rounded-full">
-        {user.imageUrl ? (
+    <div className="flex items-center gap-4">
+      {session.user.image ? (
+        <div className="relative h-10 w-10 overflow-hidden rounded-full">
           <Image
-            src={user.imageUrl}
-            alt={user.fullName ?? "Profile"}
+            src={session.user.image}
+            alt={session.user.name || "Profile"}
             fill
             className="object-cover"
-            sizes="96px"
           />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center bg-primary text-2xl text-primary-foreground">
-            {user.fullName?.charAt(0) ?? "U"}
-          </div>
-        )}
-      </div>
+        </div>
+      ) : (
+        <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-bold">
+          {session.user.name?.[0]?.toUpperCase() || "U"}
+        </div>
+      )}
       <div>
-        <h2 className="text-2xl font-bold">{user.fullName}</h2>
-        <p className="text-muted-foreground">
-          {user.primaryEmailAddress?.emailAddress}
+        <p className="font-medium">{session.user.name}</p>
+        <p className="text-sm text-muted-foreground">
+          Joined {format(new Date(createdAt), "MMMM yyyy")}
         </p>
       </div>
     </div>

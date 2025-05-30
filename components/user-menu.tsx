@@ -1,99 +1,74 @@
 "use client";
 
-import { useUser, useClerk } from "@clerk/nextjs";
-import Image from "next/image";
-import Link from "next/link";
-import { useState, useRef, useEffect } from "react";
+import { useSession, signOut } from "next-auth/react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { LogOut, User } from "lucide-react";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { User, Settings, LogOut } from "lucide-react";
+import Link from "next/link";
 
-export default function UserMenu() {
-  const { user, isLoaded } = useUser();
-  const { signOut } = useClerk();
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+export function UserMenu() {
+  const { data: session } = useSession();
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
-        setDropdownOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside, {
-      passive: true,
-    });
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  if (!isLoaded) {
-    return <Skeleton className="h-10 w-10 rounded-full" />;
-  }
-
-  if (!user) {
-    return null; // Handled by parent Server Component
+  if (!session?.user) {
+    return null;
   }
 
   return (
-    <div className="relative" ref={dropdownRef}>
-      <button
-        onClick={() => setDropdownOpen((v) => !v)}
-        className="flex items-center gap-2 rounded-full focus:outline-none"
-        aria-expanded={dropdownOpen}
-        aria-controls="user-menu"
-        aria-label="User menu"
-      >
-        {user.imageUrl ? (
-          <Image
-            src={user.imageUrl}
-            alt={user.fullName ?? "Profile"}
-            width={40}
-            height={40}
-            className="rounded-full"
-            sizes="40px"
-            quality={100}
-            priority
-          />
-        ) : (
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-lg text-primary-foreground">
-            {user.fullName?.charAt(0) ?? "U"}
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+          <Avatar className="h-8 w-8">
+            <AvatarImage
+              src={session.user.image || ""}
+              alt={session.user.name || ""}
+            />
+            <AvatarFallback>
+              {session.user.name?.[0]?.toUpperCase() || "U"}
+            </AvatarFallback>
+          </Avatar>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="w-56" align="end" forceMount>
+        <DropdownMenuLabel className="font-normal">
+          <div className="flex flex-col space-y-1">
+            <p className="text-sm font-medium leading-none">
+              {session.user.name}
+            </p>
+            <p className="text-xs leading-none text-muted-foreground">
+              {session.user.email}
+            </p>
           </div>
-        )}
-      </button>
-      {dropdownOpen && (
-        <div
-          id="user-menu"
-          className="absolute right-0 mt-2 w-48 rounded-lg bg-background p-2 shadow-lg"
+        </DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem asChild>
+          <Link href="/dashboard/profile" className="cursor-pointer">
+            <User className="mr-2 h-4 w-4" />
+            <span>Profile</span>
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href="/dashboard/settings" className="cursor-pointer">
+            <Settings className="mr-2 h-4 w-4" />
+            <span>Settings</span>
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem
+          className="cursor-pointer"
+          onClick={() => signOut({ callbackUrl: "/" })}
         >
-          <div className="mb-2 border-b px-2 pb-2">
-            <div className="font-medium">{user.fullName ?? "User"}</div>
-            <div className="truncate text-sm text-muted-foreground">
-              {user.primaryEmailAddress?.emailAddress}
-            </div>
-          </div>
-          <Button
-            variant="ghost"
-            className="w-full justify-start gap-2"
-            asChild
-          >
-            <Link href="/profile">
-              <User className="h-4 w-4" />
-              Profile
-            </Link>
-          </Button>
-          <Button
-            variant="ghost"
-            className="w-full justify-start gap-2"
-            onClick={() => signOut({ redirectUrl: "/" })}
-          >
-            <LogOut className="h-4 w-4" />
-            Sign out
-          </Button>
-        </div>
-      )}
-    </div>
+          <LogOut className="mr-2 h-4 w-4" />
+          <span>Log out</span>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

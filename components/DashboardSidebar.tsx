@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { useSession } from "next-auth/react";
 
 import {
   LayoutDashboard,
@@ -12,7 +13,6 @@ import {
   User,
   Pencil,
 } from "lucide-react";
-import { UserButton, useUser } from "@clerk/nextjs";
 
 const routes = [
   {
@@ -59,74 +59,27 @@ interface DashboardSidebarProps {
 
 export function DashboardSidebar({ isCollapsed }: DashboardSidebarProps) {
   const pathname = usePathname();
-  const { user } = useUser();
+  const { data: session } = useSession();
 
   return (
-    <div className="flex flex-col h-full text-white">
-      <div className="px-2 py-2 flex-1">
-        <div className="space-y-1">
-          {routes.map((route) => (
-            <Link
-              key={route.href}
-              href={route.href}
-              className={cn(
-                "text-sm group flex p-3 w-full font-medium cursor-pointer hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200 ease-in-out",
-                pathname === route.href
-                  ? "text-white bg-white/10"
-                  : "text-zinc-400",
-                isCollapsed ? "justify-center" : "justify-start"
-              )}
-            >
-              <div className="flex items-center gap-x-3">
-                <route.icon className={cn("h-5 w-5 shrink-0", route.color)} />
-                <span
-                  className={cn(
-                    "transition-all duration-200 ease-in-out whitespace-nowrap",
-                    isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"
-                  )}
-                >
-                  {route.label}
-                </span>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </div>
-      <div
-        className={cn(
-          "mt-auto px-2 py-4 border-t border-white/10 transition-all duration-200 ease-in-out",
-          isCollapsed && "flex justify-center"
-        )}
-      >
-        {!isCollapsed ? (
-          <div className="flex items-center gap-x-4">
-            <UserButton
-              afterSignOutUrl="/"
-              appearance={{
-                elements: {
-                  avatarBox: "h-8 w-8",
-                },
-              }}
-            />
-            <div className="flex flex-col transition-all duration-200 ease-in-out">
-              <p className="text-sm font-medium">
-                {user?.firstName} {user?.lastName}
-              </p>
-              <p className="text-xs text-zinc-400">
-                {user?.emailAddresses[0]?.emailAddress}
-              </p>
-            </div>
-          </div>
-        ) : (
-          <UserButton
-            afterSignOutUrl="/"
-            appearance={{
-              elements: {
-                avatarBox: "h-8 w-8",
-              },
-            }}
-          />
-        )}
+    <div className="flex flex-col h-full py-4">
+      <div className="space-y-1">
+        {routes.map((route) => (
+          <Link
+            key={route.href}
+            href={route.href}
+            className={cn(
+              "flex items-center gap-x-2 text-sm font-medium px-3 py-2 hover:bg-white/10 transition-all duration-200",
+              pathname === route.href
+                ? "text-white bg-white/10"
+                : "text-zinc-400",
+              isCollapsed && "justify-center"
+            )}
+          >
+            <route.icon className={cn("h-5 w-5", route.color)} />
+            {!isCollapsed && <p>{route.label}</p>}
+          </Link>
+        ))}
       </div>
     </div>
   );

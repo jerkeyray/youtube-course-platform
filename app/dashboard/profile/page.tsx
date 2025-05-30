@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useAuth, useUser } from "@clerk/nextjs";
+import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
@@ -28,27 +28,7 @@ interface UserStats {
   totalWatchTime: number;
 }
 
-interface CompletedCourse {
-  id: string;
-  title: string;
-  completedAt: string;
-}
-
-interface UserData {
-  id: string;
-  name: string | null;
-  email: string | null;
-  image: string | null;
-  createdAt: string;
-}
-
 interface ProfileData {
-  user: UserData;
-  stats: UserStats;
-  completedCourses: CompletedCourse[];
-}
-
-interface ProfileResponse {
   user: {
     id: string;
     name: string | null;
@@ -56,48 +36,21 @@ interface ProfileResponse {
     image: string | null;
     bio: string | null;
     createdAt: string;
-    completedCourses: CompletedCourse[];
   };
-  streak: {
-    currentStreak: number;
-    longestStreak: number;
-  };
-  activity: {
-    totalWatchTime: number;
-  };
+  stats: UserStats;
+  completedCourses: any[];
 }
 
-async function fetchProfileData(): Promise<ProfileResponse> {
-  const userResponse = await fetch("/api/profile");
-  if (!userResponse.ok) {
-    throw new Error(`Failed to fetch user data: ${userResponse.status}`);
+async function fetchProfileData(): Promise<ProfileData> {
+  const response = await fetch("/api/profile");
+  if (!response.ok) {
+    throw new Error("Failed to fetch profile data");
   }
-  const userData = await userResponse.json();
-
-  const streakResponse = await fetch("/api/user/streak");
-  if (!streakResponse.ok) {
-    throw new Error(`Failed to fetch streak data: ${streakResponse.status}`);
-  }
-  const streakData = await streakResponse.json();
-
-  const activityResponse = await fetch("/api/activity");
-  if (!activityResponse.ok) {
-    throw new Error(
-      `Failed to fetch activity data: ${activityResponse.status}`
-    );
-  }
-  const activityData = await activityResponse.json();
-
-  return {
-    user: userData,
-    streak: streakData,
-    activity: activityData,
-  };
+  return response.json();
 }
 
 export default function ProfilePage() {
-  const { userId, isLoaded: isAuthLoaded } = useAuth();
-  const { user: clerkUser, isLoaded: isClerkLoaded } = useUser();
+  const { data: session, status } = useSession();
   const [isEditing, setIsEditing] = useState(false);
   const [bio, setBio] = useState("");
   const queryClient = useQueryClient();
@@ -107,9 +60,9 @@ export default function ProfilePage() {
     isLoading: isLoadingProfile,
     error,
   } = useQuery({
-    queryKey: ["profile", userId],
+    queryKey: ["profile", session?.user?.id],
     queryFn: fetchProfileData,
-    enabled: !!userId && !!clerkUser,
+    enabled: !!session?.user?.id,
     staleTime: 1000 * 60 * 5, // Consider data fresh for 5 minutes
     gcTime: 1000 * 60 * 30, // Keep data in cache for 30 minutes
   });
@@ -148,11 +101,7 @@ export default function ProfilePage() {
     },
   });
 
-  if (!isAuthLoaded || !isClerkLoaded) {
-    return <Loader size="lg" />;
-  }
-
-  if (isLoadingProfile) {
+  if (status === "loading" || isLoadingProfile) {
     return <Loader size="lg" />;
   }
 
@@ -179,7 +128,7 @@ export default function ProfilePage() {
     );
   }
 
-  if (!profileData || !clerkUser) {
+  if (!profileData || !session?.user) {
     return (
       <main className="container py-8">
         <div className="max-w-5xl mx-auto">
@@ -211,11 +160,11 @@ export default function ProfilePage() {
             <Card className="md:col-span-2 border-0 shadow-xl bg-gradient-to-br from-blue-50 to-indigo-50 hover:shadow-2xl transition-all duration-300">
               <CardContent className="p-3 md:p-8 space-y-4 md:space-y-8">
                 <div className="flex flex-col md:flex-row items-center md:items-start gap-3 md:gap-8">
-                  {clerkUser.imageUrl ? (
+                  {session.user.image ? (
                     <div className="relative h-20 w-20 md:h-32 md:w-32 overflow-hidden rounded-full ring-4 ring-white shadow-xl">
                       <Image
-                        src={clerkUser.imageUrl}
-                        alt={clerkUser.fullName || "Profile"}
+                        src={session.user.image}
+                        alt={session.user.name || "Profile"}
                         fill
                         className="object-cover"
                         sizes="(max-width: 768px) 80px, 128px"
@@ -225,15 +174,15 @@ export default function ProfilePage() {
                     </div>
                   ) : (
                     <div className="h-20 w-20 md:h-32 md:w-32 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white text-2xl md:text-4xl font-bold shadow-xl">
-                      {clerkUser.fullName?.[0]?.toUpperCase() || "U"}
+                      {session.user.name?.[0]?.toUpperCase() || "U"}
                     </div>
                   )}
                   <div className="space-y-1 md:space-y-2 text-center md:text-left">
                     <h2 className="text-xl md:text-3xl font-bold text-gray-900">
-                      {clerkUser.fullName || "User"}
+                      {session.user.name || "User"}
                     </h2>
                     <p className="text-gray-600 text-sm md:text-lg">
-                      {clerkUser.primaryEmailAddress?.emailAddress}
+                      {session.user.email}
                     </p>
                     <p className="text-gray-500 text-xs md:text-base">
                       Joined{" "}
@@ -303,121 +252,73 @@ export default function ProfilePage() {
             </Card>
 
             {/* Stats Card */}
-            <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-blue-50 hover:shadow-2xl transition-all duration-300">
-              <CardHeader className="p-3 md:p-6">
-                <div className="flex items-center gap-2 mb-1 md:mb-2">
-                  <Star className="h-4 w-4 md:h-5 md:w-5 text-blue-500" />
-                  <CardTitle className="text-lg md:text-2xl font-bold text-gray-900">
-                    Learning Stats
-                  </CardTitle>
+            <Card className="border-0 shadow-xl bg-gradient-to-br from-blue-50 to-indigo-50 hover:shadow-2xl transition-all duration-300">
+              <CardContent className="p-3 md:p-8 space-y-4 md:space-y-8">
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2">
+                    <Flame className="h-5 w-5 text-orange-500" />
+                    <h3 className="text-lg font-semibold">Current Streak</h3>
+                  </div>
+                  <p className="text-3xl font-bold text-gray-900">
+                    {profileData.stats.currentStreak} days
+                  </p>
                 </div>
-              </CardHeader>
-              <CardContent className="p-3 md:p-6">
-                <div className="grid grid-cols-2 gap-3 md:gap-6">
-                  {[
-                    {
-                      icon: (
-                        <Flame className="h-4 w-4 md:h-5 md:w-5 text-orange-500" />
-                      ),
-                      label: "Current Streak",
-                      value: `${profileData.streak.currentStreak} days`,
-                    },
-                    {
-                      icon: (
-                        <Trophy className="h-4 w-4 md:h-5 md:w-5 text-yellow-500" />
-                      ),
-                      label: "Longest Streak",
-                      value: `${profileData.streak.longestStreak} days`,
-                    },
-                    {
-                      icon: (
-                        <CheckCircle className="h-4 w-4 md:h-5 md:w-5 text-green-500" />
-                      ),
-                      label: "Courses Completed",
-                      value:
-                        profileData.user.completedCourses?.length.toString() ||
-                        "0",
-                    },
-                    {
-                      icon: (
-                        <Clock className="h-4 w-4 md:h-5 md:w-5 text-blue-500" />
-                      ),
-                      label: "Watch Time",
-                      value: `${profileData.activity.totalWatchTime}h`,
-                    },
-                  ].map((stat, index) => (
-                    <div
-                      key={index}
-                      className="bg-white/50 rounded-xl p-2 md:p-4 shadow-sm hover:shadow-md transition-all duration-300"
-                    >
-                      <div className="flex items-center gap-1 md:gap-2 mb-1 md:mb-2">
-                        {stat.icon}
-                        <span className="text-xs md:text-sm font-medium text-gray-600">
-                          {stat.label}
-                        </span>
-                      </div>
-                      <p className="text-base md:text-2xl font-bold text-gray-900">
-                        {stat.value}
-                      </p>
-                    </div>
-                  ))}
+
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2">
+                    <Trophy className="h-5 w-5 text-yellow-500" />
+                    <h3 className="text-lg font-semibold">Longest Streak</h3>
+                  </div>
+                  <p className="text-3xl font-bold text-gray-900">
+                    {profileData.stats.longestStreak} days
+                  </p>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2">
+                    <BookOpen className="h-5 w-5 text-blue-500" />
+                    <h3 className="text-lg font-semibold">Courses Completed</h3>
+                  </div>
+                  <p className="text-3xl font-bold text-gray-900">
+                    {profileData.stats.coursesCompleted}
+                  </p>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2">
+                    <Clock className="h-5 w-5 text-purple-500" />
+                    <h3 className="text-lg font-semibold">Total Watch Time</h3>
+                  </div>
+                  <p className="text-3xl font-bold text-gray-900">
+                    {Math.round(profileData.stats.totalWatchTime / 60)} hours
+                  </p>
                 </div>
               </CardContent>
             </Card>
           </div>
 
-          {/* Completed Courses */}
-          <Card className="mt-3 md:mt-8 border-0 shadow-xl bg-gradient-to-br from-white to-blue-50 hover:shadow-2xl transition-all duration-300">
-            <CardHeader className="p-3 md:p-6">
-              <div className="flex items-center gap-2 mb-1 md:mb-2">
-                <BookOpen className="h-4 w-4 md:h-5 md:w-5 text-blue-500" />
-                <CardTitle className="text-lg md:text-2xl font-bold text-gray-900">
-                  Completed Courses
-                </CardTitle>
+          {/* Completed Courses Section */}
+          {profileData.completedCourses.length > 0 && (
+            <div className="mt-8">
+              <h2 className="text-2xl font-bold mb-4">Completed Courses</h2>
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {profileData.completedCourses.map((course) => (
+                  <Card
+                    key={course.id}
+                    className="border-0 shadow-lg hover:shadow-xl transition-all duration-300"
+                  >
+                    <CardContent className="p-4">
+                      <h3 className="font-semibold mb-2">{course.title}</h3>
+                      <div className="flex items-center gap-2 text-sm text-gray-500">
+                        <CheckCircle className="h-4 w-4 text-green-500" />
+                        <span>Completed</span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
               </div>
-            </CardHeader>
-            <CardContent className="p-3 md:p-6">
-              {profileData.user.completedCourses?.length === 0 ? (
-                <div className="text-center py-6 md:py-12">
-                  <div className="w-10 h-10 md:w-16 md:h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-3 md:mb-4">
-                    <Target className="h-5 w-5 md:h-8 md:w-8 text-white" />
-                  </div>
-                  <p className="text-gray-600 text-sm md:text-lg">
-                    No completed courses yet. Start your learning journey today!
-                  </p>
-                </div>
-              ) : (
-                <div className="grid gap-3 md:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-                  {profileData.user.completedCourses?.map((course) => (
-                    <Card
-                      key={course.id}
-                      className="bg-gradient-to-br from-blue-50 to-indigo-50 border-0 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
-                    >
-                      <CardContent className="p-3 md:p-6">
-                        <div className="flex items-center gap-2 md:gap-4">
-                          <div className="h-8 w-8 md:h-14 md:w-14 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg">
-                            <BookOpen className="h-4 w-4 md:h-7 md:w-7 text-white" />
-                          </div>
-                          <div>
-                            <h3 className="font-bold text-sm md:text-lg text-gray-900">
-                              {course.title}
-                            </h3>
-                            <p className="text-gray-600 text-xs md:text-base">
-                              Completed{" "}
-                              {format(
-                                new Date(course.completedAt),
-                                "MMM d, yyyy"
-                              )}
-                            </p>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+            </div>
+          )}
         </div>
       </main>
     </div>

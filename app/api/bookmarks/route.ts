@@ -1,17 +1,17 @@
 import { NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
+import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { getVideoDetails } from "@/lib/youtube";
 
 export async function GET() {
   try {
-    const { userId } = await auth();
-    if (!userId) {
+    const session = await auth();
+    if (!session?.user?.id) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
     const bookmarks = await prisma.bookmark.findMany({
-      where: { userId },
+      where: { userId: session.user.id },
       include: {
         video: {
           select: {
@@ -42,7 +42,7 @@ export async function GET() {
           youtubeId: bookmark.video.videoId,
           courseTitle: bookmark.video.course.title,
           courseId: bookmark.video.course.id,
-          note: bookmark.note,
+          note: bookmark.note || null,
         };
       })
     );
@@ -56,8 +56,8 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
-    const { userId } = await auth();
-    if (!userId) {
+    const session = await auth();
+    if (!session?.user?.id) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
@@ -79,7 +79,7 @@ export async function POST(req: Request) {
     const existingBookmark = await prisma.bookmark.findUnique({
       where: {
         userId_videoId: {
-          userId,
+          userId: session.user.id,
           videoId,
         },
       },
@@ -91,7 +91,7 @@ export async function POST(req: Request) {
 
     const bookmark = await prisma.bookmark.create({
       data: {
-        userId,
+        userId: session.user.id,
         videoId,
         note,
       },

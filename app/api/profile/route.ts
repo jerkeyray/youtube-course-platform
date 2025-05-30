@@ -1,27 +1,24 @@
-import { auth } from "@clerk/nextjs/server";
+import { auth } from "@/auth";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
 export async function GET() {
   try {
-    const { userId } = await auth();
-    console.log("Auth userId:", userId);
-
-    if (!userId) {
-      console.log("No userId found in auth");
+    const session = await auth();
+    if (!session?.user?.id) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
     // Get user data
     const user = await prisma.user.findUnique({
-      where: { id: userId },
+      where: { id: session.user.id },
       include: {
         courses: {
           include: {
             videos: {
               include: {
                 progress: {
-                  where: { userId },
+                  where: { userId: session.user.id },
                 },
               },
             },
@@ -36,33 +33,15 @@ export async function GET() {
       },
     });
 
-    console.log("Found user:", user ? "yes" : "no");
-
     if (!user) {
-      // If user doesn't exist in our database, create them
-      const clerkUser = await auth();
-      if (!clerkUser.userId) {
-        return new NextResponse("Unauthorized", { status: 401 });
-      }
-
-      const newUser = await prisma.user.create({
-        data: {
-          id: clerkUser.userId,
-          email: clerkUser.sessionClaims?.email as string,
-          name: clerkUser.sessionClaims?.name as string,
-          image: clerkUser.sessionClaims?.picture as string,
-        },
-      });
-
-      return NextResponse.json({
-        id: newUser.id,
-        name: newUser.name,
-        email: newUser.email,
-        image: newUser.image,
-        createdAt: newUser.createdAt,
-        completedCourses: [],
-      });
+      return new NextResponse("User not found", { status: 404 });
     }
+
+    // Calculate stats
+    const currentStreak = calculateCurrentStreak(user.activities);
+    const longestStreak = calculateLongestStreak(user.activities);
+    const coursesCompleted = user.certificates.length;
+    const totalWatchTime = calculateTotalWatchTime(user.activities);
 
     // Get completed courses
     const completedCourses = user.courses.filter((course) => {
@@ -74,44 +53,130 @@ export async function GET() {
     });
 
     return NextResponse.json({
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      image: user.image,
-      bio: user.bio,
-      createdAt: user.createdAt,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        image: user.image,
+        bio: user.bio,
+        createdAt: user.createdAt,
+      },
+      stats: {
+        currentStreak,
+        longestStreak,
+        coursesCompleted,
+        totalWatchTime,
+      },
       completedCourses: completedCourses.map((course) => ({
         id: course.id,
         title: course.title,
-        completedAt: course.updatedAt,
       })),
     });
   } catch (error) {
-    console.error("[PROFILE_GET] Error:", error);
-    return new NextResponse("Internal Error", { status: 500 });
+    console.error("Profile API error:", error);
+    return new NextResponse("Internal Server Error", { status: 500 });
   }
 }
 
 export async function PATCH(req: Request) {
   try {
-    const { userId } = await auth();
-    if (!userId) {
+    const session = await auth();
+    if (!session?.user?.id) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    const body = await req.json();
-    const { bio } = body;
+    const { bio } = await req.json();
 
-    const user = await prisma.user.update({
-      where: { id: userId },
-      data: {
-        bio: bio,
-      },
+    const updatedUser = await prisma.user.update({
+      where: { id: session.user.id },
+      data: { bio },
     });
 
-    return NextResponse.json(user);
+    return NextResponse.json(updatedUser);
   } catch (error) {
-    console.error("[PROFILE_PATCH] Error:", error);
-    return new NextResponse("Internal Error", { status: 500 });
+    console.error("Profile update error:", error);
+    return new NextResponse("Internal Server Error", { status: 500 });
   }
+}
+
+function calculateCurrentStreak(activities: any[]) {
+  let currentStreak = 0;
+  const today = new Date().toISOString().split("T")[0];
+  const sortedActivities = activities
+    .sort((a, b) => b.date.localeCompare(a.date))
+    .filter((a) => a.completed);
+
+  if (sortedActivities.length === 0) return 0;
+
+  // Check if the last activity was today or yesterday
+  const lastActivity = sortedActivities[0];
+  if (lastActivity.date !== today && lastActivity.date !== getYesterday()) {
+    return 0;
+  }
+
+  let currentDate = lastActivity.date;
+  for (const activity of sortedActivities) {
+    if (activity.date === currentDate) {
+      currentStreak++;
+      currentDate = getPreviousDay(currentDate);
+    } else {
+      break;
+    }
+  }
+
+  return currentStreak;
+}
+
+function calculateLongestStreak(activities: any[]) {
+  let longestStreak = 0;
+  let currentStreak = 0;
+  const sortedActivities = activities
+    .sort((a, b) => a.date.localeCompare(b.date))
+    .filter((a) => a.completed);
+
+  if (sortedActivities.length === 0) return 0;
+
+  let currentDate = sortedActivities[0].date;
+  for (const activity of sortedActivities) {
+    if (activity.date === currentDate) {
+      currentStreak++;
+      if (currentStreak > longestStreak) {
+        longestStreak = currentStreak;
+      }
+    } else if (activity.date === getNextDay(currentDate)) {
+      currentStreak++;
+      if (currentStreak > longestStreak) {
+        longestStreak = currentStreak;
+      }
+      currentDate = activity.date;
+    } else {
+      currentStreak = 1;
+      currentDate = activity.date;
+    }
+  }
+
+  return longestStreak;
+}
+
+function calculateTotalWatchTime(activities: any[]) {
+  // Assuming each completed activity represents 30 minutes of watch time
+  return activities.filter((a) => a.completed).length * 30;
+}
+
+function getYesterday() {
+  const date = new Date();
+  date.setDate(date.getDate() - 1);
+  return date.toISOString().split("T")[0];
+}
+
+function getPreviousDay(date: string) {
+  const d = new Date(date);
+  d.setDate(d.getDate() - 1);
+  return d.toISOString().split("T")[0];
+}
+
+function getNextDay(date: string) {
+  const d = new Date(date);
+  d.setDate(d.getDate() + 1);
+  return d.toISOString().split("T")[0];
 }

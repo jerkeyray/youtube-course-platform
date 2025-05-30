@@ -1,43 +1,40 @@
+"use client";
+
+import { useSession } from "next-auth/react";
 import { Progress } from "@/components/ui/progress";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import Link from "next/link";
-import { Course, Video, VideoProgress } from "@prisma/client";
+import { Card, CardContent } from "@/components/ui/card";
 
 interface CourseProgressProps {
-  course: Course & {
-    videos: (Video & {
-      progress: VideoProgress[];
-    })[];
-  };
+  courseId: string;
+  totalVideos: number;
+  completedVideos: number;
 }
 
-export function CourseProgress({ course }: CourseProgressProps) {
-  const totalVideos = course.videos.length;
-  const completedVideos = course.videos.filter((video) =>
-    video.progress.some((p) => p.completed)
-  ).length;
+export function CourseProgress({
+  courseId,
+  totalVideos,
+  completedVideos,
+}: CourseProgressProps) {
+  const { data: session } = useSession();
   const progress = totalVideos > 0 ? (completedVideos / totalVideos) * 100 : 0;
+
+  if (!session?.user) {
+    return null;
+  }
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center justify-between">
-          <Link
-            href={`/dashboard/courses/${course.id}`}
-            className="hover:underline"
-          >
-            {course.title}
-          </Link>
-          <span className="text-sm text-muted-foreground">
-            {completedVideos}/{totalVideos} videos
-          </span>
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <Progress value={progress} className="h-2" />
-        <p className="mt-2 text-sm text-muted-foreground">
-          {Math.round(progress)}% complete
-        </p>
+      <CardContent className="p-4">
+        <div className="space-y-2">
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-muted-foreground">Progress</span>
+            <span className="font-medium">{Math.round(progress)}%</span>
+          </div>
+          <Progress value={progress} className="h-2" />
+          <p className="text-sm text-muted-foreground">
+            {completedVideos} of {totalVideos} videos completed
+          </p>
+        </div>
       </CardContent>
     </Card>
   );

@@ -1,7 +1,7 @@
-import { auth } from '@clerk/nextjs/server';
-import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import { format, startOfDay } from 'date-fns';
+import { auth } from "@/lib/auth-compat";
+import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+import { format, startOfDay } from "date-fns";
 
 export async function POST(
   req: Request,
@@ -10,7 +10,7 @@ export async function POST(
   try {
     const { userId } = await auth();
     if (!userId) {
-      return new NextResponse('Unauthorized', { status: 401 });
+      return new NextResponse("Unauthorized", { status: 401 });
     }
 
     const { completed } = await req.json();
@@ -26,7 +26,7 @@ export async function POST(
 
     // If video is completed, record activity for today
     if (completed) {
-      const today = format(startOfDay(new Date()), 'yyyy-MM-dd');
+      const today = format(startOfDay(new Date()), "yyyy-MM-dd");
 
       // Check if activity already exists for today
       const existingActivity = await prisma.userActivity.findUnique({
@@ -49,7 +49,7 @@ export async function POST(
 
     return NextResponse.json(progress);
   } catch (error) {
-    console.error('[VIDEO_PROGRESS_POST]', error);
-    return new NextResponse('Internal Error', { status: 500 });
+    console.error("[VIDEO_PROGRESS_POST]", error);
+    return new NextResponse("Internal Error", { status: 500 });
   }
 }

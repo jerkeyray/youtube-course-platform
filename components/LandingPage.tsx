@@ -1,15 +1,28 @@
-"use client"
+"use client";
 
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
-import { CheckCircle, PlayCircle, Star, ArrowRight, Zap, Target, BookOpen } from "lucide-react"
-import Link from "next/link"
-import { useAuth } from "@clerk/nextjs"
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import {
+  CheckCircle,
+  PlayCircle,
+  Star,
+  ArrowRight,
+  Zap,
+  Target,
+  BookOpen,
+} from "lucide-react";
+import Link from "next/link";
+import { useSession } from "next-auth/react";
 
 export default function LandingPage() {
-  const { userId } = useAuth()
-  const getStartedLink = userId ? "/dashboard" : "/sign-up"
+  const { status } = useSession();
+  const getStartedLink = status === "authenticated" ? "/dashboard" : "/sign-up";
 
   return (
     <div className="bg-gradient-to-br from-slate-50 via-white to-blue-50 text-gray-900">
@@ -29,7 +42,7 @@ export default function LandingPage() {
           </div>
 
           <h1 className="text-6xl md:text-8xl font-bold leading-[1.05] tracking-tight bg-gradient-to-r from-gray-900 via-blue-800 to-purple-800 bg-clip-text text-transparent">
-            The YouTube Course 
+            The YouTube Course
             <br />
             <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
               Experience Platform
@@ -37,9 +50,10 @@ export default function LandingPage() {
           </h1>
 
           <p className="text-xl md:text-2xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-            Transform any YouTube playlist into a structured, focused learning experience.
-            <span className="font-semibold text-blue-600"> yudoku</span> removes distractions and keeps you focused on
-            what matters.
+            Transform any YouTube playlist into a structured, focused learning
+            experience.
+            <span className="font-semibold text-blue-600"> yudoku</span> removes
+            distractions and keeps you focused on what matters.
           </p>
 
           <div className="pt-8 flex flex-col sm:flex-row gap-4 justify-center items-center">
@@ -62,7 +76,6 @@ export default function LandingPage() {
               <Link href="#features">See How It Works</Link>
             </Button>
           </div>
-
         </div>
       </section>
 
@@ -79,8 +92,8 @@ export default function LandingPage() {
               Everything you need to learn effectively
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-              Simple yet powerful tools designed to transform your learning experience and help you achieve your goals
-              faster.
+              Simple yet powerful tools designed to transform your learning
+              experience and help you achieve your goals faster.
             </p>
           </div>
 
@@ -90,10 +103,12 @@ export default function LandingPage() {
                 <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg">
                   <PlayCircle className="h-8 w-8 text-white" />
                 </div>
-                <h3 className="text-2xl font-bold mb-4 text-gray-900">Distraction-Free Player</h3>
+                <h3 className="text-2xl font-bold mb-4 text-gray-900">
+                  Distraction-Free Player
+                </h3>
                 <p className="text-gray-600 leading-relaxed text-lg">
-                  Watch videos in a clean, focused environment without YouTube's distracting sidebar, comments, or
-                  recommendations.
+                  Watch videos in a clean, focused environment without YouTube's
+                  distracting sidebar, comments, or recommendations.
                 </p>
               </CardContent>
             </Card>
@@ -103,10 +118,12 @@ export default function LandingPage() {
                 <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg">
                   <Target className="h-8 w-8 text-white" />
                 </div>
-                <h3 className="text-2xl font-bold mb-4 text-gray-900">Smart Progress Tracking</h3>
+                <h3 className="text-2xl font-bold mb-4 text-gray-900">
+                  Smart Progress Tracking
+                </h3>
                 <p className="text-gray-600 leading-relaxed text-lg">
-                  Visualize your learning journey with beautiful progress indicators, completion rates, and learning
-                  streaks.
+                  Visualize your learning journey with beautiful progress
+                  indicators, completion rates, and learning streaks.
                 </p>
               </CardContent>
             </Card>
@@ -116,9 +133,12 @@ export default function LandingPage() {
                 <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg">
                   <BookOpen className="h-8 w-8 text-white" />
                 </div>
-                <h3 className="text-2xl font-bold mb-4 text-gray-900">Structured Courses</h3>
+                <h3 className="text-2xl font-bold mb-4 text-gray-900">
+                  Structured Courses
+                </h3>
                 <p className="text-gray-600 leading-relaxed text-lg">
-                  Transform any playlist into an organized learning path with clear objectives and milestone tracking.
+                  Transform any playlist into an organized learning path with
+                  clear objectives and milestone tracking.
                 </p>
               </CardContent>
             </Card>
@@ -140,9 +160,12 @@ export default function LandingPage() {
               <Zap className="w-4 h-4 mr-2" />
               Simple Process
             </div>
-            <h2 className="text-5xl md:text-6xl font-bold mb-6 tracking-tight">Get started in minutes</h2>
+            <h2 className="text-5xl md:text-6xl font-bold mb-6 tracking-tight">
+              Get started in minutes
+            </h2>
             <p className="text-xl text-blue-100 max-w-2xl mx-auto leading-relaxed">
-              From YouTube playlist to structured course in just a few simple steps.
+              From YouTube playlist to structured course in just a few simple
+              steps.
             </p>
           </div>
 
@@ -152,25 +175,29 @@ export default function LandingPage() {
                 {
                   step: "01",
                   title: "Sign up instantly",
-                  description: "Create your account with Google or email in under 30 seconds.",
+                  description:
+                    "Create your account with Google or email in under 30 seconds.",
                   color: "from-blue-400 to-blue-500",
                 },
                 {
                   step: "02",
                   title: "Add any playlist",
-                  description: "Paste any YouTube playlist URL and we'll structure it into a course.",
+                  description:
+                    "Paste any YouTube playlist URL and we'll structure it into a course.",
                   color: "from-green-400 to-green-500",
                 },
                 {
                   step: "03",
                   title: "Learn distraction-free",
-                  description: "Watch videos in our clean interface designed for deep learning.",
+                  description:
+                    "Watch videos in our clean interface designed for deep learning.",
                   color: "from-purple-400 to-purple-500",
                 },
                 {
                   step: "04",
                   title: "Track your progress",
-                  description: "Monitor your learning journey and celebrate your achievements.",
+                  description:
+                    "Monitor your learning journey and celebrate your achievements.",
                   color: "from-pink-400 to-pink-500",
                 },
               ].map((item, index) => (
@@ -182,7 +209,9 @@ export default function LandingPage() {
                   </div>
                   <div className="pt-2">
                     <h3 className="text-2xl font-bold mb-3">{item.title}</h3>
-                    <p className="text-blue-100 text-lg leading-relaxed">{item.description}</p>
+                    <p className="text-blue-100 text-lg leading-relaxed">
+                      {item.description}
+                    </p>
                   </div>
                 </div>
               ))}
@@ -204,7 +233,9 @@ export default function LandingPage() {
                 </div>
                 <div className="text-center">
                   <PlayCircle className="w-12 h-12 text-blue-300 mx-auto mb-3" />
-                  <p className="text-blue-100 font-medium">Your distraction-free learning environment</p>
+                  <p className="text-blue-100 font-medium">
+                    Your distraction-free learning environment
+                  </p>
                 </div>
               </div>
             </div>
@@ -216,9 +247,12 @@ export default function LandingPage() {
       <section className="py-32 px-6 bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 text-white relative overflow-hidden">
         <div className="absolute inset-0 bg-black/20"></div>
         <div className="max-w-4xl mx-auto text-center relative z-10">
-          <h2 className="text-5xl md:text-7xl font-bold mb-8 tracking-tight">Ready to transform your learning?</h2>
+          <h2 className="text-5xl md:text-7xl font-bold mb-8 tracking-tight">
+            Ready to transform your learning?
+          </h2>
           <p className="text-xl text-blue-100 mb-12 max-w-2xl mx-auto leading-relaxed">
-            Join thousands of learners who have already discovered the power of distraction-free education with yudoku.
+            Join thousands of learners who have already discovered the power of
+            distraction-free education with yudoku.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Button
@@ -232,7 +266,9 @@ export default function LandingPage() {
               </Link>
             </Button>
           </div>
-          <p className="text-blue-200 text-sm mt-6">No credit card required • Free forever</p>
+          <p className="text-blue-200 text-sm mt-6">
+            No credit card required • Free forever
+          </p>
         </div>
       </section>
 
@@ -267,7 +303,8 @@ export default function LandingPage() {
                   "yudoku provides comprehensive progress tracking including completion rates, learning streaks, time spent learning, and personalized goal setting to keep you motivated.",
               },
               {
-                question: "What types of YouTube content work best with yudoku?",
+                question:
+                  "What types of YouTube content work best with yudoku?",
                 answer:
                   "Any public YouTube playlist works great with yudoku. Educational content, tutorials, online courses, skill-building playlists, and documentary series tend to work exceptionally well with our structured learning approach.",
               },
@@ -301,11 +338,16 @@ export default function LandingPage() {
             <h3 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
               yudoku
             </h3>
-            <p className="text-gray-600">Transforming YouTube into your personal learning platform</p>
+            <p className="text-gray-600">
+              Transforming YouTube into your personal learning platform
+            </p>
           </div>
-          <p className="text-gray-500">© {new Date().getFullYear()} yudoku. Built with ❤️ for focused learning.</p>
+          <p className="text-gray-500">
+            © {new Date().getFullYear()} yudoku. Built with ❤️ for focused
+            learning.
+          </p>
         </div>
       </footer>
     </div>
-  )
+  );
 }

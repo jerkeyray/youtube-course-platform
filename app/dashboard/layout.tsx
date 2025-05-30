@@ -1,6 +1,6 @@
 "use client";
 
-import { auth } from "@clerk/nextjs/server";
+import { useSession } from "next-auth/react";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { DashboardSidebar } from "@/components/DashboardSidebar";
@@ -14,7 +14,16 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const { data: session, status } = useSession();
   const [isCollapsed, setIsCollapsed] = useState(false);
+
+  if (status === "loading") {
+    return <div>Loading...</div>;
+  }
+
+  if (!session) {
+    redirect("/api/auth/signin");
+  }
 
   return (
     <div className="h-full relative">

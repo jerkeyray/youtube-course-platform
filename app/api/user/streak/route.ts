@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
+import { auth } from "@/lib/auth-compat";
 import { prisma } from "@/lib/prisma";
 import { format, subDays, isSameDay } from "date-fns";
 

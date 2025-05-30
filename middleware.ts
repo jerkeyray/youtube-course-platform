@@ -1,29 +1,47 @@
-import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import { auth } from "./auth";
 import { NextResponse } from "next/server";
 
-const isProtectedRoute = createRouteMatcher(["/dashboard(.*)"]);
+export default auth((req) => {
+  const isAuthenticated = !!req.auth;
+  const isAuthPage =
+    req.nextUrl.pathname.startsWith("/sign-in") ||
+    req.nextUrl.pathname.startsWith("/sign-up");
 
-export default clerkMiddleware(async (auth, req) => {
-  try {
-    console.log("Middleware test OK", { url: req.url });
-    if (isProtectedRoute(req)) {
-      const { userId } = await auth();
-      if (!userId) {
-        console.log("Unauthorized access to dashboard");
-        return NextResponse.redirect(new URL("/sign-in", req.url));
-      }
-      console.log("Authenticated user:", userId);
-    }
-    return NextResponse.next();
-  } catch (error) {
-    console.error("Middleware error:", error);
-    return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 }
-    );
+  // If user is authenticated and trying to access auth pages, redirect to dashboard
+  if (isAuthenticated && isAuthPage) {
+    return NextResponse.redirect(new URL("/dashboard", req.nextUrl));
   }
+
+  // Public routes that don't require authentication
+  const isPublicRoute =
+    req.nextUrl.pathname === "/" ||
+    req.nextUrl.pathname.startsWith("/api/auth") ||
+    req.nextUrl.pathname.startsWith("/_next") ||
+    req.nextUrl.pathname.includes("/favicon.ico");
+
+  // Protected routes that require authentication
+  const isProtectedRoute = req.nextUrl.pathname.startsWith("/dashboard");
+
+  // If user is not authenticated and trying to access protected routes, redirect to sign-in
+  if (!isAuthenticated && isProtectedRoute) {
+    const signInUrl = new URL("/sign-in", req.nextUrl);
+    signInUrl.searchParams.set("callbackUrl", req.nextUrl.pathname);
+    return NextResponse.redirect(signInUrl);
+  }
+
+  return NextResponse.next();
 });
 
+// Match routes for auth middleware
 export const config = {
-  matcher: ["/((?!_next|static|favicon.ico).*)"],
+  matcher: [
+    /*
+     * Match all request paths except for the ones starting with:
+     * - api/auth (auth API routes)
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     */
+    "/((?!api/auth|_next/static|_next/image|favicon.ico).*)",
+  ],
 };
