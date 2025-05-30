@@ -10,6 +10,7 @@ import { ArrowLeft, Youtube } from "lucide-react";
 import { parse, isValid, isBefore } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
+import LoadingScreen from "@/components/LoadingScreen";
 
 export default function CreateCourse() {
   const router = useRouter();
@@ -150,7 +151,16 @@ export default function CreateCourse() {
               </div>
 
               <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? "Creating..." : "Create Course"}
+                {isLoading ? (
+                  <div className="flex items-center gap-2">
+                    <div className="h-4 w-4">
+                      <LoadingScreen variant="inline" text="" />
+                    </div>
+                    <span>Creating...</span>
+                  </div>
+                ) : (
+                  "Create Course"
+                )}
               </Button>
             </form>
           </CardContent>

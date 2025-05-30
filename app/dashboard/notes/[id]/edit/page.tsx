@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import Link from "next/link";
 import { use } from "react";
+import LoadingScreen from "@/components/LoadingScreen";
 
 interface EditNotePageProps {
   params: Promise<{
@@ -76,9 +77,7 @@ export default function EditNotePage({ params }: EditNotePageProps) {
   if (isLoading) {
     return (
       <main className="container py-8">
-        <div className="flex items-center justify-center min-h-[60vh]">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900" />
-        </div>
+        <LoadingScreen variant="fullscreen" text="Loading note editor..." />
       </main>
     );
   }
@@ -126,7 +125,9 @@ export default function EditNotePage({ params }: EditNotePageProps) {
               >
                 {isSaving ? (
                   <div className="flex items-center gap-2">
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
+                    <div className="h-4 w-4">
+                      <LoadingScreen variant="inline" text="" />
+                    </div>
                     <span>Saving...</span>
                   </div>
                 ) : (

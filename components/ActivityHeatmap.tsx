@@ -30,10 +30,10 @@ interface ActivityHeatmapProps {
 
 export default function ActivityHeatmap({
   activities,
-  cellSize = 7, // Default cellSize to 7
+  cellSize = 10, // Increased default cell size for bigger heatmap
 }: ActivityHeatmapProps) {
   const today = startOfDay(new Date());
-  const days = 357; // ~51 weeks
+  const days = 120; // Adjusted number of days to work better with larger cells
   const weeks = Math.ceil(days / 7);
 
   // Map date string to activity status
@@ -59,44 +59,71 @@ export default function ActivityHeatmap({
     grid.push(week);
   }
 
+  // Use square cells for better visual balance
+  const squareSize = cellSize; // Keep the same size for width and height to make it square
+
   return (
     <div className="w-full overflow-hidden">
-      <div className="flex gap-[2px] overflow-hidden">
-        {grid.map((week, wIdx) => (
-          <div key={wIdx} className="flex flex-col gap-[2px]">
-            {week.map((cell, dIdx) => {
-              const daysSinceToday = differenceInCalendarDays(today, cell.date);
-              const isToday = daysSinceToday === 0;
+      {/* Simplified heatmap without labels */}
+      <div className="w-full flex justify-center">
+        {/* Grid */}
+        <div className="flex gap-[3px] overflow-hidden">
+          {grid.map((week, wIdx) => (
+            <div key={wIdx} className="flex flex-col gap-[3px]">
+              {week.map((cell, dIdx) => {
+                const daysSinceToday = differenceInCalendarDays(
+                  today,
+                  cell.date
+                );
+                const isToday = daysSinceToday === 0;
 
-              return (
-                <TooltipProvider key={dIdx}>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div
-                        className={`w-[${cellSize}px] h-[${cellSize}px] rounded-sm ${
-                          cell.active
-                            ? "bg-green-500"
-                            : "bg-gray-200 dark:bg-gray-800"
-                        } ${isToday ? "ring-1 ring-blue-500" : ""}`}
-                      />
-                    </TooltipTrigger>
-                    <TooltipContent side="top" className="text-xs p-2">
-                      <p className="font-medium">
-                        {format(cell.date, "EEEE, MMMM d, yyyy")}
-                      </p>
-                      <p>
-                        {cell.active ? "Activity completed" : "No activity"}
-                      </p>
-                      {isToday && (
-                        <p className="font-semibold text-primary mt-1">Today</p>
-                      )}
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              );
-            })}
-          </div>
-        ))}
+                return (
+                  <TooltipProvider key={dIdx}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div
+                          style={{
+                            width: `${squareSize}px`,
+                            height: `${squareSize}px`,
+                          }}
+                          className={`rounded-sm ${
+                            cell.active
+                              ? "bg-blue-500 hover:bg-blue-600"
+                              : "bg-slate-50 hover:bg-slate-100 dark:bg-slate-200 dark:hover:bg-slate-300"
+                          } ${isToday ? "ring-1 ring-blue-600" : ""}`}
+                        />
+                      </TooltipTrigger>
+                      <TooltipContent
+                        side="top"
+                        className="text-xs p-2 bg-white border border-blue-100 shadow-md"
+                      >
+                        <p className="font-medium text-blue-800">
+                          {format(cell.date, "EEEE, MMMM d, yyyy")}
+                        </p>
+                        <div className="flex items-center mt-1">
+                          <div
+                            className={`w-2 h-2 rounded-full mr-1.5 ${
+                              cell.active ? "bg-blue-500" : "bg-slate-200"
+                            }`}
+                          ></div>
+                          <p>
+                            {cell.active ? "Activity completed" : "No activity"}
+                          </p>
+                        </div>
+                        {isToday && (
+                          <p className="font-semibold text-blue-600 mt-1 flex items-center">
+                            <span className="w-1.5 h-1.5 bg-blue-600 rounded-full mr-1"></span>
+                            Today
+                          </p>
+                        )}
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                );
+              })}
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

@@ -14,29 +14,28 @@ export async function GET() {
       where: { userId: session.user.id },
       orderBy: { createdAt: "desc" },
       include: {
-        video: true, // Assuming you want to include video details
+        video: {
+          include: {
+            course: true, // Include course details
+          },
+        },
       },
     });
 
-    // Optional: If you want to enrich with YouTube details (consider performance)
-    // const enrichedBookmarks = await Promise.all(
-    //   bookmarks.map(async (bookmark) => {
-    //     if (bookmark.video?.videoId) {
-    //       const videoDetails = await getVideoDetails(bookmark.video.videoId);
-    //       return {
-    //         ...bookmark,
-    //         video: {
-    //           ...bookmark.video,
-    //           thumbnailUrl: videoDetails?.thumbnailUrl,
-    //           channelTitle: videoDetails?.channelTitle,
-    //         },
-    //       };
-    //     }
-    //     return bookmark;
-    //   })
-    // );
+    // Transform the data to match the expected VideoCard format
+    const formattedBookmarks = bookmarks.map((bookmark) => {
+      return {
+        id: bookmark.video.id,
+        title: bookmark.video.title,
+        thumbnailUrl: `https://img.youtube.com/vi/${bookmark.video.videoId}/maxresdefault.jpg`,
+        duration: "00:00", // This may need to be fetched from YouTube API if required
+        youtubeId: bookmark.video.videoId,
+        courseTitle: bookmark.video.course?.title || "Unknown Course",
+        courseId: bookmark.video.courseId,
+      };
+    });
 
-    return NextResponse.json(bookmarks);
+    return NextResponse.json(formattedBookmarks);
   } catch (_error) {
     // console.error("Error fetching bookmarks:", _error);
     return NextResponse.json(

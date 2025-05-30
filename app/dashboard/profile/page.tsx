@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import Image from "next/image";
-import { Loader } from "@/components/ui/loader";
+import LoadingScreen from "@/components/LoadingScreen";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Trophy,
@@ -97,14 +97,14 @@ export default function ProfilePage() {
       toast.success("Profile updated successfully");
       setIsEditing(false);
     },
-    onError: (_error) => {
+    onError: () => {
       // console.error("Error updating profile:", _error);
       toast.error("Failed to update profile");
     },
   });
 
   if (status === "loading" || isLoadingProfile) {
-    return <Loader size="lg" />;
+    return <LoadingScreen text="Loading your profile..." />;
   }
 
   if (profileQueryError) {
@@ -113,12 +113,13 @@ export default function ProfilePage() {
         <div className="max-w-5xl mx-auto">
           <div className="flex items-center justify-center min-h-[60vh]">
             <div className="text-center space-y-4">
-              <p className="text-destructive text-lg">
+              <p className="text-red-500 text-lg">
                 {profileQueryError instanceof Error
                   ? profileQueryError.message
                   : "An error occurred fetching profile"}
               </p>
               <Button
+                className="bg-blue-600 hover:bg-blue-700"
                 onClick={() =>
                   queryClient.invalidateQueries({ queryKey: ["profile"] })
                 }
@@ -138,7 +139,7 @@ export default function ProfilePage() {
         <div className="max-w-5xl mx-auto">
           <div className="flex items-center justify-center min-h-[60vh]">
             <div className="text-center space-y-4">
-              <p className="text-muted-foreground text-lg">
+              <p className="text-blue-500 text-lg">
                 No profile data available or not signed in.
               </p>
             </div>
@@ -153,7 +154,7 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="bg-gradient-to-br from-slate-50 via-white to-blue-50 min-h-screen">
+    <div className="min-h-screen">
       <main className="container py-3 md:py-8">
         <div className="max-w-5xl mx-auto">
           <div className="grid gap-3 md:gap-8 md:grid-cols-3">
@@ -161,7 +162,7 @@ export default function ProfilePage() {
               <CardContent className="p-3 md:p-8 space-y-4 md:space-y-8">
                 <div className="flex flex-col md:flex-row items-center md:items-start gap-3 md:gap-8">
                   {session.user.image ? (
-                    <div className="relative h-20 w-20 md:h-32 md:w-32 overflow-hidden rounded-full ring-4 ring-white shadow-xl">
+                    <div className="relative h-20 w-20 md:h-32 md:w-32 overflow-hidden rounded-full ring-4 ring-blue-100 shadow-md">
                       <Image
                         src={session.user.image}
                         alt={session.user.name || "Profile"}
@@ -173,18 +174,18 @@ export default function ProfilePage() {
                       />
                     </div>
                   ) : (
-                    <div className="h-20 w-20 md:h-32 md:w-32 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white text-2xl md:text-4xl font-bold shadow-xl">
+                    <div className="h-20 w-20 md:h-32 md:w-32 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white text-2xl md:text-4xl font-bold shadow-md">
                       {session.user.name?.[0]?.toUpperCase() || "U"}
                     </div>
                   )}
                   <div className="space-y-1 md:space-y-2 text-center md:text-left">
-                    <h2 className="text-xl md:text-3xl font-bold text-gray-900">
+                    <h2 className="text-xl md:text-3xl font-bold text-blue-900">
                       {session.user.name || "User"}
                     </h2>
-                    <p className="text-gray-600 text-sm md:text-lg">
+                    <p className="text-blue-700 text-sm md:text-lg">
                       {session.user.email}
                     </p>
-                    <p className="text-gray-500 text-xs md:text-base">
+                    <p className="text-blue-500 text-xs md:text-base">
                       Joined{" "}
                       {format(
                         new Date(profileData.user.createdAt),
@@ -196,13 +197,14 @@ export default function ProfilePage() {
 
                 <div className="space-y-2 md:space-y-3">
                   <div className="flex justify-between items-center">
-                    <label className="text-sm md:text-lg font-medium text-gray-900">
+                    <label className="text-sm md:text-lg font-medium text-blue-800">
                       Bio
                     </label>
                     {!isEditing && (
                       <Button
                         variant="ghost"
                         size="sm"
+                        className="text-blue-600 hover:text-blue-800 hover:bg-blue-100"
                         onClick={() => setIsEditing(true)}
                       >
                         <Edit2 className="mr-2 h-4 w-4" /> Edit
@@ -215,11 +217,12 @@ export default function ProfilePage() {
                         value={bio}
                         onChange={(e) => setBio(e.target.value)}
                         placeholder="Tell us about yourself..."
-                        className="min-h-[100px] md:min-h-[120px] text-sm md:text-lg rounded-xl border-2 focus:border-blue-500 transition-all duration-300"
+                        className="min-h-[100px] md:min-h-[120px] text-sm md:text-lg rounded-xl border-blue-200 focus:border-blue-500 bg-white/70 transition-all duration-300"
                       />
                       <div className="flex justify-end gap-2 mt-2">
                         <Button
                           variant="outline"
+                          className="border-blue-200 text-blue-700 hover:bg-blue-50"
                           onClick={() => {
                             setIsEditing(false);
                             setBio(profileData.user.bio || "");
@@ -228,6 +231,7 @@ export default function ProfilePage() {
                           Cancel
                         </Button>
                         <Button
+                          className="bg-blue-600 hover:bg-blue-700"
                           onClick={handleSubmitBio}
                           disabled={updateProfileMutation.isPending}
                         >
@@ -238,7 +242,7 @@ export default function ProfilePage() {
                       </div>
                     </>
                   ) : (
-                    <p className="text-gray-600 text-sm md:text-lg pt-2 min-h-[60px]">
+                    <p className="text-blue-700 text-sm md:text-lg pt-2 min-h-[60px]">
                       {bio || "No bio yet. Click edit to add one!"}
                     </p>
                   )}
@@ -246,14 +250,16 @@ export default function ProfilePage() {
               </CardContent>
             </Card>
 
-            <Card className="border-0 shadow-xl bg-gradient-to-br from-blue-50 to-indigo-50 hover:shadow-2xl transition-all duration-300">
-              <CardContent className="p-3 md:p-8 space-y-4 md:space-y-8">
+            <Card className="border border-blue-100 shadow bg-blue-50/50 hover:shadow-lg transition-all duration-300">
+              <CardContent className="p-3 md:p-8 space-y-4 md:space-y-6">
                 <div className="space-y-4">
                   <div className="flex items-center gap-2">
                     <Flame className="h-5 w-5 text-orange-500" />
-                    <h3 className="text-lg font-semibold">Current Streak</h3>
+                    <h3 className="text-lg font-semibold text-blue-900">
+                      Current Streak
+                    </h3>
                   </div>
-                  <p className="text-3xl font-bold text-gray-900">
+                  <p className="text-3xl font-bold text-blue-700">
                     {profileData.stats.currentStreak} days
                   </p>
                 </div>
@@ -261,9 +267,11 @@ export default function ProfilePage() {
                 <div className="space-y-4">
                   <div className="flex items-center gap-2">
                     <Trophy className="h-5 w-5 text-yellow-500" />
-                    <h3 className="text-lg font-semibold">Longest Streak</h3>
+                    <h3 className="text-lg font-semibold text-blue-900">
+                      Longest Streak
+                    </h3>
                   </div>
-                  <p className="text-3xl font-bold text-gray-900">
+                  <p className="text-3xl font-bold text-blue-700">
                     {profileData.stats.longestStreak} days
                   </p>
                 </div>
@@ -271,19 +279,23 @@ export default function ProfilePage() {
                 <div className="space-y-4">
                   <div className="flex items-center gap-2">
                     <BookOpen className="h-5 w-5 text-blue-500" />
-                    <h3 className="text-lg font-semibold">Courses Completed</h3>
+                    <h3 className="text-lg font-semibold text-blue-900">
+                      Courses Completed
+                    </h3>
                   </div>
-                  <p className="text-3xl font-bold text-gray-900">
+                  <p className="text-3xl font-bold text-blue-700">
                     {profileData.stats.coursesCompleted}
                   </p>
                 </div>
 
                 <div className="space-y-4">
                   <div className="flex items-center gap-2">
-                    <Clock className="h-5 w-5 text-purple-500" />
-                    <h3 className="text-lg font-semibold">Total Watch Time</h3>
+                    <Clock className="h-5 w-5 text-blue-500" />
+                    <h3 className="text-lg font-semibold text-blue-900">
+                      Total Watch Time
+                    </h3>
                   </div>
-                  <p className="text-3xl font-bold text-gray-900">
+                  <p className="text-3xl font-bold text-blue-700">
                     {Math.round(profileData.stats.totalWatchTime / 60)} hours
                   </p>
                 </div>
@@ -293,16 +305,20 @@ export default function ProfilePage() {
 
           {profileData.completedCourses.length > 0 && (
             <div className="mt-8">
-              <h2 className="text-2xl font-bold mb-4">Completed Courses</h2>
+              <h2 className="text-2xl font-bold mb-4 text-blue-900">
+                Completed Courses
+              </h2>
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {profileData.completedCourses.map((course) => (
                   <Card
                     key={course.id}
-                    className="border-0 shadow-lg hover:shadow-xl transition-all duration-300"
+                    className="border border-blue-100 shadow bg-blue-50/50 hover:shadow-lg transition-all duration-300"
                   >
                     <CardContent className="p-4">
-                      <h3 className="font-semibold mb-2">{course.title}</h3>
-                      <div className="flex items-center gap-2 text-sm text-gray-500">
+                      <h3 className="font-semibold mb-2 text-blue-800">
+                        {course.title}
+                      </h3>
+                      <div className="flex items-center gap-2 text-sm text-blue-600">
                         <CheckCircle className="h-4 w-4 text-green-500" />
                         <span>Completed</span>
                       </div>

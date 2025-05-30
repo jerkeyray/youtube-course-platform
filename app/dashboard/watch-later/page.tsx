@@ -4,6 +4,7 @@ import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import VideoCard from "@/components/VideoCard";
+import LoadingScreen from "@/components/LoadingScreen";
 
 interface Video {
   id: string;
@@ -52,9 +53,10 @@ export default function WatchLaterPage() {
   if (isLoading) {
     return (
       <main className="container py-8">
-        <div className="flex items-center justify-center h-[50vh]">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-        </div>
+        <LoadingScreen
+          variant="fullscreen"
+          text="Loading your watch later videos..."
+        />
       </main>
     );
   }

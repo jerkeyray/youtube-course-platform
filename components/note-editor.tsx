@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import { Loader } from "@/components/ui/loader";
+import LoadingScreen from "@/components/LoadingScreen";
 import { toast } from "sonner";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Pencil, Save, X, Calendar } from "lucide-react";
@@ -70,7 +70,7 @@ export function NoteEditor({ videoId, courseId }: NoteEditorProps) {
   }, [note]);
 
   if (isLoading) {
-    return <Loader size="sm" />;
+    return <LoadingScreen variant="contained" text="Loading notes..." />;
   }
 
   return (
@@ -111,7 +111,7 @@ export function NoteEditor({ videoId, courseId }: NoteEditorProps) {
               className="gap-2"
             >
               {saveNoteMutation.isPending ? (
-                <Loader size="sm" className="text-white" />
+                <LoadingScreen variant="inline" text="" />
               ) : (
                 <Save className="h-4 w-4" />
               )}

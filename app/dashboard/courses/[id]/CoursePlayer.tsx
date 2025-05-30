@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Loader } from "@/components/ui/loader";
+import LoadingScreen from "@/components/LoadingScreen";
 import { Textarea } from "@/components/ui/textarea";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -388,7 +388,9 @@ export default function CoursePlayer({ course }: CoursePlayerProps) {
                     >
                       {saveNoteMutation.isPending ? (
                         <div className="flex items-center gap-2">
-                          <Loader size="sm" className="text-white" />
+                          <div className="w-4 h-4">
+                            <LoadingScreen variant="inline" text="" />
+                          </div>
                           <span>Saving...</span>
                         </div>
                       ) : (
@@ -412,7 +414,7 @@ export default function CoursePlayer({ course }: CoursePlayerProps) {
                 </div>
               ) : isNoteLoading ? (
                 <div className="flex justify-center py-8">
-                  <Loader size="lg" />
+                  <LoadingScreen variant="contained" text="Loading notes..." />
                 </div>
               ) : note?.content ? (
                 <div className="prose prose-sm max-w-none rounded-lg border bg-white p-4 shadow-sm">

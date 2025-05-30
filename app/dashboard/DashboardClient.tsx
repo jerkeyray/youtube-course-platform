@@ -1,10 +1,10 @@
+// filepath: /Users/srivastavya/code/yudoku/youtube-course-platform/app/dashboard/DashboardClient.tsx
 "use client";
 
 import React from "react";
 import Link from "next/link";
 import ActivityHeatmap from "@/components/ActivityHeatmap";
 import CourseCard from "@/components/CourseCard";
-import { StreakDisplay } from "@/components/StreakDisplay";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -68,18 +68,6 @@ export default function DashboardClient({
         new Date(a.deadline!).getTime() - new Date(b.deadline!).getTime()
     );
 
-  // // Calculate total videos and completed videos
-  // const totalVideos = courses.reduce(
-  //   (acc, course) => acc + course.videos.length,
-  //   0
-  // );
-  // const completedVideos = courses.reduce((acc, course) => {
-  //   const completed = course.videos.filter(
-  //     (video) => video.progress?.[0]?.completed
-  //   ).length;
-  //   return acc + completed;
-  // }, 0);
-
   // Get the most recently updated video with progress
   const today = new Date();
   const recentlyWatchedVideos = courses
@@ -135,15 +123,17 @@ export default function DashboardClient({
   }
 
   return (
-    <main className="space-y-8">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <main className="space-y-8 min-h-screen bg-gray-50 p-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
         <div>
-          <h1 className="text-4xl font-bold tracking-tight">Dashboard</h1>
-          <p className="text-muted-foreground mt-1">
+          <h1 className="text-4xl font-bold tracking-tight text-gray-900">
+            Dashboard
+          </h1>
+          <p className="text-gray-500 mt-1">
             Track your progress and manage your courses
           </p>
         </div>
-        <Button className="gap-2">
+        <Button className="gap-2 bg-blue-600 hover:bg-blue-700 shadow-sm">
           <Plus size={16} />
           <Link href="/dashboard/courses/new">Add Course</Link>
         </Button>
@@ -151,41 +141,42 @@ export default function DashboardClient({
 
       <div className="grid gap-8 grid-cols-1">
         {/* Updated Activity Section */}
-        <div className="bg-white rounded-lg p-6 border border-gray-200">
-          <div className="flex justify-between items-center">
-            <div>
-              <div className="flex items-center gap-2 mb-3">
-                <Flame className="h-6 w-6 text-orange-500" />
-                <h2 className="text-2xl font-bold text-orange-500">
+        <div className="bg-blue-50 rounded-lg p-6 border border-blue-100 shadow-sm">
+          <div className="flex flex-col md:flex-row items-center">
+            <div className="md:w-3/5 lg:w-1/2 flex justify-center md:justify-start py-4 order-last md:order-first">
+              <div className="w-full max-w-[380px] bg-white p-5 rounded-lg shadow-sm border border-blue-50">
+                <ActivityHeatmap activities={activities} cellSize={11} />
+              </div>
+            </div>
+
+            <div className="md:w-2/5 lg:w-1/2 md:pl-8 flex flex-col justify-center text-center md:text-left">
+              <div className="flex items-center gap-3 mb-4 justify-center md:justify-start">
+                <div className="bg-blue-100 p-2 rounded-full">
+                  <Flame className="h-8 w-8 text-blue-600" />
+                </div>
+                <h2 className="text-3xl font-bold text-blue-600">
                   {currentStreak || 0} day streak
                 </h2>
               </div>
-              <p className="text-gray-600">
+              <p className="text-gray-700 text-lg mt-1">
                 {currentStreak
-                  ? `${currentStreak} days? Keep it up! You're on fire! 🔥`
+                  ? `${currentStreak} days? Cool. Still not enough to explain anything without Googling. 😉`
                   : "Start watching videos to build your streak!"}
               </p>
             </div>
-            <div className="hidden md:block">
-              <StreakDisplay activities={activities} />
-            </div>
-          </div>
-
-          <div className="mt-8">
-            <ActivityHeatmap activities={activities} cellSize={10} />
           </div>
         </div>
 
         {/* Upcoming Deadlines Section */}
         {coursesWithDeadlines.length > 0 && (
-          <Card>
-            <CardHeader className="pb-2">
+          <Card className="border-blue-100 shadow-sm hover:shadow-md transition-shadow bg-blue-50">
+            <CardHeader className="pb-2 bg-blue-50">
               <CardTitle className="text-xl font-semibold flex items-center">
-                <Clock className="h-5 w-5 mr-2 text-amber-600" /> Upcoming
+                <Clock className="h-5 w-5 mr-2 text-blue-600" /> Upcoming
                 Deadlines
               </CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="bg-blue-50">
               <div className="grid gap-3 grid-cols-1 md:grid-cols-3">
                 {coursesWithDeadlines.map((course) => {
                   const deadlineDate = new Date(course.deadline!);
@@ -198,46 +189,34 @@ export default function DashboardClient({
                   return (
                     <div
                       key={course.id}
-                      className={`flex items-center justify-between p-3 rounded-lg border ${
+                      className={`flex items-center justify-between p-3 rounded-lg border border-blue-200 bg-white shadow-sm ${
                         isUrgent
-                          ? "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800"
-                          : "bg-card"
-                      } hover:bg-accent/50 transition-colors`}
+                          ? "border-amber-300 bg-amber-50"
+                          : "border-gray-200"
+                      }`}
                     >
-                      <div className="flex items-center space-x-3">
-                        <div
-                          className={`h-10 w-10 rounded-full ${
+                      <div>
+                        <h3 className="font-medium truncate max-w-[200px]">
+                          {course.title}
+                        </h3>
+                        <p
+                          className={`text-sm ${
                             isUrgent
-                              ? "bg-red-100 dark:bg-red-900/50"
-                              : "bg-amber-100 dark:bg-amber-900/50"
-                          } flex items-center justify-center`}
+                              ? "text-amber-600"
+                              : "text-muted-foreground"
+                          }`}
                         >
-                          <Clock
-                            className={`h-5 w-5 ${
-                              isUrgent
-                                ? "text-red-600 dark:text-red-400"
-                                : "text-amber-600 dark:text-amber-400"
-                            }`}
-                          />
-                        </div>
-                        <div>
-                          <h4 className="font-medium">{course.title}</h4>
-                          <p
-                            className={`text-sm ${
-                              isUrgent
-                                ? "text-red-600 dark:text-red-400 font-medium"
-                                : "text-muted-foreground"
-                            }`}
-                          >
-                            Due {format(deadlineDate, "MMM d, yyyy")} (
-                            {daysRemaining}{" "}
-                            {daysRemaining === 1 ? "day" : "days"} left)
-                          </p>
-                        </div>
+                          {daysRemaining} days remaining
+                        </p>
                       </div>
-                      <Button size="sm" variant="outline" asChild>
-                        <Link href={`/dashboard/courses/${course.id}`}>
-                          View
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="shrink-0"
+                        asChild
+                      >
+                        <Link href={`/courses/${course.id}`}>
+                          <ArrowUpRight className="h-4 w-4" />
                         </Link>
                       </Button>
                     </div>
@@ -249,13 +228,13 @@ export default function DashboardClient({
         )}
 
         {/* Courses Section */}
-        <Card>
-          <CardHeader className="pb-2">
+        <Card className="border-blue-100 shadow-sm hover:shadow-md transition-shadow bg-blue-50">
+          <CardHeader className="pb-2 bg-blue-50">
             <CardTitle className="text-xl font-semibold flex items-center">
               <BookOpen className="h-5 w-5 mr-2 text-blue-600" /> Your Courses
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="bg-blue-50">
             {courses.length > 0 ? (
               <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3">
                 {courses.map((course) => (
@@ -264,13 +243,13 @@ export default function DashboardClient({
               </div>
             ) : (
               <div className="p-8 text-center">
-                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center">
-                  <BookOpen className="h-8 w-8 text-blue-500" />
+                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                  <BookOpen className="h-8 w-8 text-blue-600" />
                 </div>
-                <p className="text-muted-foreground mb-4">
+                <p className="text-blue-600/70 mb-4">
                   You haven't added any courses yet.
                 </p>
-                <Button className="mt-2" asChild>
+                <Button className="mt-2 bg-blue-600 hover:bg-blue-700" asChild>
                   <Link href="/dashboard/courses/new">
                     Add Your First Course
                   </Link>
@@ -282,36 +261,37 @@ export default function DashboardClient({
 
         {/* Recently Watched Videos Section */}
         {recentlyWatchedVideos.length > 0 && (
-          <Card>
-            <CardHeader className="pb-2">
+          <Card className="border-blue-100 shadow-sm hover:shadow-md transition-shadow bg-blue-50">
+            <CardHeader className="pb-2 bg-blue-50">
               <CardTitle className="text-xl font-semibold flex items-center">
-                <Video className="h-5 w-5 mr-2 text-purple-600" /> Recently
+                <Video className="h-5 w-5 mr-2 text-blue-600" /> Recently
                 Watched
               </CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="bg-blue-50">
               <div className="grid gap-3 grid-cols-1 md:grid-cols-3">
                 {recentlyWatchedVideos.map((video) => (
                   <div
                     key={video.id}
-                    className="flex items-center justify-between p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
+                    className="flex items-center justify-between p-3 rounded-lg border border-blue-200 bg-white hover:bg-blue-50 transition-colors"
                   >
-                    <div className="flex items-center space-x-3">
-                      <div className="h-10 w-10 rounded-full bg-purple-100 dark:bg-purple-900/50 flex items-center justify-center">
-                        <Video className="h-5 w-5 text-purple-600 dark:text-purple-400" />
-                      </div>
-                      <div className="overflow-hidden">
-                        <h4 className="font-medium truncate max-w-[200px]">
-                          {video.title}
-                        </h4>
-                        <p className="text-sm text-muted-foreground truncate max-w-[200px]">
-                          {video.courseTitle}
-                        </p>
-                      </div>
+                    <div className="overflow-hidden">
+                      <h3 className="font-medium truncate max-w-[200px]">
+                        {video.title}
+                      </h3>
+                      <p className="text-sm text-muted-foreground truncate">
+                        {video.courseTitle}
+                      </p>
                     </div>
-                    <Button size="sm" variant="ghost" className="gap-1" asChild>
-                      <Link href={`/dashboard/courses/${video.courseId}`}>
-                        <span className="hidden sm:inline">View</span>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="shrink-0"
+                      asChild
+                    >
+                      <Link
+                        href={`/courses/${video.courseId}/videos/${video.videoId}`}
+                      >
                         <ArrowUpRight className="h-4 w-4" />
                       </Link>
                     </Button>

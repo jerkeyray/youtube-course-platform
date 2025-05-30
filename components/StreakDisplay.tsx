@@ -111,59 +111,59 @@ export function StreakDisplay({ activities }: StreakDisplayProps) {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <Card className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950 dark:to-orange-900 border border-orange-200 dark:border-orange-800 overflow-hidden">
+        <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900 border border-blue-200 dark:border-blue-800 overflow-hidden shadow-sm">
           <CardContent className="p-4">
             <div className="flex items-center">
-              <div className="h-10 w-10 flex items-center justify-center rounded-full bg-orange-500/20 mr-3">
-                <Flame className="h-5 w-5 text-orange-500" />
+              <div className="h-10 w-10 flex items-center justify-center rounded-full bg-blue-500/20 mr-3">
+                <Flame className="h-5 w-5 text-blue-500" />
               </div>
               <div>
-                <p className="text-sm font-medium text-orange-600 dark:text-orange-400">
+                <p className="text-sm font-medium text-blue-600 dark:text-blue-400">
                   Current Streak
                 </p>
                 <div className="flex items-baseline">
                   <p className="text-2xl font-bold">{currentStreak}</p>
-                  <p className="text-sm ml-1 text-orange-600/70 dark:text-orange-400/70">
+                  <p className="text-sm ml-1 text-blue-600/70 dark:text-blue-400/70">
                     days
                   </p>
                 </div>
               </div>
             </div>
             {currentStreak > 0 && (
-              <div className="mt-2 text-xs text-orange-600/80 dark:text-orange-400/80 flex items-center">
+              <div className="mt-2 text-xs text-blue-600/80 dark:text-blue-400/80 flex items-center">
                 <Zap className="h-3 w-3 mr-1" /> Keep it going!
               </div>
             )}
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950 dark:to-purple-900 border border-purple-200 dark:border-purple-800 overflow-hidden">
+        <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900 border border-blue-200 dark:border-blue-800 overflow-hidden shadow-sm">
           <CardContent className="p-4">
             <div className="flex items-center">
-              <div className="h-10 w-10 flex items-center justify-center rounded-full bg-purple-500/20 mr-3">
-                <Award className="h-5 w-5 text-purple-500" />
+              <div className="h-10 w-10 flex items-center justify-center rounded-full bg-blue-500/20 mr-3">
+                <Award className="h-5 w-5 text-blue-500" />
               </div>
               <div>
-                <p className="text-sm font-medium text-purple-600 dark:text-purple-400">
+                <p className="text-sm font-medium text-blue-600 dark:text-blue-400">
                   Longest Streak
                 </p>
                 <div className="flex items-baseline">
                   <p className="text-2xl font-bold">{longestStreak}</p>
-                  <p className="text-sm ml-1 text-purple-600/70 dark:text-purple-400/70">
+                  <p className="text-sm ml-1 text-blue-600/70 dark:text-blue-400/70">
                     days
                   </p>
                 </div>
               </div>
             </div>
             {currentStreak > 0 && currentStreak === longestStreak && (
-              <div className="mt-2 text-xs text-purple-600/80 dark:text-purple-400/80 flex items-center">
+              <div className="mt-2 text-xs text-blue-600/80 dark:text-blue-400/80 flex items-center">
                 <Star className="h-3 w-3 mr-1" /> Personal best!
               </div>
             )}
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900 border border-blue-200 dark:border-blue-800 overflow-hidden">
+        <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900 border border-blue-200 dark:border-blue-800 overflow-hidden shadow-sm">
           <CardContent className="p-4">
             <div className="flex items-center">
               <div className="h-10 w-10 flex items-center justify-center rounded-full bg-blue-500/20 mr-3">
@@ -193,7 +193,7 @@ export function StreakDisplay({ activities }: StreakDisplayProps) {
         </Card>
       </div>
 
-      <div className="mt-3 text-center text-xs text-muted-foreground">
+      <div className="mt-3 text-center text-xs text-blue-600/70 dark:text-blue-400/70">
         <p>
           Total active days:{" "}
           <span className="font-medium">{totalActiveDays}</span>

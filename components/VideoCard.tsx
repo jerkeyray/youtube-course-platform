@@ -12,11 +12,11 @@ interface VideoCardProps {
   video: {
     id: string;
     title: string;
-    thumbnailUrl: string;
-    duration: string;
+    thumbnailUrl?: string; // Made optional as we have a fallback
+    duration?: string; // Made optional as we conditionally render it
     youtubeId: string;
-    courseTitle: string;
-    courseId: string;
+    courseTitle?: string;
+    courseId?: string;
   };
   onRemove?: () => void;
   type?: "watch-later" | "bookmark";
@@ -28,7 +28,10 @@ export default function VideoCard({
   type = "watch-later",
 }: VideoCardProps) {
   const router = useRouter();
-  const [imgSrc, setImgSrc] = React.useState(video.thumbnailUrl);
+  const [imgSrc, setImgSrc] = React.useState(
+    video.thumbnailUrl ||
+      `https://img.youtube.com/vi/${video.youtubeId}/maxresdefault.jpg`
+  );
 
   const handleRemove = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -39,6 +42,10 @@ export default function VideoCard({
         type === "watch-later"
           ? `/api/videos/${video.id}/watch-later`
           : `/api/bookmarks/${video.youtubeId}`;
+
+      // Debug the endpoint
+      // eslint-disable-next-line no-console
+      console.log(`Removing ${type} with endpoint: ${endpoint}`);
 
       const response = await fetch(endpoint, {
         method: type === "watch-later" ? "POST" : "DELETE",
@@ -69,26 +76,34 @@ export default function VideoCard({
         onRemove();
       }
     } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error(`Error removing from ${type}:`, error);
       toast.error(`Failed to remove from ${type}`);
     }
   };
 
   // Debug: log the video prop
-  console.log("VideoCard video:", video);
+  // console.log("VideoCard video:", video);
 
   return (
     <div
       className={cn(
-        "group relative overflow-hidden rounded-lg border bg-card transition-all hover:shadow-md flex flex-col w-full max-w-xs mx-auto"
+        "group relative overflow-hidden rounded-lg border border-blue-100 bg-blue-50/50 transition-all hover:shadow-md hover:border-blue-200 flex flex-col w-full max-w-xs mx-auto"
       )}
-      onClick={() =>
-        router.push(`/dashboard/courses/${video.courseId}?video=${video.id}`)
-      }
+      onClick={() => {
+        if (video.courseId) {
+          router.push(`/dashboard/courses/${video.courseId}?video=${video.id}`);
+        } else {
+          toast.error("Course information is missing for this video");
+          // eslint-disable-next-line no-console
+          console.error("Missing courseId for video:", video);
+        }
+      }}
     >
       <div className="relative aspect-[16/9] flex-shrink-0">
         <Image
           src={imgSrc}
-          alt={video.title}
+          alt={video.title || "Video thumbnail"}
           fill
           className="object-cover"
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
@@ -100,24 +115,26 @@ export default function VideoCard({
             );
           }}
         />
-        <div className="absolute bottom-2 right-2 rounded bg-black/80 px-1.5 py-0.5 text-xs text-white">
-          {video.duration}
-        </div>
+        {video.duration && (
+          <div className="absolute bottom-2 right-2 rounded bg-blue-900/90 px-1.5 py-0.5 text-xs text-white">
+            {video.duration}
+          </div>
+        )}
       </div>
       <div className="p-3 md:p-4 flex flex-col flex-grow justify-between min-h-0">
         <div>
-          <h3 className="font-medium text-base mb-1 line-clamp-2 min-h-[2.5rem]">
+          <h3 className="font-medium text-base mb-1 line-clamp-2 min-h-[2.5rem] text-gray-800">
             {video.title}
           </h3>
           <p
-            className="text-sm font-semibold text-blue-700 line-clamp-1 mb-1"
+            className="text-sm font-semibold text-blue-600 line-clamp-1 mb-1"
             title={video.courseTitle || "Unknown Course"}
           >
             {video.courseTitle || "Unknown Course"}
           </p>
         </div>
         <div className="flex items-center justify-between mt-2">
-          <div className="flex items-center text-sm text-muted-foreground">
+          <div className="flex items-center text-sm text-blue-500">
             <Clock className="mr-1 h-4 w-4" />
             {type === "watch-later" ? "Watch Later" : "Bookmark"}
           </div>
@@ -125,7 +142,7 @@ export default function VideoCard({
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8 hover:bg-red-100 hover:text-red-600"
+              className="h-8 w-8 hover:bg-red-100 hover:text-red-600 transition-colors duration-200"
               onClick={handleRemove}
             >
               <Trash2 className="h-4 w-4" />

@@ -8,6 +8,7 @@ import { MobileNav } from "@/components/MobileNav";
 import { DashboardSidebarToggle } from "@/components/DashboardSidebarToggle";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import LoadingScreen from "@/components/LoadingScreen";
 
 export default function DashboardLayout({
   children,
@@ -18,7 +19,7 @@ export default function DashboardLayout({
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   if (status === "loading") {
-    return <div>Loading...</div>;
+    return <LoadingScreen text="Loading dashboard..." />;
   }
 
   if (!session) {
@@ -30,7 +31,7 @@ export default function DashboardLayout({
       {/* Desktop Sidebar */}
       <div
         className={cn(
-          "hidden h-full md:flex md:flex-col md:fixed md:inset-y-0 z-[80] bg-[#111827] transition-all duration-200 ease-in-out",
+          "hidden h-full md:flex md:flex-col md:fixed md:inset-y-0 z-[80] bg-gradient-to-b from-blue-900 to-blue-950 transition-all duration-200 ease-in-out",
           isCollapsed ? "md:w-16" : "md:w-52"
         )}
       >
@@ -42,7 +43,7 @@ export default function DashboardLayout({
           {!isCollapsed && (
             <Link
               href="/"
-              className="text-xl font-bold text-white ml-2 hover:text-gray-300 transition-opacity duration-200 ease-in-out"
+              className="text-xl font-bold text-blue-100 ml-2 hover:text-blue-300 transition-opacity duration-200 ease-in-out"
             >
               Yudoku
             </Link>
@@ -59,7 +60,7 @@ export default function DashboardLayout({
       {/* Main Content */}
       <main
         className={cn(
-          "transition-all duration-200 ease-in-out",
+          "transition-all duration-200 ease-in-out bg-blue-50/50",
           isCollapsed ? "md:pl-16" : "md:pl-52"
         )}
       >
