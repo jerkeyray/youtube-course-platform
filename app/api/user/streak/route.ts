@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth-compat";
 import { prisma } from "@/lib/prisma";
-import { format, subDays, isSameDay } from "date-fns";
+import { subDays, isSameDay } from "date-fns";
 
 export async function GET() {
   try {
@@ -94,7 +94,10 @@ export async function GET() {
       longestStreak,
     });
   } catch (error) {
-    console.error("[STREAK_GET]", error);
-    return new NextResponse("Internal Error", { status: 500 });
+    // console.error("Error fetching user streak:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch user streak" },
+      { status: 500 }
+    );
   }
 }

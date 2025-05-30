@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { useSession } from "next-auth/react";
 
 import {
   LayoutDashboard,
@@ -59,7 +58,6 @@ interface DashboardSidebarProps {
 
 export function DashboardSidebar({ isCollapsed }: DashboardSidebarProps) {
   const pathname = usePathname();
-  const { data: session } = useSession();
 
   return (
     <div className="flex flex-col h-full py-4">

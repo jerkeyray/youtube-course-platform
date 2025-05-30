@@ -13,7 +13,7 @@ export async function POST(
   }
 
   try {
-    const { videoId } = await req.json();
+    const { videoId, completed } = await req.json();
 
     // Verify the course belongs to the user
     const course = await prisma.course.findUnique({
@@ -27,6 +27,24 @@ export async function POST(
       return NextResponse.json({ error: "Course not found" }, { status: 404 });
     }
 
+    // Verify video belongs to the course and user has access
+    const video = await prisma.video.findFirst({
+      where: {
+        id: videoId,
+        courseId: params.id,
+        course: {
+          userId,
+        },
+      },
+    });
+
+    if (!video) {
+      return NextResponse.json(
+        { error: "Video not found or access denied" },
+        { status: 404 }
+      );
+    }
+
     // Create or update the progress
     const progress = await prisma.videoProgress.upsert({
       where: {
@@ -36,18 +54,18 @@ export async function POST(
         },
       },
       update: {
-        completed: true,
+        completed: completed,
       },
       create: {
         userId,
         videoId,
-        completed: true,
+        completed: completed,
       },
     });
 
     return NextResponse.json(progress);
   } catch (error) {
-    console.error("Error updating progress:", error);
+    // console.error("Error updating progress:", error);
     return NextResponse.json(
       { error: "Failed to update progress" },
       { status: 500 }

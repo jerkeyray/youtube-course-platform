@@ -44,7 +44,10 @@ export async function POST(
       return new NextResponse(null, { status: 204 });
     }
   } catch (error) {
-    console.error("[WATCH_LATER]", error);
-    return new NextResponse("Internal Error", { status: 500 });
+    // console.error("[WATCH_LATER]", error);
+    return NextResponse.json(
+      { error: "Failed to update watch later status" },
+      { status: 500 }
+    );
   }
 }

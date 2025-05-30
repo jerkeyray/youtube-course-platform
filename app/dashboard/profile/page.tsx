@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -17,8 +17,6 @@ import {
   Edit2,
   CheckCircle,
   Flame,
-  Star,
-  Target,
 } from "lucide-react";
 
 interface UserStats {
@@ -26,6 +24,11 @@ interface UserStats {
   longestStreak: number;
   coursesCompleted: number;
   totalWatchTime: number;
+}
+
+interface CompletedCourseType {
+  id: string;
+  title: string;
 }
 
 interface ProfileData {
@@ -38,7 +41,7 @@ interface ProfileData {
     createdAt: string;
   };
   stats: UserStats;
-  completedCourses: any[];
+  completedCourses: CompletedCourseType[];
 }
 
 async function fetchProfileData(): Promise<ProfileData> {
@@ -58,16 +61,15 @@ export default function ProfilePage() {
   const {
     data: profileData,
     isLoading: isLoadingProfile,
-    error,
+    error: profileQueryError,
   } = useQuery({
     queryKey: ["profile", session?.user?.id],
     queryFn: fetchProfileData,
     enabled: !!session?.user?.id,
-    staleTime: 1000 * 60 * 5, // Consider data fresh for 5 minutes
-    gcTime: 1000 * 60 * 30, // Keep data in cache for 30 minutes
+    staleTime: 1000 * 60 * 5,
+    gcTime: 1000 * 60 * 30,
   });
 
-  // Set initial bio when profile data is loaded
   useEffect(() => {
     if (profileData?.user.bio) {
       setBio(profileData.user.bio);
@@ -75,13 +77,13 @@ export default function ProfilePage() {
   }, [profileData?.user.bio]);
 
   const updateProfileMutation = useMutation({
-    mutationFn: async (bio: string) => {
+    mutationFn: async (newBio: string) => {
       const response = await fetch("/api/profile", {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ bio }),
+        body: JSON.stringify({ bio: newBio }),
       });
 
       if (!response.ok) {
@@ -95,8 +97,8 @@ export default function ProfilePage() {
       toast.success("Profile updated successfully");
       setIsEditing(false);
     },
-    onError: (error) => {
-      console.error("Error updating profile:", error);
+    onError: (_error) => {
+      // console.error("Error updating profile:", _error);
       toast.error("Failed to update profile");
     },
   });
@@ -105,14 +107,16 @@ export default function ProfilePage() {
     return <Loader size="lg" />;
   }
 
-  if (error) {
+  if (profileQueryError) {
     return (
       <main className="container py-8">
         <div className="max-w-5xl mx-auto">
           <div className="flex items-center justify-center min-h-[60vh]">
             <div className="text-center space-y-4">
               <p className="text-destructive text-lg">
-                {error instanceof Error ? error.message : "An error occurred"}
+                {profileQueryError instanceof Error
+                  ? profileQueryError.message
+                  : "An error occurred fetching profile"}
               </p>
               <Button
                 onClick={() =>
@@ -135,15 +139,8 @@ export default function ProfilePage() {
           <div className="flex items-center justify-center min-h-[60vh]">
             <div className="text-center space-y-4">
               <p className="text-muted-foreground text-lg">
-                No profile data available
+                No profile data available or not signed in.
               </p>
-              <Button
-                onClick={() =>
-                  queryClient.invalidateQueries({ queryKey: ["profile"] })
-                }
-              >
-                Refresh Page
-              </Button>
             </div>
           </div>
         </div>
@@ -151,12 +148,15 @@ export default function ProfilePage() {
     );
   }
 
+  const handleSubmitBio = () => {
+    updateProfileMutation.mutate(bio);
+  };
+
   return (
     <div className="bg-gradient-to-br from-slate-50 via-white to-blue-50 min-h-screen">
       <main className="container py-3 md:py-8">
         <div className="max-w-5xl mx-auto">
           <div className="grid gap-3 md:gap-8 md:grid-cols-3">
-            {/* Profile Card */}
             <Card className="md:col-span-2 border-0 shadow-xl bg-gradient-to-br from-blue-50 to-indigo-50 hover:shadow-2xl transition-all duration-300">
               <CardContent className="p-3 md:p-8 space-y-4 md:space-y-8">
                 <div className="flex flex-col md:flex-row items-center md:items-start gap-3 md:gap-8">
@@ -195,63 +195,57 @@ export default function ProfilePage() {
                 </div>
 
                 <div className="space-y-2 md:space-y-3">
-                  <label className="text-sm md:text-lg font-medium text-gray-900">
-                    Bio
-                  </label>
-                  {isEditing ? (
-                    <Textarea
-                      value={bio}
-                      onChange={(e) => setBio(e.target.value)}
-                      placeholder="Tell us about yourself..."
-                      className="min-h-[100px] md:min-h-[120px] text-sm md:text-lg rounded-xl border-2 focus:border-blue-500 transition-all duration-300"
-                    />
-                  ) : (
-                    <p className="text-gray-600 text-sm md:text-lg">
-                      {bio || "No bio yet. Click edit to add one!"}
-                    </p>
-                  )}
-                </div>
-
-                <div className="flex flex-col sm:flex-row gap-3 md:gap-4">
+                  <div className="flex justify-between items-center">
+                    <label className="text-sm md:text-lg font-medium text-gray-900">
+                      Bio
+                    </label>
+                    {!isEditing && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setIsEditing(true)}
+                      >
+                        <Edit2 className="mr-2 h-4 w-4" /> Edit
+                      </Button>
+                    )}
+                  </div>
                   {isEditing ? (
                     <>
-                      <Button
-                        onClick={() => updateProfileMutation.mutate(bio)}
-                        disabled={updateProfileMutation.isPending}
-                        className="flex-1 py-2 md:py-6 text-sm md:text-lg rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 transition-all duration-300"
-                      >
-                        {updateProfileMutation.isPending ? (
-                          <div className="flex items-center gap-2">
-                            <Loader size="sm" className="text-white" />
-                            <span>Saving...</span>
-                          </div>
-                        ) : (
-                          "Save Changes"
-                        )}
-                      </Button>
-                      <Button
-                        variant="outline"
-                        onClick={() => setIsEditing(false)}
-                        className="py-2 md:py-6 text-sm md:text-lg rounded-xl"
-                      >
-                        Cancel
-                      </Button>
+                      <Textarea
+                        value={bio}
+                        onChange={(e) => setBio(e.target.value)}
+                        placeholder="Tell us about yourself..."
+                        className="min-h-[100px] md:min-h-[120px] text-sm md:text-lg rounded-xl border-2 focus:border-blue-500 transition-all duration-300"
+                      />
+                      <div className="flex justify-end gap-2 mt-2">
+                        <Button
+                          variant="outline"
+                          onClick={() => {
+                            setIsEditing(false);
+                            setBio(profileData.user.bio || "");
+                          }}
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          onClick={handleSubmitBio}
+                          disabled={updateProfileMutation.isPending}
+                        >
+                          {updateProfileMutation.isPending
+                            ? "Saving..."
+                            : "Save Changes"}
+                        </Button>
+                      </div>
                     </>
                   ) : (
-                    <Button
-                      variant="outline"
-                      onClick={() => setIsEditing(true)}
-                      className="w-full py-2 md:py-6 text-sm md:text-lg rounded-xl gap-2 hover:shadow-lg transition-all duration-300"
-                    >
-                      <Edit2 className="h-4 w-4 md:h-5 md:w-5" />
-                      Edit Profile
-                    </Button>
+                    <p className="text-gray-600 text-sm md:text-lg pt-2 min-h-[60px]">
+                      {bio || "No bio yet. Click edit to add one!"}
+                    </p>
                   )}
                 </div>
               </CardContent>
             </Card>
 
-            {/* Stats Card */}
             <Card className="border-0 shadow-xl bg-gradient-to-br from-blue-50 to-indigo-50 hover:shadow-2xl transition-all duration-300">
               <CardContent className="p-3 md:p-8 space-y-4 md:space-y-8">
                 <div className="space-y-4">
@@ -297,7 +291,6 @@ export default function ProfilePage() {
             </Card>
           </div>
 
-          {/* Completed Courses Section */}
           {profileData.completedCourses.length > 0 && (
             <div className="mt-8">
               <h2 className="text-2xl font-bold mb-4">Completed Courses</h2>

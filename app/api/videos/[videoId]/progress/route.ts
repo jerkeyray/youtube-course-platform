@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth-compat";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { format, startOfDay } from "date-fns";
+import { z } from "zod";
 
 export async function POST(
   req: Request,
@@ -49,7 +50,16 @@ export async function POST(
 
     return NextResponse.json(progress);
   } catch (error) {
-    console.error("[VIDEO_PROGRESS_POST]", error);
-    return new NextResponse("Internal Error", { status: 500 });
+    // console.error("Error updating video progress:", error);
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: "Validation Error", errors: error.errors },
+        { status: 400 }
+      );
+    }
+    return NextResponse.json(
+      { error: "Failed to update video progress" },
+      { status: 500 }
+    );
   }
 }

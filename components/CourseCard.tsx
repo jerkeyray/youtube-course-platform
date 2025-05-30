@@ -65,7 +65,7 @@ const CourseCard: React.FC<CourseCardProps> = ({ course }) => {
       router.refresh();
     } catch (error) {
       toast.error("Failed to delete course");
-      console.error("Error deleting course:", error);
+      // console.error("Error deleting course:", error);
     }
   };
 

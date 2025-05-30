@@ -1,9 +1,9 @@
 "use client";
 
 import { useSession } from "next-auth/react";
-import { Flame, Award, TrendingUp, Star, Calendar, Zap } from "lucide-react";
+import { Flame, Award, Star, Calendar, Zap } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import { format, isAfter, isBefore, subDays } from "date-fns";
+import { format, subDays } from "date-fns";
 
 interface StreakDisplayProps {
   activities: Array<{

@@ -12,18 +12,10 @@ import {
   Clock,
   Plus,
   Video,
-  Award,
-  Zap,
-  BarChart4,
-  Trophy,
-  Calendar,
-  CheckCircle2,
-  Bookmark,
-  GraduationCap,
   ArrowUpRight,
   Flame,
 } from "lucide-react";
-import { formatDistanceToNow, format } from "date-fns";
+import { format } from "date-fns";
 
 interface SerializedCourse {
   id: string;
@@ -76,29 +68,20 @@ export default function DashboardClient({
         new Date(a.deadline!).getTime() - new Date(b.deadline!).getTime()
     );
 
-  // Calculate total videos and completed videos
-  const totalVideos = courses.reduce(
-    (acc, course) => acc + course.videos.length,
-    0
-  );
-  const completedVideos = courses.reduce((acc, course) => {
-    const completed = course.videos.filter(
-      (video) => video.progress?.[0]?.completed
-    ).length;
-    return acc + completed;
-  }, 0);
-
-  // Calculate overall completion percentage
-  const overallCompletionPercentage =
-    totalVideos > 0 ? Math.round((completedVideos / totalVideos) * 100) : 0;
-
-  // Get the most recently updated course
-  const sortedCourses = [...courses].sort(
-    (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
-  );
-  const latestCourse = sortedCourses[0];
+  // // Calculate total videos and completed videos
+  // const totalVideos = courses.reduce(
+  //   (acc, course) => acc + course.videos.length,
+  //   0
+  // );
+  // const completedVideos = courses.reduce((acc, course) => {
+  //   const completed = course.videos.filter(
+  //     (video) => video.progress?.[0]?.completed
+  //   ).length;
+  //   return acc + completed;
+  // }, 0);
 
   // Get the most recently updated video with progress
+  const today = new Date();
   const recentlyWatchedVideos = courses
     .flatMap((course) =>
       course.videos.map((video) => ({
@@ -114,18 +97,6 @@ export default function DashboardClient({
         new Date(a.progress[0].updatedAt).getTime()
     )
     .slice(0, 3);
-
-  // Calculate active days this week
-  const today = new Date();
-  const startOfWeek = new Date(today);
-  startOfWeek.setDate(today.getDate() - today.getDay());
-
-  const activeDaysThisWeek = activities.filter((activity) => {
-    const activityDate = new Date(activity.date);
-    return (
-      activity.completed && activityDate >= startOfWeek && activityDate <= today
-    );
-  }).length;
 
   // Calculate current streak for the activity banner
   const sortedActivities = [...activities]

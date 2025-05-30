@@ -2,31 +2,6 @@ import { google } from "googleapis";
 
 const youtube = google.youtube("v3");
 
-interface YouTubeAPIError {
-  error?: {
-    message?: string;
-  };
-}
-
-interface PlaylistItem {
-  snippet: {
-    title: string;
-  };
-  contentDetails: {
-    videoId: string;
-  };
-}
-
-interface PlaylistMetaItem {
-  snippet: {
-    title: string;
-  };
-}
-
-type PlaylistMetaResponse = {
-  items?: PlaylistMetaItem[];
-};
-
 interface PlaylistVideo {
   title: string;
   youtubeId: string;
@@ -83,11 +58,39 @@ export async function fetchPlaylistDetails(
   }
 }
 
-export async function getPlaylistVideos(playlistUrl: string) {
+export async function getPlaylistTitle(playlistId: string): Promise<string> {
   try {
-    const playlistId = playlistUrl.match(/[&?]list=([^&]+)/)?.[1];
-    if (!playlistId) {
-      throw new Error("Invalid playlist URL");
+    const response = await youtube.playlists.list({
+      key: process.env.YOUTUBE_API_KEY,
+      part: ["snippet"],
+      id: [playlistId],
+    });
+
+    if (!response.data.items?.[0]) {
+      throw new Error("Playlist not found");
+    }
+
+    return response.data.items[0].snippet?.title ?? "Untitled Playlist";
+  } catch (error) {
+    console.error("Error fetching playlist title:", error);
+    throw new Error("Failed to fetch playlist title");
+  }
+}
+
+export async function getPlaylistVideos(playlistUrlOrId: string) {
+  try {
+    let playlistId = playlistUrlOrId;
+
+    // Check if it's a URL and extract the playlist ID if it is
+    if (
+      playlistUrlOrId.includes("youtube.com") ||
+      playlistUrlOrId.includes("youtu.be")
+    ) {
+      const match = playlistUrlOrId.match(/[&?]list=([^&]+)/);
+      if (!match || !match[1]) {
+        throw new Error("Invalid playlist URL");
+      }
+      playlistId = match[1];
     }
 
     const response = await youtube.playlistItems.list({

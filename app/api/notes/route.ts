@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth-compat";
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { z } from "zod";
 
 export async function POST(req: Request) {
   try {
@@ -56,8 +57,17 @@ export async function POST(req: Request) {
 
     return NextResponse.json(note);
   } catch (error) {
-    console.error("[NOTES_POST]", error);
-    return new NextResponse("Internal Error", { status: 500 });
+    // console.error("Error creating note:", error);
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: error.errors[0].message },
+        { status: 400 }
+      );
+    }
+    return NextResponse.json(
+      { error: "Failed to create note" },
+      { status: 500 }
+    );
   }
 }
 
@@ -97,7 +107,10 @@ export async function GET(req: Request) {
 
     return NextResponse.json(note);
   } catch (error) {
-    console.error("[NOTES_GET]", error);
-    return new NextResponse("Internal Error", { status: 500 });
+    // console.error("Error fetching notes:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch notes" },
+      { status: 500 }
+    );
   }
 }

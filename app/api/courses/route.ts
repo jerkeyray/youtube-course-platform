@@ -6,6 +6,7 @@ import { auth } from "@/lib/auth-compat";
 import { prisma } from "@/lib/prisma";
 import { extractPlaylistId, fetchPlaylistDetails } from "@/lib/youtube";
 import type { Course, Video, VideoProgress } from "@prisma/client";
+import { z } from "zod";
 
 type CourseWithProgress = Course & {
   videos: (Video & {
@@ -61,7 +62,7 @@ export async function GET() {
 
     return NextResponse.json({ courses: coursesWithCompletion });
   } catch (error) {
-    console.error("Error fetching courses:", error);
+    // console.error("Error fetching courses:", error);
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }
@@ -108,7 +109,10 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(course);
   } catch (error) {
-    console.error("Error creating course:", error);
+    // console.error("Error creating course:", error);
+    if (error instanceof z.ZodError) {
+      return NextResponse.json({ error: "Invalid input" }, { status: 400 });
+    }
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }

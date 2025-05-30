@@ -4,12 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Menu } from "lucide-react";
 
 interface DashboardSidebarToggleProps {
-  isCollapsed: boolean;
+  _isCollapsed: boolean;
   onToggle: () => void;
 }
 
 export function DashboardSidebarToggle({
-  isCollapsed,
   onToggle,
 }: DashboardSidebarToggleProps) {
   return (

@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth-compat";
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { z } from "zod";
 
 export async function GET(
   req: Request,
@@ -40,8 +41,11 @@ export async function GET(
 
     return NextResponse.json(note);
   } catch (error) {
-    console.error("[NOTE_GET]", error);
-    return new NextResponse("Internal Error", { status: 500 });
+    // console.error("Error fetching note:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch note" },
+      { status: 500 }
+    );
   }
 }
 
@@ -73,8 +77,17 @@ export async function PATCH(
 
     return NextResponse.json(note);
   } catch (error) {
-    console.error("[NOTE_UPDATE]", error);
-    return new NextResponse("Internal Error", { status: 500 });
+    // console.error("Error updating note:", error);
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: error.errors[0].message },
+        { status: 400 }
+      );
+    }
+    return NextResponse.json(
+      { error: "Failed to update note" },
+      { status: 500 }
+    );
   }
 }
 
@@ -97,9 +110,12 @@ export async function DELETE(
       },
     });
 
-    return NextResponse.json(note);
+    return NextResponse.json({ message: "Note deleted successfully" });
   } catch (error) {
-    console.error("[NOTE_DELETE]", error);
-    return new NextResponse("Internal Error", { status: 500 });
+    // console.error("Error deleting note:", error);
+    return NextResponse.json(
+      { error: "Failed to delete note" },
+      { status: 500 }
+    );
   }
 }

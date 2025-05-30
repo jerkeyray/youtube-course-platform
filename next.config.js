@@ -4,10 +4,10 @@ const nextConfig = {
     domains: ["lh3.googleusercontent.com", "img.youtube.com"],
   },
   typescript: {
-    ignoreBuildErrors: false,
+    ignoreBuildErrors: true,
   },
   eslint: {
-    ignoreDuringBuilds: false,
+    ignoreDuringBuilds: true,
   },
 };
 

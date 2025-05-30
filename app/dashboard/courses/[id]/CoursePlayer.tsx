@@ -4,7 +4,7 @@
 import { useState, useCallback, useEffect } from "react";
 import { Course, Video, VideoProgress } from "@prisma/client";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import {
   Check,
   ChevronLeft,
@@ -97,7 +97,6 @@ export default function CoursePlayer({ course }: CoursePlayerProps) {
           }
           return newSet;
         });
-        console.error("Error updating video progress:", error);
         toast.error("Failed to update video progress");
       }
     },
@@ -138,7 +137,6 @@ export default function CoursePlayer({ course }: CoursePlayerProps) {
           newSet.delete(videoId);
           return newSet;
         });
-        console.error("Error updating watch later status:", error);
         toast.error("Failed to update watch later status");
       }
     },
@@ -176,7 +174,6 @@ export default function CoursePlayer({ course }: CoursePlayerProps) {
           newSet.delete(videoId);
           return newSet;
         });
-        console.error("Error updating bookmark status:", error);
         toast.error("Failed to update bookmark status");
       }
     },

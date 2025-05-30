@@ -5,13 +5,11 @@ import { Progress } from "@/components/ui/progress";
 import { Card, CardContent } from "@/components/ui/card";
 
 interface CourseProgressProps {
-  courseId: string;
   totalVideos: number;
   completedVideos: number;
 }
 
 export function CourseProgress({
-  courseId,
   totalVideos,
   completedVideos,
 }: CourseProgressProps) {

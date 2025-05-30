@@ -1,56 +1,48 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { getVideoDetails } from "@/lib/youtube";
+import { z } from "zod";
 
 export async function GET() {
   try {
     const session = await auth();
     if (!session?.user?.id) {
-      return new NextResponse("Unauthorized", { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const bookmarks = await prisma.bookmark.findMany({
       where: { userId: session.user.id },
-      include: {
-        video: {
-          select: {
-            id: true,
-            title: true,
-            videoId: true,
-            course: {
-              select: {
-                id: true,
-                title: true,
-              },
-            },
-          },
-        },
-      },
       orderBy: { createdAt: "desc" },
+      include: {
+        video: true, // Assuming you want to include video details
+      },
     });
 
-    // Transform the data to match our VideoCard interface
-    const videos = await Promise.all(
-      bookmarks.map(async (bookmark) => {
-        const duration = await getVideoDetails(bookmark.video.videoId);
-        return {
-          id: bookmark.video.id,
-          title: bookmark.video.title,
-          thumbnailUrl: `https://img.youtube.com/vi/${bookmark.video.videoId}/hqdefault.jpg`,
-          duration,
-          youtubeId: bookmark.video.videoId,
-          courseTitle: bookmark.video.course.title,
-          courseId: bookmark.video.course.id,
-          note: bookmark.note || null,
-        };
-      })
-    );
+    // Optional: If you want to enrich with YouTube details (consider performance)
+    // const enrichedBookmarks = await Promise.all(
+    //   bookmarks.map(async (bookmark) => {
+    //     if (bookmark.video?.videoId) {
+    //       const videoDetails = await getVideoDetails(bookmark.video.videoId);
+    //       return {
+    //         ...bookmark,
+    //         video: {
+    //           ...bookmark.video,
+    //           thumbnailUrl: videoDetails?.thumbnailUrl,
+    //           channelTitle: videoDetails?.channelTitle,
+    //         },
+    //       };
+    //     }
+    //     return bookmark;
+    //   })
+    // );
 
-    return NextResponse.json(videos);
-  } catch (error) {
-    console.error("[BOOKMARKS_GET]", error);
-    return new NextResponse("Internal Error", { status: 500 });
+    return NextResponse.json(bookmarks);
+  } catch (_error) {
+    // console.error("Error fetching bookmarks:", _error);
+    return NextResponse.json(
+      { error: "Failed to fetch bookmarks" },
+      { status: 500 }
+    );
   }
 }
 
@@ -99,8 +91,17 @@ export async function POST(req: Request) {
     });
 
     return NextResponse.json(bookmark);
-  } catch (error) {
-    console.error("[BOOKMARKS_POST]", error);
-    return new NextResponse("Internal Error", { status: 500 });
+  } catch (_error) {
+    // console.error("Error creating bookmark:", _error);
+    if (_error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: "Validation Error", errors: _error.errors },
+        { status: 400 }
+      );
+    }
+    return NextResponse.json(
+      { error: "Failed to create bookmark" },
+      { status: 500 }
+    );
   }
 }

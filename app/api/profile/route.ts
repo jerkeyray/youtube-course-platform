@@ -1,6 +1,17 @@
 import { auth } from "@/auth";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { z } from "zod";
+
+// Define a type for the activity objects used in streak calculations
+interface Activity {
+  id: string;
+  userId: string;
+  date: string; // Assuming date is stored as an ISO string e.g., "YYYY-MM-DD"
+  completed: boolean;
+  createdAt: Date; // Or string if it's serialized before reaching here
+  updatedAt: Date; // Or string
+}
 
 export async function GET() {
   try {
@@ -37,11 +48,14 @@ export async function GET() {
       return new NextResponse("User not found", { status: 404 });
     }
 
+    // Assuming user.activities matches the Activity[] type or can be cast
+    const activitiesForStreak: Activity[] = user.activities as Activity[];
+
     // Calculate stats
-    const currentStreak = calculateCurrentStreak(user.activities);
-    const longestStreak = calculateLongestStreak(user.activities);
+    const currentStreak = calculateCurrentStreak(activitiesForStreak);
+    const longestStreak = calculateLongestStreak(activitiesForStreak);
     const coursesCompleted = user.certificates.length;
-    const totalWatchTime = calculateTotalWatchTime(user.activities);
+    const totalWatchTime = calculateTotalWatchTime(activitiesForStreak);
 
     // Get completed courses
     const completedCourses = user.courses.filter((course) => {
@@ -59,7 +73,7 @@ export async function GET() {
         email: user.email,
         image: user.image,
         bio: user.bio,
-        createdAt: user.createdAt,
+        createdAt: user.createdAt.toISOString(),
       },
       stats: {
         currentStreak,
@@ -73,8 +87,11 @@ export async function GET() {
       })),
     });
   } catch (error) {
-    console.error("Profile API error:", error);
-    return new NextResponse("Internal Server Error", { status: 500 });
+    // console.error("Error fetching profile data:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch profile data" },
+      { status: 500 }
+    );
   }
 }
 
@@ -94,89 +111,102 @@ export async function PATCH(req: Request) {
 
     return NextResponse.json(updatedUser);
   } catch (error) {
-    console.error("Profile update error:", error);
-    return new NextResponse("Internal Server Error", { status: 500 });
+    // console.error("Error updating profile:", error);
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: error.errors[0].message },
+        { status: 400 }
+      );
+    }
+    return NextResponse.json(
+      { error: "Failed to update profile" },
+      { status: 500 }
+    );
   }
 }
 
-function calculateCurrentStreak(activities: any[]) {
+function calculateCurrentStreak(activities: Activity[]) {
   let currentStreak = 0;
+  if (!activities || activities.length === 0) return 0;
+
   const today = new Date().toISOString().split("T")[0];
   const sortedActivities = activities
-    .sort((a, b) => b.date.localeCompare(a.date))
-    .filter((a) => a.completed);
+    .filter((a) => a.completed)
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
   if (sortedActivities.length === 0) return 0;
 
-  // Check if the last activity was today or yesterday
-  const lastActivity = sortedActivities[0];
-  if (lastActivity.date !== today && lastActivity.date !== getYesterday()) {
+  const lastActivityDateStr = sortedActivities[0].date.split("T")[0];
+  const yesterday = getPreviousDay(today);
+
+  if (lastActivityDateStr !== today && lastActivityDateStr !== yesterday) {
     return 0;
   }
 
-  let currentDate = lastActivity.date;
+  let currentDate = lastActivityDateStr;
   for (const activity of sortedActivities) {
-    if (activity.date === currentDate) {
+    const activityDateStr = activity.date.split("T")[0];
+    if (activityDateStr === currentDate) {
       currentStreak++;
       currentDate = getPreviousDay(currentDate);
+    } else if (currentDate === activityDateStr) {
+      // This handles multiple activities on the same day already counted
+      continue;
     } else {
-      break;
+      break; // Streak broken
     }
   }
-
   return currentStreak;
 }
 
-function calculateLongestStreak(activities: any[]) {
+function calculateLongestStreak(activities: Activity[]) {
   let longestStreak = 0;
   let currentStreak = 0;
-  const sortedActivities = activities
-    .sort((a, b) => a.date.localeCompare(b.date))
-    .filter((a) => a.completed);
+  if (!activities || activities.length === 0) return 0;
 
-  if (sortedActivities.length === 0) return 0;
+  const sortedCompletedActivities = activities
+    .filter((a) => a.completed)
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
-  let currentDate = sortedActivities[0].date;
-  for (const activity of sortedActivities) {
-    if (activity.date === currentDate) {
+  if (sortedCompletedActivities.length === 0) return 0;
+
+  let lastActivityDate = new Date(
+    sortedCompletedActivities[0].date.split("T")[0]
+  );
+  currentStreak = 1;
+  longestStreak = 1;
+
+  for (let i = 1; i < sortedCompletedActivities.length; i++) {
+    const currentActivityDate = new Date(
+      sortedCompletedActivities[i].date.split("T")[0]
+    );
+    const expectedPreviousDate = new Date(currentActivityDate);
+    expectedPreviousDate.setDate(expectedPreviousDate.getDate() - 1);
+
+    if (currentActivityDate.getTime() === lastActivityDate.getTime()) {
+      // Same day, streak continues (if not already counted)
+      // This logic might need refinement if multiple distinct activities on the same day don't extend the streak count itself
+      continue;
+    } else if (lastActivityDate.getTime() === expectedPreviousDate.getTime()) {
       currentStreak++;
-      if (currentStreak > longestStreak) {
-        longestStreak = currentStreak;
-      }
-    } else if (activity.date === getNextDay(currentDate)) {
-      currentStreak++;
-      if (currentStreak > longestStreak) {
-        longestStreak = currentStreak;
-      }
-      currentDate = activity.date;
     } else {
-      currentStreak = 1;
-      currentDate = activity.date;
+      currentStreak = 1; // Streak broken
+    }
+    lastActivityDate = currentActivityDate;
+    if (currentStreak > longestStreak) {
+      longestStreak = currentStreak;
     }
   }
-
   return longestStreak;
 }
 
-function calculateTotalWatchTime(activities: any[]) {
-  // Assuming each completed activity represents 30 minutes of watch time
-  return activities.filter((a) => a.completed).length * 30;
-}
-
-function getYesterday() {
-  const date = new Date();
-  date.setDate(date.getDate() - 1);
-  return date.toISOString().split("T")[0];
+function calculateTotalWatchTime(activities: Activity[]) {
+  if (!activities) return 0;
+  return activities.filter((a) => a.completed).length * 30; // Assuming 30 mins per completed activity
 }
 
 function getPreviousDay(date: string) {
   const d = new Date(date);
   d.setDate(d.getDate() - 1);
-  return d.toISOString().split("T")[0];
-}
-
-function getNextDay(date: string) {
-  const d = new Date(date);
-  d.setDate(d.getDate() + 1);
   return d.toISOString().split("T")[0];
 }

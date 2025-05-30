@@ -53,7 +53,10 @@ export async function GET() {
 
     return NextResponse.json({ videos });
   } catch (error) {
-    console.error("[WATCH_LATER_GET]", error);
-    return new NextResponse("Internal Error", { status: 500 });
+    // console.error("[WATCH_LATER_GET]", error);
+    return NextResponse.json(
+      { error: "Failed to fetch watch later videos" },
+      { status: 500 }
+    );
   }
 }
