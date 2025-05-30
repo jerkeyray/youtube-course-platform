@@ -153,10 +153,7 @@ export default function CreateCourse() {
               <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading ? (
                   <div className="flex items-center gap-2">
-                    <div className="h-4 w-4">
-                      <LoadingScreen variant="inline" text="" />
-                    </div>
-                    <span>Creating...</span>
+                    <span className="animate-pulse">Creating...</span>
                   </div>
                 ) : (
                   "Create Course"
