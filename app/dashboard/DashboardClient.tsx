@@ -135,7 +135,7 @@ export default function DashboardClient({
         </div>
         <Button className="gap-2 bg-blue-600 hover:bg-blue-700 shadow-sm">
           <Plus size={16} />
-          <Link href="/dashboard/courses/new">Add Course</Link>
+          <Link href="/dashboard/courses/create">Add Course</Link>
         </Button>
       </div>
 
