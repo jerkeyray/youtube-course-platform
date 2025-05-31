@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { google } from "googleapis";
 
 const youtube = google.youtube("v3");
@@ -22,38 +23,57 @@ export async function fetchPlaylistDetails(
   playlistId: string
 ): Promise<PlaylistDetails> {
   try {
-    const [playlistResponse, videosResponse] = await Promise.all([
-      youtube.playlists.list({
-        key: process.env.YOUTUBE_API_KEY,
-        part: ["snippet"],
-        id: [playlistId],
-      }),
-      youtube.playlistItems.list({
-        key: process.env.YOUTUBE_API_KEY,
-        part: ["snippet", "contentDetails"],
-        playlistId,
-        maxResults: 50,
-      }),
-    ]);
+    // First, get the playlist info
+    const playlistResponse = await youtube.playlists.list({
+      key: process.env.YOUTUBE_API_KEY,
+      part: ["snippet"],
+      id: [playlistId],
+    });
 
     if (!playlistResponse.data.items?.[0]) {
       throw new Error("Playlist not found");
     }
 
-    if (!videosResponse.data.items?.length) {
+    // Fetch all videos with pagination support
+    const videos: PlaylistVideo[] = [];
+    let nextPageToken: string | undefined = undefined;
+
+    do {
+      // Type annotation for videosResponse
+      const videosResponse: any = await youtube.playlistItems.list({
+        key: process.env.YOUTUBE_API_KEY,
+        part: ["snippet", "contentDetails"],
+        playlistId,
+        maxResults: 50,
+        pageToken: nextPageToken,
+      });
+
+      if (videosResponse.data.items?.length) {
+        // Extract video information from each item
+        videosResponse.data.items.forEach((item: any) => {
+          if (item.snippet && item.contentDetails?.videoId) {
+            videos.push({
+              title: item.snippet.title ?? "Untitled Video",
+              youtubeId: item.contentDetails.videoId,
+            });
+          }
+        });
+      }
+
+      nextPageToken = videosResponse.data.nextPageToken;
+    } while (nextPageToken);
+
+    if (videos.length === 0) {
       throw new Error("No videos found in playlist");
     }
 
     return {
       title:
         playlistResponse.data.items[0].snippet?.title ?? "Untitled Playlist",
-      videos: videosResponse.data.items.map((item) => ({
-        title: item.snippet?.title ?? "Untitled Video",
-        youtubeId: item.contentDetails?.videoId ?? "",
-      })),
+      videos,
     };
   } catch (error) {
-    console.error("Error fetching playlist details:", error);
+    // Handle error silently
     throw new Error("Failed to fetch playlist details");
   }
 }
@@ -72,7 +92,7 @@ export async function getPlaylistTitle(playlistId: string): Promise<string> {
 
     return response.data.items[0].snippet?.title ?? "Untitled Playlist";
   } catch (error) {
-    console.error("Error fetching playlist title:", error);
+    // Handle error silently
     throw new Error("Failed to fetch playlist title");
   }
 }
@@ -93,27 +113,39 @@ export async function getPlaylistVideos(playlistUrlOrId: string) {
       playlistId = match[1];
     }
 
-    const response = await youtube.playlistItems.list({
-      key: process.env.YOUTUBE_API_KEY,
-      part: ["snippet", "contentDetails"],
-      playlistId,
-      maxResults: 50,
-    });
+    // Collect all videos with pagination
+    const allVideos: any[] = [];
+    let nextPageToken: string | undefined = undefined;
 
-    const videos = response.data.items?.map((item) => ({
+    do {
+      // Type annotation for response
+      const response: any = await youtube.playlistItems.list({
+        key: process.env.YOUTUBE_API_KEY,
+        part: ["snippet", "contentDetails"],
+        playlistId,
+        maxResults: 50,
+        pageToken: nextPageToken,
+      });
+
+      if (response.data.items?.length) {
+        allVideos.push(...response.data.items);
+      }
+
+      nextPageToken = response.data.nextPageToken;
+    } while (nextPageToken);
+
+    const videos = allVideos.map((item) => ({
       id: item.contentDetails?.videoId,
       title: item.snippet?.title,
       duration: 0, // Duration requires additional API call
     }));
 
-    return (
-      videos?.filter(
-        (v): v is { id: string; title: string; duration: number } =>
-          Boolean(v.id && v.title)
-      ) ?? []
+    return videos.filter(
+      (v): v is { id: string; title: string; duration: number } =>
+        Boolean(v.id && v.title)
     );
   } catch (error) {
-    console.error("Error fetching playlist videos:", error);
+    // Handle error silently
     throw new Error("Failed to fetch playlist videos");
   }
 }
@@ -153,7 +185,7 @@ export async function getVideoDetails(videoId: string) {
       .toString()
       .padStart(2, "0")}`;
   } catch (error) {
-    console.error("Error fetching video details:", error);
+    // Handle error silently
     return "0:00";
   }
 }
