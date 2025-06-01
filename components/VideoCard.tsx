@@ -88,7 +88,7 @@ export default function VideoCard({
   return (
     <div
       className={cn(
-        "group relative overflow-hidden rounded-lg border border-blue-100 bg-blue-50/50 transition-all hover:shadow-md hover:border-blue-200 flex flex-col w-full max-w-xs mx-auto"
+        "group relative overflow-hidden rounded-lg border border-blue-100 dark:border-blue-800 bg-blue-50/50 dark:bg-blue-900/30 transition-all hover:shadow-md hover:border-blue-200 dark:hover:border-blue-700 flex flex-col w-full max-w-xs mx-auto"
       )}
       onClick={() => {
         if (video.courseId) {
@@ -123,18 +123,18 @@ export default function VideoCard({
       </div>
       <div className="p-3 md:p-4 flex flex-col flex-grow justify-between min-h-0">
         <div>
-          <h3 className="font-medium text-base mb-1 line-clamp-2 min-h-[2.5rem] text-gray-800">
+          <h3 className="font-medium text-base mb-1 line-clamp-2 min-h-[2.5rem] text-gray-800 dark:text-gray-200">
             {video.title}
           </h3>
           <p
-            className="text-sm font-semibold text-blue-600 line-clamp-1 mb-1"
+            className="text-sm font-semibold text-blue-600 dark:text-blue-400 line-clamp-1 mb-1"
             title={video.courseTitle || "Unknown Course"}
           >
             {video.courseTitle || "Unknown Course"}
           </p>
         </div>
         <div className="flex items-center justify-between mt-2">
-          <div className="flex items-center text-sm text-blue-500">
+          <div className="flex items-center text-sm text-blue-500 dark:text-blue-400">
             <Clock className="mr-1 h-4 w-4" />
             {type === "watch-later" ? "Watch Later" : "Bookmark"}
           </div>
@@ -142,7 +142,7 @@ export default function VideoCard({
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8 hover:bg-red-100 hover:text-red-600 transition-colors duration-200"
+              className="h-8 w-8 hover:bg-red-100 dark:hover:bg-red-900/30 hover:text-red-600 dark:hover:text-red-400 transition-colors duration-200"
               onClick={handleRemove}
             >
               <Trash2 className="h-4 w-4" />

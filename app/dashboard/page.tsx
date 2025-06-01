@@ -3,32 +3,6 @@ import { redirect } from "next/navigation";
 import DashboardClient from "./DashboardClient";
 import { prisma } from "@/lib/prisma";
 
-interface SerializedCourse {
-  id: string;
-  title: string;
-  playlistId: string;
-  userId: string;
-  deadline: string | null;
-  createdAt: string;
-  updatedAt: string;
-  videos: Array<{
-    id: string;
-    title: string;
-    videoId: string;
-    order: number;
-    createdAt: string;
-    updatedAt: string;
-    progress: Array<{
-      id: string;
-      userId: string;
-      videoId: string;
-      completed: boolean;
-      updatedAt: string;
-    }>;
-  }>;
-}
-
-
 export default async function DashboardPage() {
   const session = await auth();
 

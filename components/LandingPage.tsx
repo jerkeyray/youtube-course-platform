@@ -22,7 +22,7 @@ import { useSession } from "next-auth/react";
 
 export default function LandingPage() {
   const { status } = useSession();
-  const getStartedLink = status === "authenticated" ? "/dashboard" : "/sign-up";
+  const getStartedLink = status === "authenticated" ? "/dashboard" : "/sign-in";
 
   return (
     <div className="bg-gradient-to-br from-slate-50 via-white to-blue-50 text-gray-900">
@@ -70,7 +70,7 @@ export default function LandingPage() {
             <Button
               variant="outline"
               size="lg"
-              className="text-lg px-10 py-6 border-2 border-gray-300 hover:border-blue-400 rounded-full transition-all duration-300"
+              className="text-lg px-10 py-6 border-2 border-gray-300 hover:border-blue-400 bg-white text-gray-800 hover:bg-blue-50 hover:text-blue-700 rounded-full transition-all duration-300"
               asChild
             >
               <Link href="#features">See How It Works</Link>
@@ -80,15 +80,15 @@ export default function LandingPage() {
       </section>
 
       {/* Features Section */}
-      <section id="features" className="py-32 px-6 relative">
+      <section id="features" className="py-32 px-6 sm:px-8 lg:px-12 relative">
         <div className="absolute inset-0 bg-gradient-to-b from-white/50 to-slate-50/50"></div>
         <div className="max-w-7xl mx-auto relative z-10">
-          <div className="text-center mb-20">
+          <div className="text-center mb-20 px-4 sm:px-0">
             <div className="inline-flex items-center px-4 py-2 bg-blue-100 text-blue-700 rounded-full text-sm font-medium mb-6">
               <Star className="w-4 h-4 mr-2" />
               Powerful Features
             </div>
-            <h2 className="text-5xl md:text-6xl font-bold mb-6 tracking-tight bg-gradient-to-r from-gray-900 to-blue-800 bg-clip-text text-transparent">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-8 tracking-tight bg-gradient-to-r from-gray-900 to-blue-800 bg-clip-text text-transparent leading-[1.2] py-2">
               Everything you need to learn effectively
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
@@ -288,30 +288,24 @@ export default function LandingPage() {
           <Accordion type="single" collapsible className="w-full space-y-6">
             {[
               {
-                question: "Is yudoku completely free to use?",
+                question: "Why use Yudoku instead of YouTube?",
                 answer:
-                  "Yes, yudoku is completely free to use while in beta. We may introduce premium features in the future, but the core functionality will always remain free for everyone.",
+                  "Yudoku transforms YouTube into a focused learning platform by organizing educational content into a structured, distraction-free experience. It helps you track progress and stay on track with deadlines.",
               },
               {
-                question: "Do I need a YouTube account to use yudoku?",
+                question: "How does Yudoku help me track my learning?",
                 answer:
-                  "No YouTube account is required to use yudoku. However, signing in with your Google account can enhance your experience and help sync your learning preferences across devices.",
+                  "Yudoku monitors your completion rates and learning streaks, keeping you motivated and aligned with your educational goals.",
               },
               {
-                question: "Can I track my learning goals and progress?",
+                question: "What content works best with Yudoku?",
                 answer:
-                  "yudoku provides comprehensive progress tracking including completion rates, learning streaks, time spent learning, and personalized goal setting to keep you motivated.",
+                  "Yudoku is designed for public YouTube playlists, particularly educational ones like tutorials, courses, skill-building videos, and documentaries, creating a seamless learning path.",
               },
               {
-                question:
-                  "What types of YouTube content work best with yudoku?",
+                question: "How does Yudoku reduce distractions?",
                 answer:
-                  "Any public YouTube playlist works great with yudoku. Educational content, tutorials, online courses, skill-building playlists, and documentary series tend to work exceptionally well with our structured learning approach.",
-              },
-              {
-                question: "How does yudoku remove distractions from YouTube?",
-                answer:
-                  "yudoku creates a clean, focused viewing environment by removing YouTube's sidebar, comments, recommended videos, and other distracting elements, allowing you to focus purely on the educational content.",
+                  "Yudoku offers a clean viewing experience by removing YouTube’s sidebar, recommended videos, and comments, keeping your focus on the content that matters.",
               },
             ].map((item, index) => (
               <AccordionItem
@@ -339,12 +333,11 @@ export default function LandingPage() {
               yudoku
             </h3>
             <p className="text-gray-600">
-              Transforming YouTube into your personal learning platform
+              The YouTube Course Experience Platform
             </p>
           </div>
           <p className="text-gray-500">
-            © {new Date().getFullYear()} yudoku. Built with ❤️ for focused
-            learning.
+            © {new Date().getFullYear()} yudoku. jerkeyray corp.
           </p>
         </div>
       </footer>

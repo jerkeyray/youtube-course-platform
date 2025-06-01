@@ -28,11 +28,11 @@ export function MobileNav() {
       </SheetTrigger>
       <SheetContent
         side="left"
-        className="p-0 w-[280px] sm:w-[320px] bg-gradient-to-b from-blue-900 to-blue-950 border-r border-blue-700/30"
+        className="p-0 w-[280px] sm:w-[320px] bg-gradient-to-b from-blue-900 to-blue-950 dark:from-[#050C20] dark:to-[#081030] border-r border-blue-700/30"
       >
         <SheetHeader className="px-4 py-3 border-b border-blue-700/30">
           <SheetTitle className="text-xl font-bold text-blue-100">
-            Yudoku
+            yudoku
           </SheetTitle>
         </SheetHeader>
         <div className="text-white">

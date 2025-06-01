@@ -17,29 +17,33 @@ export function Navbar() {
   const isSignedIn = status === "authenticated";
 
   return (
-    <div className="fixed w-full z-50 flex justify-between items-center py-2 px-4 border-b border-primary/10 bg-background h-16">
+    <div className="fixed w-full z-50 flex justify-between items-center py-2 px-4 border-b border-gray-200 bg-white h-16">
       <div className="flex items-center">
         <Link href="/" className="flex items-center">
-          <h1 className="text-2xl font-bold">Yudoku</h1>
+          <h1 className="text-2xl font-bold text-gray-900">yudoku</h1>
         </Link>
       </div>
       <div className="flex items-center gap-x-3">
         {isSignedIn ? (
           <div className="flex items-center gap-x-4">
-            <Button variant="ghost" asChild>
+            <Button
+              variant="outline"
+              asChild
+              className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200 text-blue-700 hover:from-blue-100 hover:to-indigo-100 hover:border-blue-300 hover:text-blue-800 font-medium px-4 py-2 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md"
+            >
               <Link href="/dashboard">Dashboard</Link>
             </Button>
             <div className="flex flex-col items-end">
-              <p className="text-sm font-medium">{session.user?.name}</p>
-              <p className="text-xs text-muted-foreground">
-                {session.user?.email}
+              <p className="text-sm font-medium text-gray-900">
+                {session.user?.name}
               </p>
+              <p className="text-xs text-gray-600">{session.user?.email}</p>
             </div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
                   variant="ghost"
-                  className="relative h-10 w-10 rounded-full"
+                  className="relative h-10 w-10 rounded-full hover:bg-gray-100"
                 >
                   {session.user?.image ? (
                     <Image
@@ -74,11 +78,18 @@ export function Navbar() {
           </div>
         ) : (
           <>
-            <Button variant="ghost" asChild>
+            <Button
+              variant="ghost"
+              asChild
+              className="text-gray-700 hover:text-gray-900 hover:bg-gray-100"
+            >
               <Link href="/sign-in">Sign In</Link>
             </Button>
-            <Button asChild>
-              <Link href="/sign-up">Get Started</Link>
+            <Button
+              asChild
+              className="bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              <Link href="/sign-in">Get Started</Link>
             </Button>
           </>
         )}

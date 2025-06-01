@@ -47,26 +47,37 @@ export function DeleteCourseDialog({
           </DialogDescription>
         </DialogHeader>
         <div className="py-4">
-          <Label htmlFor="confirm-text" className="mb-2 block">
-            Please type <span className="font-semibold">{courseTitle}</span> to
-            confirm deletion
+          <Label
+            htmlFor="confirm-text"
+            className="mb-2 block dark:text-blue-200"
+          >
+            Please type{" "}
+            <span className="font-semibold dark:text-blue-100">
+              {courseTitle}
+            </span>{" "}
+            to confirm deletion
           </Label>
           <Input
             id="confirm-text"
             value={confirmText}
             onChange={(e) => setConfirmText(e.target.value)}
             placeholder="Type course name to confirm"
-            className="mt-2"
+            className="mt-2 dark:bg-blue-950/50 dark:border-blue-700"
           />
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>
+          <Button
+            variant="outline"
+            onClick={onClose}
+            className="dark:border-blue-700 dark:text-blue-300 dark:hover:bg-blue-900/50"
+          >
             Cancel
           </Button>
           <Button
             variant="destructive"
             onClick={handleConfirm}
             disabled={confirmText !== courseTitle}
+            className="dark:bg-red-800 dark:hover:bg-red-700"
           >
             Delete Course
           </Button>

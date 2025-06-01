@@ -40,8 +40,10 @@ export default function WatchLaterPage() {
     toast.error("Failed to load watch later videos");
     return (
       <main className="container py-8">
-        <div className="rounded-lg border bg-card p-8 text-center">
-          <h2 className="mb-2 text-xl font-medium">Error loading videos</h2>
+        <div className="rounded-lg border bg-card dark:bg-blue-900/50 p-8 text-center">
+          <h2 className="mb-2 text-xl font-medium dark:text-blue-100">
+            Error loading videos
+          </h2>
           <p className="mb-4 text-muted-foreground">
             Please try refreshing the page
           </p>
@@ -53,10 +55,7 @@ export default function WatchLaterPage() {
   if (isLoading) {
     return (
       <main className="container py-8">
-        <LoadingScreen
-          variant="fullscreen"
-          text="Loading your watch later videos..."
-        />
+        <LoadingScreen variant="fullscreen" />
       </main>
     );
   }
@@ -64,15 +63,14 @@ export default function WatchLaterPage() {
   return (
     <main className="container py-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold">Watch Later</h1>
-        <p className="text-muted-foreground mt-1">
-          Videos you've saved to watch later
-        </p>
+        <h1 className="text-3xl font-bold dark:text-white">Watch Later</h1>
       </div>
 
       {videos.length === 0 ? (
-        <div className="rounded-lg border bg-card p-8 text-center">
-          <h2 className="mb-2 text-xl font-medium">No videos in watch later</h2>
+        <div className="rounded-lg border bg-card dark:bg-blue-900/50 p-8 text-center">
+          <h2 className="mb-2 text-xl font-medium dark:text-blue-100">
+            No videos in watch later
+          </h2>
           <p className="text-muted-foreground">
             Add videos to your watch later list while browsing courses
           </p>

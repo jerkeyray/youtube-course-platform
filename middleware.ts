@@ -5,7 +5,7 @@ export default auth((req) => {
   const isAuthenticated = !!req.auth;
   const isAuthPage =
     req.nextUrl.pathname.startsWith("/sign-in") ||
-    req.nextUrl.pathname.startsWith("/sign-up");
+    req.nextUrl.pathname.startsWith("/auth");
 
   // If user is authenticated and trying to access auth pages, redirect to dashboard
   if (isAuthenticated && isAuthPage) {

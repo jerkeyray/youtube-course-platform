@@ -35,7 +35,7 @@ export function AddBookmarkDialog({
       await onConfirm(note);
       setNote("");
       onClose();
-    } catch (error) {
+    } catch {
       toast.error("Failed to add bookmark");
     } finally {
       setIsLoading(false);
@@ -56,14 +56,22 @@ export function AddBookmarkDialog({
             placeholder="Add a note (optional)"
             value={note}
             onChange={(e) => setNote(e.target.value)}
-            className="min-h-[100px]"
+            className="min-h-[100px] dark:bg-blue-950/50 dark:border-blue-700"
           />
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>
+          <Button
+            variant="outline"
+            onClick={onClose}
+            className="dark:border-blue-700 dark:text-blue-300 dark:hover:bg-blue-900/50"
+          >
             Cancel
           </Button>
-          <Button onClick={handleConfirm} disabled={isLoading}>
+          <Button
+            onClick={handleConfirm}
+            disabled={isLoading}
+            className="dark:bg-blue-700 dark:hover:bg-blue-600"
+          >
             {isLoading ? "Adding..." : "Add Bookmark"}
           </Button>
         </DialogFooter>

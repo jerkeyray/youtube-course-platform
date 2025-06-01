@@ -12,56 +12,59 @@ export default async function SignInPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 flex flex-col items-center justify-center p-4 relative overflow-hidden">
-      {/* Background decorative elements */}
-      <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-purple-400/20 to-blue-400/20 rounded-full blur-3xl opacity-50"></div>
-      <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-blue-400/20 to-green-400/20 rounded-full blur-3xl opacity-50"></div>
+    <div className="min-h-screen bg-white flex">
+      {/* Left side - Branding */}
+      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-slate-50 via-white to-blue-50 p-12 flex-col justify-between relative overflow-hidden">
+        {/* Background Elements - matching landing page */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute -top-20 -right-20 w-40 h-40 bg-gradient-to-br from-blue-400/20 to-purple-400/20 rounded-full blur-3xl"></div>
+          <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-gradient-to-br from-green-400/20 to-blue-400/20 rounded-full blur-3xl"></div>
+        </div>
 
-      <div className="relative z-10 w-full max-w-md">
-        <div className="text-center mb-10">
-          <Link href="/" className="inline-block mb-8">
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+        <div className="relative z-10">
+          <Link href="/" className="inline-block">
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
               yudoku
             </h1>
           </Link>
-          <h2 className="text-3xl md:text-4xl font-semibold tracking-tight bg-gradient-to-r from-gray-800 to-blue-700 bg-clip-text text-transparent mb-3">
-            Welcome Back
+        </div>
+
+        <div className="max-w-md relative z-10">
+          <h2 className="text-4xl font-bold text-gray-900 mb-6 leading-tight">
+            Transform your YouTube learning experience
           </h2>
-          <p className="text-lg text-gray-600">
-            Sign in to continue your learning journey.
+          <p className="text-lg text-gray-600 leading-relaxed">
+            Organize, track, and enhance your learning journey with powerful
+            tools designed for YouTube courses.
           </p>
         </div>
 
-        <div className="bg-white/70 backdrop-blur-md rounded-2xl shadow-xl p-8 border border-gray-200/50">
+        <div className="text-sm text-gray-500 relative z-10">
+          Focus on what matters most - your learning
+        </div>
+      </div>
+
+      {/* Right side - Auth Form */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-8">
+        <div className="w-full max-w-sm">
+          {/* Mobile logo */}
+          <div className="lg:hidden text-center mb-8">
+            <Link href="/" className="inline-block">
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                yudoku
+              </h1>
+            </Link>
+          </div>
+
+          <div className="text-center mb-8">
+            <h2 className="text-2xl font-semibold text-gray-900 mb-2">
+              Welcome back
+            </h2>
+            <p className="text-gray-600">Sign in to your account to continue</p>
+          </div>
+
           <SignInForm />
         </div>
-
-        <p className="mt-8 px-8 text-center text-sm text-gray-500">
-          By clicking continue, you agree to our{" "}
-          <Link
-            href="/terms"
-            className="underline underline-offset-4 hover:text-blue-600 font-medium"
-          >
-            Terms of Service
-          </Link>{" "}
-          and{" "}
-          <Link
-            href="/privacy"
-            className="underline underline-offset-4 hover:text-blue-600 font-medium"
-          >
-            Privacy Policy
-          </Link>
-          .
-        </p>
-        <p className="mt-4 text-center text-sm text-gray-500">
-          Don't have an account?{" "}
-          <Link
-            href="/sign-up"
-            className="font-semibold text-blue-600 hover:text-blue-700 underline underline-offset-4"
-          >
-            Sign Up
-          </Link>
-        </p>
       </div>
     </div>
   );

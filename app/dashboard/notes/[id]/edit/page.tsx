@@ -77,7 +77,7 @@ export default function EditNotePage({ params }: EditNotePageProps) {
   if (isLoading) {
     return (
       <main className="container py-8">
-        <LoadingScreen variant="fullscreen" text="Loading note editor..." />
+        <LoadingScreen variant="fullscreen" />
       </main>
     );
   }
@@ -126,7 +126,7 @@ export default function EditNotePage({ params }: EditNotePageProps) {
                 {isSaving ? (
                   <div className="flex items-center gap-2">
                     <div className="h-4 w-4">
-                      <LoadingScreen variant="inline" text="" />
+                      <LoadingScreen variant="inline" />
                     </div>
                     <span>Saving...</span>
                   </div>

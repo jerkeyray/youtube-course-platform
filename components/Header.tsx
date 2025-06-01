@@ -1,7 +1,6 @@
 "use client";
 
 import { useSession, signOut } from "next-auth/react";
-import { ModeToggle } from "@/components/ui/mode-toggle";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import Image from "next/image";
@@ -19,14 +18,13 @@ export function Header() {
 
   return (
     <header className="flex justify-end items-center p-4 gap-4 h-16 border-b">
-      <ModeToggle />
       {!isSignedIn ? (
         <>
           <Button variant="ghost" asChild>
             <Link href="/sign-in">Sign In</Link>
           </Button>
           <Button asChild>
-            <Link href="/sign-up">Get Started</Link>
+            <Link href="/sign-in">Get Started</Link>
           </Button>
         </>
       ) : (

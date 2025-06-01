@@ -70,7 +70,7 @@ export function NoteEditor({ videoId, courseId }: NoteEditorProps) {
   }, [note]);
 
   if (isLoading) {
-    return <LoadingScreen variant="contained" text="Loading notes..." />;
+    return <LoadingScreen variant="contained" />;
   }
 
   return (
@@ -111,7 +111,7 @@ export function NoteEditor({ videoId, courseId }: NoteEditorProps) {
               className="gap-2"
             >
               {saveNoteMutation.isPending ? (
-                <LoadingScreen variant="inline" text="" />
+                <LoadingScreen variant="inline" />
               ) : (
                 <Save className="h-4 w-4" />
               )}

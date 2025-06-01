@@ -2,6 +2,7 @@ import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import CoursePlayer from "./CoursePlayer";
+import CourseHeader from "./CourseHeader";
 import type { Course, Video, VideoProgress } from "@prisma/client";
 
 type CourseWithProgress = Course & {
@@ -65,17 +66,8 @@ export default async function CoursePage({ params }: CoursePageProps) {
   };
 
   return (
-    <main className="container py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">{course.title}</h1>
-        <div className="flex items-center gap-4 text-sm text-muted-foreground">
-          <span>{course.videos.length} videos</span>
-          <span>•</span>
-          <span>{completedVideos} completed</span>
-          <span>•</span>
-          <span>{completionPercentage}% progress</span>
-        </div>
-      </div>
+    <main className="container pt-4 pb-8">
+      <CourseHeader course={courseWithProgress} />
       <CoursePlayer course={courseWithProgress} />
     </main>
   );

@@ -63,13 +63,13 @@ export default function ActivityHeatmap({
   const squareSize = cellSize; // Keep the same size for width and height to make it square
 
   return (
-    <div className="w-full overflow-hidden">
+    <div className="w-full overflow-visible px-2">
       {/* Simplified heatmap without labels */}
       <div className="w-full flex justify-center">
         {/* Grid */}
-        <div className="flex gap-[3px] overflow-hidden">
+        <div className="flex gap-1.5 overflow-visible">
           {grid.map((week, wIdx) => (
-            <div key={wIdx} className="flex flex-col gap-[3px]">
+            <div key={wIdx} className="flex flex-col gap-1.5">
               {week.map((cell, dIdx) => {
                 const daysSinceToday = differenceInCalendarDays(
                   today,
@@ -88,31 +88,37 @@ export default function ActivityHeatmap({
                           }}
                           className={`rounded-sm ${
                             cell.active
-                              ? "bg-blue-500 hover:bg-blue-600"
-                              : "bg-slate-50 hover:bg-slate-100 dark:bg-slate-200 dark:hover:bg-slate-300"
-                          } ${isToday ? "ring-1 ring-blue-600" : ""}`}
+                              ? "bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-500"
+                              : "bg-slate-50 hover:bg-slate-100 dark:bg-blue-950 dark:hover:bg-blue-900"
+                          } ${
+                            isToday
+                              ? "ring-1 ring-blue-600 dark:ring-blue-400"
+                              : ""
+                          }`}
                         />
                       </TooltipTrigger>
                       <TooltipContent
                         side="top"
-                        className="text-xs p-2 bg-white border border-blue-100 shadow-md"
+                        className="text-xs p-2 bg-white dark:bg-blue-950 border border-blue-100 dark:border-blue-800 shadow-md"
                       >
-                        <p className="font-medium text-blue-800">
+                        <p className="font-medium text-blue-800 dark:text-blue-300">
                           {format(cell.date, "EEEE, MMMM d, yyyy")}
                         </p>
                         <div className="flex items-center mt-1">
                           <div
                             className={`w-2 h-2 rounded-full mr-1.5 ${
-                              cell.active ? "bg-blue-500" : "bg-slate-200"
+                              cell.active
+                                ? "bg-blue-500 dark:bg-blue-400"
+                                : "bg-slate-200 dark:bg-blue-800"
                             }`}
                           ></div>
-                          <p>
+                          <p className="dark:text-blue-200">
                             {cell.active ? "Activity completed" : "No activity"}
                           </p>
                         </div>
                         {isToday && (
-                          <p className="font-semibold text-blue-600 mt-1 flex items-center">
-                            <span className="w-1.5 h-1.5 bg-blue-600 rounded-full mr-1"></span>
+                          <p className="font-semibold text-blue-600 dark:text-blue-300 mt-1 flex items-center">
+                            <span className="w-1.5 h-1.5 bg-blue-600 dark:bg-blue-400 rounded-full mr-1"></span>
                             Today
                           </p>
                         )}

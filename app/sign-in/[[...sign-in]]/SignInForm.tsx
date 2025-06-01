@@ -6,17 +6,27 @@ import { FcGoogle } from "react-icons/fc"; // Google icon
 
 export default function SignInForm() {
   return (
-    <div className="grid gap-6">
+    <div className="space-y-6">
       <Button
         variant="outline"
         type="button"
         onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
-        className="w-full flex items-center justify-center gap-3 py-6 text-lg border-2 border-gray-300 hover:border-blue-400 hover:bg-blue-50/50 transition-all duration-300 rounded-xl shadow-sm hover:shadow-md transform hover:scale-[1.02]"
+        className="w-full flex items-center justify-center gap-3 h-12 text-sm font-medium border border-gray-300 hover:border-blue-400 hover:bg-blue-50/50 hover:text-black transition-colors duration-200 rounded-lg"
       >
-        <FcGoogle className="h-6 w-6" />
-        <span className="font-medium text-gray-700">Sign in with Google</span>
+        <FcGoogle className="h-5 w-5" />
+        Continue with Google
       </Button>
-      {/* You can add other sign-in methods here if needed */}
+
+      <div className="relative">
+        <div className="absolute inset-0 flex items-center">
+          <span className="w-full border-t border-gray-200" />
+        </div>
+        <div className="relative flex justify-center text-xs uppercase">
+          <span className="bg-white px-2 text-gray-500">
+            Secure authentication
+          </span>
+        </div>
+      </div>
     </div>
   );
 }

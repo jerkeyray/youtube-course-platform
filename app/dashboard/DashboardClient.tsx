@@ -1,4 +1,3 @@
-// filepath: /Users/srivastavya/code/yudoku/youtube-course-platform/app/dashboard/DashboardClient.tsx
 "use client";
 
 import React from "react";
@@ -10,10 +9,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   BookOpen,
   Clock,
+  Flame,
   Plus,
   Video,
   ArrowUpRight,
-  Flame,
 } from "lucide-react";
 import { format } from "date-fns";
 
@@ -42,7 +41,8 @@ interface SerializedCourse {
   }>;
 }
 
-interface SerializedActivity {
+// Match the ActivityHeatmap component's interface
+interface Activity {
   id: string;
   userId: string;
   date: string;
@@ -53,48 +53,51 @@ interface SerializedActivity {
 
 interface DashboardClientProps {
   courses: SerializedCourse[];
-  activities: SerializedActivity[];
+  activities: Activity[];
 }
 
 export default function DashboardClient({
   courses,
   activities,
 }: DashboardClientProps) {
-  // Filter courses with deadlines and calculate days remaining
   const coursesWithDeadlines = courses
     .filter((course) => course.deadline)
     .sort(
       (a, b) =>
         new Date(a.deadline!).getTime() - new Date(b.deadline!).getTime()
-    );
+    )
+    .slice(0, 6);
 
   // Get the most recently updated video with progress
-  const today = new Date();
   const recentlyWatchedVideos = courses
     .flatMap((course) =>
-      course.videos.map((video) => ({
-        courseId: course.id,
-        courseTitle: course.title,
-        ...video,
-      }))
+      course.videos
+        .filter((video) => video.progress.length > 0)
+        .map((video) => ({
+          id: video.id,
+          title: video.title,
+          videoId: video.videoId,
+          courseId: course.id,
+          courseTitle: course.title,
+          updatedAt: video.progress[0].updatedAt,
+        }))
     )
-    .filter((video) => video.progress?.[0]?.updatedAt)
     .sort(
       (a, b) =>
-        new Date(b.progress[0].updatedAt).getTime() -
-        new Date(a.progress[0].updatedAt).getTime()
+        new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
     )
-    .slice(0, 3);
+    .slice(0, 6);
 
-  // Calculate current streak for the activity banner
-  const sortedActivities = [...activities]
-    .filter((a) => a.completed)
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-
+  // Calculate current streak
   let currentStreak = 0;
+  const sortedActivities = [...activities].sort(
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+  );
+
   if (sortedActivities.length > 0) {
     const mostRecentDate = new Date(sortedActivities[0].date);
-    const yesterday = new Date(today);
+    const today = new Date();
+    const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
 
     // Check if most recent activity was today or yesterday to continue streak
@@ -123,15 +126,12 @@ export default function DashboardClient({
   }
 
   return (
-    <main className="space-y-8 min-h-screen bg-gray-50 p-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+    <main className="space-y-8 min-h-screen bg-background p-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-card p-6 rounded-lg border shadow-sm">
         <div>
-          <h1 className="text-4xl font-bold tracking-tight text-gray-900">
+          <h1 className="text-4xl font-bold tracking-tight text-foreground">
             Dashboard
           </h1>
-          <p className="text-gray-500 mt-1">
-            Track your progress and manage your courses
-          </p>
         </div>
         <Button className="gap-2 bg-blue-600 hover:bg-blue-700 shadow-sm">
           <Plus size={16} />
@@ -141,24 +141,22 @@ export default function DashboardClient({
 
       <div className="grid gap-8 grid-cols-1">
         {/* Updated Activity Section */}
-        <div className="bg-blue-50 rounded-lg p-6 border border-blue-100 shadow-sm">
-          <div className="flex flex-col md:flex-row items-center">
-            <div className="md:w-3/5 lg:w-1/2 flex justify-center md:justify-start py-4 order-last md:order-first">
-              <div className="w-full max-w-[380px] bg-white p-5 rounded-lg shadow-sm border border-blue-50">
-                <ActivityHeatmap activities={activities} cellSize={11} />
-              </div>
+        <div className="bg-blue-50 dark:bg-blue-950/50 rounded-lg p-4 md:p-6 border border-blue-100 dark:border-blue-900 shadow-sm">
+          <div className="flex flex-col md:flex-row items-center gap-6">
+            <div className="w-full md:w-3/4 lg:w-2/3 flex justify-center md:justify-start py-4 order-last md:order-first">
+              <ActivityHeatmap activities={activities} cellSize={18} />
             </div>
 
-            <div className="md:w-2/5 lg:w-1/2 md:pl-8 flex flex-col justify-center text-center md:text-left">
+            <div className="w-full md:w-1/4 lg:w-1/3 flex flex-col justify-center text-center md:text-left">
               <div className="flex items-center gap-3 mb-4 justify-center md:justify-start">
-                <div className="bg-blue-100 p-2 rounded-full">
-                  <Flame className="h-8 w-8 text-blue-600" />
+                <div className="bg-blue-100 dark:bg-blue-800 p-2 rounded-full">
+                  <Flame className="h-8 w-8 text-blue-600 dark:text-blue-300" />
                 </div>
-                <h2 className="text-3xl font-bold text-blue-600">
+                <h2 className="text-3xl font-bold text-blue-600 dark:text-blue-300">
                   {currentStreak || 0} day streak
                 </h2>
               </div>
-              <p className="text-gray-700 text-lg mt-1">
+              <p className="text-gray-700 dark:text-gray-200 text-lg mt-1">
                 {currentStreak
                   ? `${currentStreak} days? Cool. Still not enough to explain anything without Googling. 😉`
                   : "Start watching videos to build your streak!"}
@@ -169,14 +167,14 @@ export default function DashboardClient({
 
         {/* Upcoming Deadlines Section */}
         {coursesWithDeadlines.length > 0 && (
-          <Card className="border-blue-100 shadow-sm hover:shadow-md transition-shadow bg-blue-50">
-            <CardHeader className="pb-2 bg-blue-50">
+          <Card className="border-blue-100 dark:border-blue-900 shadow-sm hover:shadow-md transition-shadow bg-blue-50 dark:bg-blue-950/50">
+            <CardHeader className="pb-2 bg-blue-50 dark:bg-blue-950/50">
               <CardTitle className="text-xl font-semibold flex items-center">
-                <Clock className="h-5 w-5 mr-2 text-blue-600" /> Upcoming
-                Deadlines
+                <Clock className="h-5 w-5 mr-2 text-blue-600 dark:text-blue-300" />{" "}
+                Upcoming Deadlines
               </CardTitle>
             </CardHeader>
-            <CardContent className="bg-blue-50">
+            <CardContent className="bg-blue-50 dark:bg-blue-950/50">
               <div className="grid gap-3 grid-cols-1 md:grid-cols-3">
                 {coursesWithDeadlines.map((course) => {
                   const deadlineDate = new Date(course.deadline!);
@@ -189,10 +187,10 @@ export default function DashboardClient({
                   return (
                     <div
                       key={course.id}
-                      className={`flex items-center justify-between p-3 rounded-lg border border-blue-200 bg-white shadow-sm ${
+                      className={`flex items-center justify-between p-3 rounded-lg border shadow-sm ${
                         isUrgent
-                          ? "border-amber-300 bg-amber-50"
-                          : "border-gray-200"
+                          ? "border-amber-300 bg-amber-50 dark:bg-amber-900/20 dark:border-amber-800"
+                          : "border-gray-200 bg-white dark:bg-blue-900/20 dark:border-blue-800"
                       }`}
                     >
                       <div>
@@ -228,15 +226,16 @@ export default function DashboardClient({
         )}
 
         {/* Courses Section */}
-        <Card className="border-blue-100 shadow-sm hover:shadow-md transition-shadow bg-blue-50">
-          <CardHeader className="pb-2 bg-blue-50">
+        <Card>
+          <CardHeader>
             <CardTitle className="text-xl font-semibold flex items-center">
-              <BookOpen className="h-5 w-5 mr-2 text-blue-600" /> Your Courses
+              <BookOpen className="h-5 w-5 mr-2 text-blue-600 dark:text-blue-300" />{" "}
+              My Courses
             </CardTitle>
           </CardHeader>
-          <CardContent className="bg-blue-50">
+          <CardContent>
             {courses.length > 0 ? (
-              <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3">
+              <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
                 {courses.map((course) => (
                   <CourseCard key={course.id} course={course} />
                 ))}
@@ -244,9 +243,9 @@ export default function DashboardClient({
             ) : (
               <div className="p-8 text-center">
                 <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                  <BookOpen className="h-8 w-8 text-blue-600" />
+                  <BookOpen className="h-8 w-8 text-blue-600 dark:text-blue-400" />
                 </div>
-                <p className="text-blue-600/70 mb-4">
+                <p className="text-blue-600/70 dark:text-blue-400/90 mb-4">
                   You haven't added any courses yet.
                 </p>
                 <Button className="mt-2 bg-blue-600 hover:bg-blue-700" asChild>
@@ -261,19 +260,19 @@ export default function DashboardClient({
 
         {/* Recently Watched Videos Section */}
         {recentlyWatchedVideos.length > 0 && (
-          <Card className="border-blue-100 shadow-sm hover:shadow-md transition-shadow bg-blue-50">
-            <CardHeader className="pb-2 bg-blue-50">
+          <Card className="border-blue-100 dark:border-blue-900 shadow-sm hover:shadow-md transition-shadow bg-blue-50 dark:bg-blue-950/50">
+            <CardHeader className="pb-2 bg-blue-50 dark:bg-blue-950/50">
               <CardTitle className="text-xl font-semibold flex items-center">
-                <Video className="h-5 w-5 mr-2 text-blue-600" /> Recently
-                Watched
+                <Video className="h-5 w-5 mr-2 text-blue-600 dark:text-blue-300" />{" "}
+                Recently Watched
               </CardTitle>
             </CardHeader>
-            <CardContent className="bg-blue-50">
+            <CardContent className="bg-blue-50 dark:bg-blue-950/50">
               <div className="grid gap-3 grid-cols-1 md:grid-cols-3">
                 {recentlyWatchedVideos.map((video) => (
                   <div
                     key={video.id}
-                    className="flex items-center justify-between p-3 rounded-lg border border-blue-200 bg-white hover:bg-blue-50 transition-colors"
+                    className="flex items-center justify-between p-3 rounded-lg border border-blue-200 dark:border-blue-800 bg-white dark:bg-blue-900/20 hover:bg-blue-50 dark:hover:bg-blue-800/30 transition-colors"
                   >
                     <div className="overflow-hidden">
                       <h3 className="font-medium truncate max-w-[200px]">

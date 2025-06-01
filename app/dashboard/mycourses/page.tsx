@@ -77,7 +77,7 @@ export default function MyCoursesPage() {
   if (isLoading) {
     return (
       <main className="container py-8">
-        <LoadingScreen variant="fullscreen" text="Loading your courses..." />
+        <LoadingScreen variant="fullscreen" />
       </main>
     );
   }
@@ -87,9 +87,6 @@ export default function MyCoursesPage() {
       <div className="mb-8 flex flex-col justify-between gap-4 md:flex-row md:items-center">
         <div>
           <h1 className="text-3xl font-bold">My Courses</h1>
-          <p className="text-muted-foreground mt-1">
-            Manage and track your learning progress
-          </p>
         </div>
 
         <div className="flex items-center gap-2">
@@ -117,10 +114,10 @@ export default function MyCoursesPage() {
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <Button asChild>
+          <Button className="bg-blue-600 hover:bg-blue-700" asChild>
             <Link href="/dashboard/courses/create">
               <PlusCircle className="mr-2 h-5 w-5" />
-              Create New Course
+              Add Course
             </Link>
           </Button>
         </div>
@@ -134,7 +131,7 @@ export default function MyCoursesPage() {
               ? "No courses match your current filter"
               : "Create your first course to get started"}
           </p>
-          <Button asChild>
+          <Button className="bg-blue-600 hover:bg-blue-700" asChild>
             <Link href="/dashboard/courses/create">
               <PlusCircle className="mr-2 h-5 w-5" />
               Create New Course

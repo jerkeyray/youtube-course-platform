@@ -6,6 +6,12 @@ import { Course, Video, VideoProgress } from "@prisma/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
   Check,
   ChevronLeft,
   ChevronRight,
@@ -81,12 +87,20 @@ export default function CoursePlayer({ course }: CoursePlayerProps) {
         if (!response.ok) {
           throw new Error("Failed to update video progress");
         }
+
+        // Emit custom event for progress update
+        window.dispatchEvent(
+          new CustomEvent("videoProgressUpdate", {
+            detail: { videoId, completed: !isCompleted },
+          })
+        );
+
         toast.success(
           isCompleted
             ? "Video marked as not completed"
             : "Video marked as completed"
         );
-      } catch (error) {
+      } catch {
         // Revert optimistic update
         setWatchedVideos((prev) => {
           const newSet = new Set(prev);
@@ -106,16 +120,19 @@ export default function CoursePlayer({ course }: CoursePlayerProps) {
   const handleWatchLater = useCallback(
     async (videoId: string) => {
       const isWatchLater = watchLaterVideos.has(videoId);
-      if (isWatchLater) {
-        toast.info("Already in Watch Later");
-        return;
-      }
+      const newWatchLaterStatus = !isWatchLater;
+
       // Optimistically update UI
       setWatchLaterVideos((prev) => {
         const newSet = new Set(prev);
-        newSet.add(videoId);
+        if (newWatchLaterStatus) {
+          newSet.add(videoId);
+        } else {
+          newSet.delete(videoId);
+        }
         return newSet;
       });
+
       try {
         const response = await fetch(`/api/videos/${videoId}/watch-later`, {
           method: "POST",
@@ -123,18 +140,28 @@ export default function CoursePlayer({ course }: CoursePlayerProps) {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            watchLater: true,
+            watchLater: newWatchLaterStatus,
           }),
         });
 
         if (!response.ok) {
           throw new Error("Failed to update watch later status");
         }
-        toast.success("Added to watch later");
-      } catch (error) {
+
+        if (newWatchLaterStatus) {
+          toast.success("Added to watch later");
+        } else {
+          toast.success("Removed from watch later");
+        }
+      } catch {
+        // Revert optimistic update on error
         setWatchLaterVideos((prev) => {
           const newSet = new Set(prev);
-          newSet.delete(videoId);
+          if (newWatchLaterStatus) {
+            newSet.delete(videoId);
+          } else {
+            newSet.add(videoId);
+          }
           return newSet;
         });
         toast.error("Failed to update watch later status");
@@ -146,32 +173,59 @@ export default function CoursePlayer({ course }: CoursePlayerProps) {
   const handleBookmark = useCallback(
     async (videoId: string, youtubeId: string) => {
       const isBookmarked = bookmarkedVideos.has(videoId);
-      if (isBookmarked) {
-        toast.info("Already bookmarked");
-        return;
-      }
+      const newBookmarkStatus = !isBookmarked;
+
+      // Optimistically update UI
       setBookmarkedVideos((prev) => {
         const newSet = new Set(prev);
-        newSet.add(videoId);
+        if (newBookmarkStatus) {
+          newSet.add(videoId);
+        } else {
+          newSet.delete(videoId);
+        }
         return newSet;
       });
+
       try {
-        const response = await fetch("/api/bookmarks", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ videoId }),
-        });
+        let response;
+
+        if (newBookmarkStatus) {
+          // Add bookmark
+          response = await fetch("/api/bookmarks", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ videoId }),
+          });
+        } else {
+          // Remove bookmark
+          response = await fetch(`/api/bookmarks/${youtubeId}`, {
+            method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          });
+        }
 
         if (!response.ok) {
           throw new Error("Failed to update bookmark status");
         }
-        toast.success("Added to bookmarks");
-      } catch (error) {
+
+        if (newBookmarkStatus) {
+          toast.success("Added to bookmarks");
+        } else {
+          toast.success("Removed from bookmarks");
+        }
+      } catch {
+        // Revert optimistic update on error
         setBookmarkedVideos((prev) => {
           const newSet = new Set(prev);
-          newSet.delete(videoId);
+          if (newBookmarkStatus) {
+            newSet.delete(videoId);
+          } else {
+            newSet.add(videoId);
+          }
           return newSet;
         });
         toast.error("Failed to update bookmark status");
@@ -269,11 +323,13 @@ export default function CoursePlayer({ course }: CoursePlayerProps) {
           </div>
 
           {/* Video Info and Controls */}
-          <Card className="p-6">
+          <Card className="p-6 dark:bg-gray-800 dark:border-gray-700">
             <div className="space-y-4">
               <div>
-                <h2 className="text-2xl font-bold">{currentVideo.title}</h2>
-                <p className="text-muted-foreground">
+                <h2 className="text-2xl font-bold dark:text-white">
+                  {currentVideo.title}
+                </h2>
+                <p className="text-muted-foreground dark:text-gray-400">
                   Video {currentVideoIndex + 1} of {course.videos.length}
                 </p>
               </div>
@@ -284,7 +340,11 @@ export default function CoursePlayer({ course }: CoursePlayerProps) {
                   variant={
                     watchedVideos.has(currentVideo.id) ? "default" : "outline"
                   }
-                  className="flex items-center gap-2"
+                  className={`flex items-center gap-2 ${
+                    watchedVideos.has(currentVideo.id)
+                      ? "bg-blue-600 hover:bg-blue-700"
+                      : ""
+                  }`}
                 >
                   <Check className="h-4 w-4" />
                   {watchedVideos.has(currentVideo.id)
@@ -299,7 +359,11 @@ export default function CoursePlayer({ course }: CoursePlayerProps) {
                       ? "default"
                       : "outline"
                   }
-                  className="flex items-center gap-2"
+                  className={`flex items-center gap-2 ${
+                    watchLaterVideos.has(currentVideo.id)
+                      ? "bg-blue-600 hover:bg-blue-700"
+                      : ""
+                  }`}
                 >
                   <Clock className="h-4 w-4" />
                   Watch Later
@@ -314,7 +378,11 @@ export default function CoursePlayer({ course }: CoursePlayerProps) {
                       ? "default"
                       : "outline"
                   }
-                  className="flex items-center gap-2"
+                  className={`flex items-center gap-2 ${
+                    bookmarkedVideos.has(currentVideo.id)
+                      ? "bg-blue-600 hover:bg-blue-700"
+                      : ""
+                  }`}
                 >
                   <Bookmark className="h-4 w-4" />
                   Bookmark
@@ -343,10 +411,10 @@ export default function CoursePlayer({ course }: CoursePlayerProps) {
           </Card>
 
           {/* Notes Section */}
-          <Card className="p-6">
+          <Card className="p-6 dark:bg-gray-800 dark:border-gray-700">
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold">Notes</h3>
+                <h3 className="text-lg font-semibold dark:text-white">Notes</h3>
                 {!showNoteEditor && (
                   <Button
                     onClick={() => setShowNoteEditor(true)}
@@ -367,13 +435,13 @@ export default function CoursePlayer({ course }: CoursePlayerProps) {
                     value={noteTitle}
                     onChange={(e) => setNoteTitle(e.target.value)}
                     placeholder="Note title (optional)"
-                    className="w-full rounded-md border px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full rounded-md border px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400"
                   />
                   <Textarea
                     value={noteContent}
                     onChange={(e) => setNoteContent(e.target.value)}
                     placeholder="Write your notes here... (Markdown supported)"
-                    className="min-h-[200px] font-mono text-sm resize-none focus:ring-2 focus:ring-blue-500"
+                    className="min-h-[200px] font-mono text-sm resize-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400"
                   />
                   <div className="flex gap-2">
                     <Button
@@ -384,12 +452,12 @@ export default function CoursePlayer({ course }: CoursePlayerProps) {
                         })
                       }
                       disabled={saveNoteMutation.isPending}
-                      className="flex-1"
+                      className="flex-1 bg-blue-600 hover:bg-blue-700"
                     >
                       {saveNoteMutation.isPending ? (
                         <div className="flex items-center gap-2">
                           <div className="w-4 h-4">
-                            <LoadingScreen variant="inline" text="" />
+                            <LoadingScreen variant="inline" />
                           </div>
                           <span>Saving...</span>
                         </div>
@@ -414,21 +482,23 @@ export default function CoursePlayer({ course }: CoursePlayerProps) {
                 </div>
               ) : isNoteLoading ? (
                 <div className="flex justify-center py-8">
-                  <LoadingScreen variant="contained" text="Loading notes..." />
+                  <LoadingScreen variant="contained" />
                 </div>
               ) : note?.content ? (
-                <div className="prose prose-sm max-w-none rounded-lg border bg-white p-4 shadow-sm">
+                <div className="prose prose-sm max-w-none rounded-lg border bg-white dark:bg-gray-700 dark:border-gray-600 p-4 shadow-sm">
                   {note.title && (
-                    <h4 className="text-lg font-medium text-gray-900 mb-2">
+                    <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
                       {note.title}
                     </h4>
                   )}
-                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                    {note.content}
-                  </ReactMarkdown>
+                  <div className="dark:prose-invert">
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                      {note.content}
+                    </ReactMarkdown>
+                  </div>
                 </div>
               ) : (
-                <div className="text-center py-8 text-muted-foreground">
+                <div className="text-center py-8 text-muted-foreground dark:text-gray-400">
                   <p>No notes yet. Click the button above to add some!</p>
                 </div>
               )}
@@ -439,67 +509,132 @@ export default function CoursePlayer({ course }: CoursePlayerProps) {
 
       {/* Course Content Sidebar */}
       <div className="lg:col-span-4">
-        <Card className="sticky top-4">
-          <div className="p-4">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold">Course Content</h3>
-              <div className="text-sm text-muted-foreground">
-                {watchedVideos.size}/{course.videos.length} completed
+        <Card className="sticky top-4 dark:bg-gray-800 dark:border-gray-700 shadow-lg">
+          <div className="p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-bold dark:text-white flex items-center gap-2">
+                <Play className="h-5 w-5 text-blue-600" />
+                Course Content
+              </h3>
+              <div className="flex flex-col items-end">
+                <div className="text-sm font-medium text-blue-600 dark:text-blue-400">
+                  {watchedVideos.size}/{course.videos.length} completed
+                </div>
+                <div className="w-16 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full mt-1 overflow-hidden">
+                  <div
+                    className="h-full bg-blue-600 rounded-full transition-all duration-300"
+                    style={{
+                      width: `${
+                        (watchedVideos.size / course.videos.length) * 100
+                      }%`,
+                    }}
+                  />
+                </div>
               </div>
             </div>
-            <div className="space-y-1 max-h-[calc(100vh-12rem)] overflow-y-auto">
-              {course.videos.map((video, index) => (
-                <div
-                  key={video.id}
-                  className={`group relative rounded-lg border p-3 cursor-pointer transition-all hover:bg-muted/50 ${
-                    currentVideoIndex === index
-                      ? "border-primary bg-primary/5"
-                      : "border-border"
-                  }`}
-                  onClick={() => setCurrentVideoIndex(index)}
-                >
-                  <div className="flex items-start gap-3">
-                    <div className="flex-shrink-0 mt-1">
-                      {watchedVideos.has(video.id) ? (
-                        <div className="w-6 h-6 rounded-full bg-green-600 flex items-center justify-center">
-                          <Check className="h-3 w-3 text-white" />
-                        </div>
-                      ) : currentVideoIndex === index ? (
-                        <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center">
-                          <Play className="h-3 w-3 text-white ml-0.5" />
-                        </div>
-                      ) : (
-                        <div className="w-6 h-6 rounded-full border-2 border-muted-foreground/30 flex items-center justify-center text-sm font-medium text-muted-foreground">
-                          {index + 1}
-                        </div>
-                      )}
-                    </div>
 
-                    <div className="flex-1 min-w-0">
-                      <h4 className="text-sm font-medium leading-tight line-clamp-2 mb-1">
-                        {video.title}
-                      </h4>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs text-muted-foreground">
-                          Video {index + 1}
-                        </span>
-                        {watchLaterVideos.has(video.id) && (
-                          <div className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium border border-gray-200">
-                            <Clock className="h-2 w-2 mr-1" />
-                            Later
+            <div className="space-y-1.5 max-h-[calc(100vh-16rem)] overflow-y-auto pr-2 -mr-2">
+              <TooltipProvider>
+                {course.videos.map((video, index) => (
+                  <Tooltip key={video.id}>
+                    <TooltipTrigger asChild>
+                      <div
+                        className={`group relative rounded-lg border transition-all duration-200 cursor-pointer overflow-hidden min-h-20 ${
+                          currentVideoIndex === index
+                            ? "border-blue-400 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/40 dark:to-indigo-950/40 shadow-lg ring-2 ring-blue-500/30"
+                            : "border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700/30"
+                        }`}
+                        onClick={() => setCurrentVideoIndex(index)}
+                      >
+                        <div className="flex items-start gap-3 p-3">
+                          <div className="flex-shrink-0 mt-1">
+                            {watchedVideos.has(video.id) ? (
+                              <div className="w-7 h-7 rounded-full bg-green-500 flex items-center justify-center shadow-sm">
+                                <Check className="h-4 w-4 text-white" />
+                              </div>
+                            ) : currentVideoIndex === index ? (
+                              <div className="w-7 h-7 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 flex items-center justify-center shadow-md">
+                                <Play className="h-4 w-4 text-white ml-0.5" />
+                              </div>
+                            ) : (
+                              <div className="w-7 h-7 rounded-full border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 flex items-center justify-center text-xs font-semibold text-gray-600 dark:text-gray-400 transition-all duration-200 group-hover:border-blue-400 group-hover:bg-blue-50 dark:group-hover:bg-blue-950/30">
+                                {index + 1}
+                              </div>
+                            )}
                           </div>
-                        )}
-                        {bookmarkedVideos.has(video.id) && (
-                          <div className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium border border-gray-200">
-                            <Bookmark className="h-2 w-2 mr-1" />
-                            Bookmarked
+
+                          <div className="flex-1 min-w-0">
+                            <h4
+                              className={`text-sm font-medium leading-5 line-clamp-2 mb-1 transition-colors ${
+                                currentVideoIndex === index
+                                  ? "text-blue-900 dark:text-blue-100"
+                                  : "text-gray-900 dark:text-gray-100 group-hover:text-blue-700 dark:group-hover:text-blue-300"
+                              }`}
+                            >
+                              {video.title}
+                            </h4>
+
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-xs text-gray-500 dark:text-gray-400">
+                                Video {index + 1}
+                              </span>
+
+                              {watchedVideos.has(video.id) && (
+                                <span className="text-xs font-medium text-green-700 dark:text-green-400">
+                                  • Completed
+                                </span>
+                              )}
+
+                              {watchLaterVideos.has(video.id) && (
+                                <span className="text-xs font-medium text-orange-700 dark:text-orange-400">
+                                  • Watch Later
+                                </span>
+                              )}
+
+                              {bookmarkedVideos.has(video.id) && (
+                                <span className="text-xs font-medium text-purple-700 dark:text-purple-400">
+                                  • Bookmarked
+                                </span>
+                              )}
+                            </div>
                           </div>
-                        )}
+
+                          {/* Play indicator for current video */}
+                          {currentVideoIndex === index && (
+                            <div className="flex-shrink-0 animate-pulse">
+                              <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+                            </div>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
+                    </TooltipTrigger>
+                    <TooltipContent side="left" className="max-w-xs">
+                      <p className="font-medium">{video.title}</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Video {index + 1}
+                        {watchedVideos.has(video.id) && " • Completed"}
+                        {watchLaterVideos.has(video.id) && " • Watch Later"}
+                        {bookmarkedVideos.has(video.id) && " • Bookmarked"}
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                ))}
+              </TooltipProvider>
+            </div>
+
+            {/* Course progress summary */}
+            <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-600 dark:text-gray-400">
+                  Progress
+                </span>
+                <span className="font-medium text-gray-900 dark:text-gray-100">
+                  {Math.round(
+                    (watchedVideos.size / course.videos.length) * 100
+                  )}
+                  % complete
+                </span>
+              </div>
             </div>
           </div>
         </Card>

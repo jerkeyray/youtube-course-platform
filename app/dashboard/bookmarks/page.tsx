@@ -39,9 +39,11 @@ export default function BookmarksPage() {
     toast.error("Failed to load bookmarks");
     return (
       <main className="container py-8">
-        <div className="rounded-lg border bg-card p-8 text-center">
-          <h2 className="mb-2 text-xl font-medium">Error loading bookmarks</h2>
-          <p className="mb-4 text-muted-foreground">
+        <div className="rounded-lg border bg-card dark:bg-gray-800 dark:border-gray-700 p-8 text-center">
+          <h2 className="mb-2 text-xl font-medium dark:text-white">
+            Error loading bookmarks
+          </h2>
+          <p className="mb-4 text-muted-foreground dark:text-gray-400">
             Please try refreshing the page
           </p>
         </div>
@@ -52,7 +54,7 @@ export default function BookmarksPage() {
   if (isLoading) {
     return (
       <main className="container py-8">
-        <LoadingScreen variant="fullscreen" text="Loading your bookmarks..." />
+        <LoadingScreen variant="fullscreen" />
       </main>
     );
   }
@@ -60,13 +62,14 @@ export default function BookmarksPage() {
   return (
     <main className="container py-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold">My Bookmarks</h1>
-        <p className="text-muted-foreground mt-1">Videos you've bookmarked</p>
+        <h1 className="text-3xl font-bold dark:text-white">My Bookmarks</h1>
       </div>
 
       {videos.length === 0 ? (
-        <div className="rounded-lg border bg-card p-8 text-center">
-          <h2 className="mb-2 text-xl font-medium">No bookmarks yet</h2>
+        <div className="rounded-lg border bg-card dark:bg-blue-900/50 p-8 text-center">
+          <h2 className="mb-2 text-xl font-medium dark:text-blue-100">
+            No bookmarks yet
+          </h2>
           <p className="text-muted-foreground">
             Add bookmarks while watching videos
           </p>
