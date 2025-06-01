@@ -249,7 +249,7 @@ export default function DashboardClient({
                   You haven't added any courses yet.
                 </p>
                 <Button className="mt-2 bg-blue-600 hover:bg-blue-700" asChild>
-                  <Link href="/dashboard/courses/new">
+                  <Link href="/dashboard/courses/create">
                     Add Your First Course
                   </Link>
                 </Button>
