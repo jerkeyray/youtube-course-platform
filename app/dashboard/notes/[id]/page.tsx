@@ -10,9 +10,9 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
 interface NotePageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export default async function NotePage({ params }: NotePageProps) {
@@ -22,9 +22,11 @@ export default async function NotePage({ params }: NotePageProps) {
     return redirect("/");
   }
 
+  const { id } = await params;
+
   const note = await db.note.findUnique({
     where: {
-      id: params.id,
+      id,
       userId,
     },
     include: {

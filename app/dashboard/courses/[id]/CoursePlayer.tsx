@@ -1,7 +1,7 @@
 // components/CoursePlayer.tsx
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import { Course, Video, VideoProgress } from "@prisma/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -246,6 +246,24 @@ export default function CoursePlayer({ course }: CoursePlayerProps) {
 
   const currentVideo = course.videos[currentVideoIndex];
 
+  // Memoize the iframe src to prevent unnecessary re-renders
+  const iframeSrc = useMemo(() => {
+    // Use youtube-nocookie.com for privacy-enhanced mode to reduce tracking
+    const baseUrl = `https://www.youtube-nocookie.com/embed/${currentVideo.videoId}`;
+    const params = new URLSearchParams({
+      rel: "0",
+      showinfo: "0",
+      modestbranding: "1",
+      enablejsapi: "1",
+      // Additional privacy parameters
+      iv_load_policy: "3", // Hide video annotations
+      disablekb: "1", // Disable keyboard controls to reduce tracking
+      fs: "1", // Allow fullscreen
+      cc_load_policy: "0", // Don't show closed captions by default
+    });
+    return `${baseUrl}?${params.toString()}`;
+  }, [currentVideo.videoId]);
+
   // Fetch note for current video only when editor is opened
   const { data: note, isLoading: isNoteLoading } = useQuery({
     queryKey: ["note", currentVideo.id],
@@ -316,9 +334,13 @@ export default function CoursePlayer({ course }: CoursePlayerProps) {
           {/* Video Player */}
           <div className="aspect-video w-full overflow-hidden rounded-lg bg-black">
             <iframe
-              src={`https://www.youtube.com/embed/${currentVideo.videoId}`}
-              className="h-full w-full"
+              key={currentVideo.videoId}
+              src={iframeSrc}
+              title={currentVideo.title}
+              className="h-full w-full border-0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
               allowFullScreen
+              loading="lazy"
             />
           </div>
 

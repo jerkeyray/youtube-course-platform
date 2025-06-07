@@ -13,9 +13,9 @@ type CourseWithProgress = Course & {
 };
 
 interface CoursePageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export default async function CoursePage({ params }: CoursePageProps) {
@@ -25,7 +25,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
     return redirect("/");
   }
 
-  const courseId = params.id;
+  const { id: courseId } = await params;
 
   const course = await db.course.findUnique({
     where: {
