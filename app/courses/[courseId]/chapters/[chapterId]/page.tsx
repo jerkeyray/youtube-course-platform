@@ -14,7 +14,7 @@ export default function ChapterPage({
       <div className="aspect-video relative">
         <iframe
           key={video.videoId}
-          src={`https://www.youtube-nocookie.com/embed/${video.videoId}?rel=0&showinfo=0&modestbranding=1&enablejsapi=1&iv_load_policy=3&disablekb=1&fs=1&cc_load_policy=0`}
+          src={`https://www.youtube-nocookie.com/embed/${video.videoId}?rel=0&showinfo=0&modestbranding=1&enablejsapi=1&iv_load_policy=3&fs=1&cc_load_policy=0`}
           title="Video Player"
           className="w-full h-full rounded-lg border-0"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"

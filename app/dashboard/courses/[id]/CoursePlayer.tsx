@@ -257,7 +257,6 @@ export default function CoursePlayer({ course }: CoursePlayerProps) {
       enablejsapi: "1",
       // Additional privacy parameters
       iv_load_policy: "3", // Hide video annotations
-      disablekb: "1", // Disable keyboard controls to reduce tracking
       fs: "1", // Allow fullscreen
       cc_load_policy: "0", // Don't show closed captions by default
     });
