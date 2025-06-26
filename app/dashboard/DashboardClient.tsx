@@ -225,6 +225,49 @@ export default function DashboardClient({
           </Card>
         )}
 
+        {/* Recently Watched Videos Section */}
+        {recentlyWatchedVideos.length > 0 && (
+          <Card className="border-blue-100 dark:border-blue-900 shadow-sm hover:shadow-md transition-shadow bg-blue-50 dark:bg-blue-950/50">
+            <CardHeader className="pb-2 bg-blue-50 dark:bg-blue-950/50">
+              <CardTitle className="text-xl font-semibold flex items-center">
+                <Video className="h-5 w-5 mr-2 text-blue-600 dark:text-blue-300" />{" "}
+                Recently Watched
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="bg-blue-50 dark:bg-blue-950/50">
+              <div className="grid gap-3 grid-cols-1 md:grid-cols-3">
+                {recentlyWatchedVideos.map((video) => (
+                  <div
+                    key={video.id}
+                    className="flex items-center justify-between p-3 rounded-lg border border-blue-200 dark:border-blue-800 bg-white dark:bg-blue-900/20 hover:bg-blue-50 dark:hover:bg-blue-800/30 transition-colors"
+                  >
+                    <div className="overflow-hidden">
+                      <h3 className="font-medium truncate max-w-[200px]">
+                        {video.title}
+                      </h3>
+                      <p className="text-sm text-muted-foreground truncate">
+                        {video.courseTitle}
+                      </p>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="shrink-0"
+                      asChild
+                    >
+                      <Link
+                        href={`/dashboard/courses/${video.courseId}?videoId=${video.id}`}
+                      >
+                        <ArrowUpRight className="h-4 w-4" />
+                      </Link>
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Courses Section */}
         <Card>
           <CardHeader>
@@ -257,49 +300,6 @@ export default function DashboardClient({
             )}
           </CardContent>
         </Card>
-
-        {/* Recently Watched Videos Section */}
-        {recentlyWatchedVideos.length > 0 && (
-          <Card className="border-blue-100 dark:border-blue-900 shadow-sm hover:shadow-md transition-shadow bg-blue-50 dark:bg-blue-950/50">
-            <CardHeader className="pb-2 bg-blue-50 dark:bg-blue-950/50">
-              <CardTitle className="text-xl font-semibold flex items-center">
-                <Video className="h-5 w-5 mr-2 text-blue-600 dark:text-blue-300" />{" "}
-                Recently Watched
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="bg-blue-50 dark:bg-blue-950/50">
-              <div className="grid gap-3 grid-cols-1 md:grid-cols-3">
-                {recentlyWatchedVideos.map((video) => (
-                  <div
-                    key={video.id}
-                    className="flex items-center justify-between p-3 rounded-lg border border-blue-200 dark:border-blue-800 bg-white dark:bg-blue-900/20 hover:bg-blue-50 dark:hover:bg-blue-800/30 transition-colors"
-                  >
-                    <div className="overflow-hidden">
-                      <h3 className="font-medium truncate max-w-[200px]">
-                        {video.title}
-                      </h3>
-                      <p className="text-sm text-muted-foreground truncate">
-                        {video.courseTitle}
-                      </p>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="shrink-0"
-                      asChild
-                    >
-                      <Link
-                        href={`/courses/${video.courseId}/videos/${video.videoId}`}
-                      >
-                        <ArrowUpRight className="h-4 w-4" />
-                      </Link>
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
       </div>
     </main>
   );

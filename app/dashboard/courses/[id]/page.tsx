@@ -16,9 +16,15 @@ interface CoursePageProps {
   params: Promise<{
     id: string;
   }>;
+  searchParams: Promise<{
+    videoId?: string;
+  }>;
 }
 
-export default async function CoursePage({ params }: CoursePageProps) {
+export default async function CoursePage({
+  params,
+  searchParams,
+}: CoursePageProps) {
   const session = await auth();
 
   if (!session?.user?.id) {
@@ -26,6 +32,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
   }
 
   const { id: courseId } = await params;
+  const { videoId } = await searchParams;
 
   const course = await db.course.findUnique({
     where: {
@@ -52,6 +59,15 @@ export default async function CoursePage({ params }: CoursePageProps) {
     return redirect("/");
   }
 
+  // Find the initial video index if videoId is provided
+  let initialVideoIndex = 0;
+  if (videoId) {
+    const videoIndex = course.videos.findIndex((video) => video.id === videoId);
+    if (videoIndex !== -1) {
+      initialVideoIndex = videoIndex;
+    }
+  }
+
   const totalVideos = course.videos.length;
   const completedVideos = course.videos.filter((video) =>
     video.progress.some((p) => p.completed)
@@ -68,7 +84,10 @@ export default async function CoursePage({ params }: CoursePageProps) {
   return (
     <main className="container pt-4 pb-8">
       <CourseHeader course={courseWithProgress} />
-      <CoursePlayer course={courseWithProgress} />
+      <CoursePlayer
+        course={courseWithProgress}
+        initialVideoIndex={initialVideoIndex}
+      />
     </main>
   );
 }

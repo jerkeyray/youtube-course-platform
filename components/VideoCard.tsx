@@ -92,7 +92,9 @@ export default function VideoCard({
       )}
       onClick={() => {
         if (video.courseId) {
-          router.push(`/dashboard/courses/${video.courseId}?video=${video.id}`);
+          router.push(
+            `/dashboard/courses/${video.courseId}?videoId=${video.id}`
+          );
         } else {
           toast.error("Course information is missing for this video");
           // eslint-disable-next-line no-console

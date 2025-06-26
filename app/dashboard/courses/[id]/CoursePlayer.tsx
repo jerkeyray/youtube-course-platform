@@ -38,10 +38,14 @@ type CourseWithProgress = Course & {
 
 interface CoursePlayerProps {
   course: CourseWithProgress;
+  initialVideoIndex?: number;
 }
 
-export default function CoursePlayer({ course }: CoursePlayerProps) {
-  const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
+export default function CoursePlayer({
+  course,
+  initialVideoIndex = 0,
+}: CoursePlayerProps) {
+  const [currentVideoIndex, setCurrentVideoIndex] = useState(initialVideoIndex);
   const [watchedVideos, setWatchedVideos] = useState<Set<string>>(
     new Set(
       course.videos
