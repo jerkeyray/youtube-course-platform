@@ -680,21 +680,6 @@ export default function CoursePlayer({
                 ))}
               </TooltipProvider>
             </div>
-
-            {/* Course progress summary */}
-            <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-600 dark:text-gray-400">
-                  Progress
-                </span>
-                <span className="font-medium text-gray-900 dark:text-gray-100">
-                  {Math.round(
-                    (watchedVideos.size / course.videos.length) * 100
-                  )}
-                  % complete
-                </span>
-              </div>
-            </div>
           </div>
         </Card>
       </div>

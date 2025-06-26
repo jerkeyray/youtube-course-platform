@@ -88,6 +88,29 @@ export default function DashboardClient({
     )
     .slice(0, 6);
 
+  // Get the last 6 courses that have been recently watched
+  const recentlyWatchedCourses = courses
+    .map((course) => {
+      // Find the most recent video progress for this course
+      const mostRecentProgress = course.videos
+        .flatMap((video) => video.progress)
+        .sort(
+          (a, b) =>
+            new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+        )[0];
+
+      return {
+        course,
+        lastActivity: mostRecentProgress
+          ? new Date(mostRecentProgress.updatedAt)
+          : new Date(0),
+      };
+    })
+    .filter(({ lastActivity }) => lastActivity.getTime() > 0) // Only courses with some progress
+    .sort((a, b) => b.lastActivity.getTime() - a.lastActivity.getTime())
+    .slice(0, 6)
+    .map(({ course }) => course);
+
   // Calculate current streak
   let currentStreak = 0;
   const sortedActivities = [...activities].sort(
@@ -237,31 +260,25 @@ export default function DashboardClient({
             <CardContent className="bg-blue-50 dark:bg-blue-950/50">
               <div className="grid gap-3 grid-cols-1 md:grid-cols-3">
                 {recentlyWatchedVideos.map((video) => (
-                  <div
+                  <Link
                     key={video.id}
-                    className="flex items-center justify-between p-3 rounded-lg border border-blue-200 dark:border-blue-800 bg-white dark:bg-blue-900/20 hover:bg-blue-50 dark:hover:bg-blue-800/30 transition-colors"
+                    href={`/dashboard/courses/${video.courseId}?videoId=${video.id}`}
+                    className="block"
                   >
-                    <div className="overflow-hidden">
-                      <h3 className="font-medium truncate max-w-[200px]">
-                        {video.title}
-                      </h3>
-                      <p className="text-sm text-muted-foreground truncate">
-                        {video.courseTitle}
-                      </p>
+                    <div className="flex items-center justify-between p-3 rounded-lg border border-blue-200 dark:border-blue-800 bg-white dark:bg-blue-900/20 hover:bg-blue-50 dark:hover:bg-blue-800/30 transition-colors cursor-pointer">
+                      <div className="overflow-hidden flex-1">
+                        <h3 className="font-medium truncate max-w-[200px]">
+                          {video.title}
+                        </h3>
+                        <p className="text-sm text-muted-foreground truncate">
+                          {video.courseTitle}
+                        </p>
+                      </div>
+                      <div className="flex-shrink-0 ml-2">
+                        <ArrowUpRight className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                      </div>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="shrink-0"
-                      asChild
-                    >
-                      <Link
-                        href={`/dashboard/courses/${video.courseId}?videoId=${video.id}`}
-                      >
-                        <ArrowUpRight className="h-4 w-4" />
-                      </Link>
-                    </Button>
-                  </div>
+                  </Link>
                 ))}
               </div>
             </CardContent>
@@ -273,15 +290,37 @@ export default function DashboardClient({
           <CardHeader>
             <CardTitle className="text-xl font-semibold flex items-center">
               <BookOpen className="h-5 w-5 mr-2 text-blue-600 dark:text-blue-300" />{" "}
-              My Courses
+              Continue Course
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {courses.length > 0 ? (
-              <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-                {courses.map((course) => (
-                  <CourseCard key={course.id} course={course} />
-                ))}
+            {recentlyWatchedCourses.length > 0 ? (
+              <div>
+                <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+                  {recentlyWatchedCourses.map((course) => (
+                    <CourseCard key={course.id} course={course} />
+                  ))}
+                </div>
+                {courses.length > 6 && (
+                  <div className="mt-6 text-center">
+                    <Button variant="outline" asChild>
+                      <Link href="/dashboard/mycourses">View All Courses</Link>
+                    </Button>
+                  </div>
+                )}
+              </div>
+            ) : courses.length > 0 ? (
+              <div className="p-8 text-center">
+                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                  <BookOpen className="h-8 w-8 text-blue-600 dark:text-blue-400" />
+                </div>
+                <p className="text-blue-600/70 dark:text-blue-400/90 mb-4">
+                  Start watching videos to see your recently watched courses
+                  here.
+                </p>
+                <Button className="mt-2 bg-blue-600 hover:bg-blue-700" asChild>
+                  <Link href="/dashboard/mycourses">View All Courses</Link>
+                </Button>
               </div>
             ) : (
               <div className="p-8 text-center">
