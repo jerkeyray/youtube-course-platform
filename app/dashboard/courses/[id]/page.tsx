@@ -82,12 +82,14 @@ export default async function CoursePage({
   };
 
   return (
-    <main className="container pt-4 pb-8">
-      <CourseHeader course={courseWithProgress} />
-      <CoursePlayer
-        course={courseWithProgress}
-        initialVideoIndex={initialVideoIndex}
-      />
-    </main>
+    <div className="min-h-screen bg-black text-white">
+      <main className="container pt-4 pb-8 px-4 lg:px-6">
+        <CourseHeader course={courseWithProgress} />
+        <CoursePlayer
+          course={courseWithProgress}
+          initialVideoIndex={initialVideoIndex}
+        />
+      </main>
+    </div>
   );
 }

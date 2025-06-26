@@ -29,37 +29,37 @@ const routes = [
     label: "Dashboard",
     icon: LayoutDashboard,
     href: "/dashboard",
-    color: "text-slate-400",
+    color: "text-gray-400",
   },
   {
     label: "My Courses",
     icon: BookOpen,
     href: "/dashboard/mycourses",
-    color: "text-slate-400",
+    color: "text-gray-400",
   },
   {
     label: "Notes",
     icon: Pencil,
     href: "/dashboard/notes",
-    color: "text-slate-400",
+    color: "text-gray-400",
   },
   {
     label: "Bookmarks",
     icon: Bookmark,
     href: "/dashboard/bookmarks",
-    color: "text-slate-400",
+    color: "text-gray-400",
   },
   {
     label: "Watch Later",
     icon: Clock,
     href: "/dashboard/watch-later",
-    color: "text-slate-400",
+    color: "text-gray-400",
   },
   {
     label: "Profile",
     icon: User,
     href: "/dashboard/profile",
-    color: "text-slate-400",
+    color: "text-gray-400",
   },
 ];
 
@@ -82,8 +82,8 @@ export function DashboardSidebar({ isCollapsed }: DashboardSidebarProps) {
             className={cn(
               "flex items-center gap-x-2 text-sm font-medium px-3 py-2 transition-all duration-200",
               pathname === route.href
-                ? "text-white bg-slate-700/80 border-l-4 border-slate-400"
-                : "text-slate-200 hover:bg-slate-800/60",
+                ? "text-white bg-blue-600/20 border-l-4 border-blue-400"
+                : "text-gray-300 hover:bg-zinc-800/60 hover:text-white",
               isCollapsed ? "justify-center rounded-lg mx-1" : "rounded-r-lg"
             )}
           >
@@ -102,14 +102,14 @@ export function DashboardSidebar({ isCollapsed }: DashboardSidebarProps) {
               <Button
                 variant="ghost"
                 className={cn(
-                  "flex items-center gap-x-2 text-sm font-medium px-3 py-2 text-slate-200 w-full transition-all duration-200",
+                  "flex items-center gap-x-2 text-sm font-medium px-3 py-2 text-gray-300 w-full transition-all duration-200 hover:bg-zinc-800/60 hover:text-white",
                   isCollapsed
                     ? "justify-center rounded-lg mx-1 h-12 w-12"
                     : "rounded-r-lg justify-start"
                 )}
               >
                 {session.user.image ? (
-                  <div className="relative h-8 w-8 rounded-full overflow-hidden">
+                  <div className="relative h-8 w-8 rounded-full overflow-hidden ring-2 ring-zinc-700">
                     <Image
                       src={session.user.image}
                       alt={session.user.name || "Profile"}
@@ -119,13 +119,13 @@ export function DashboardSidebar({ isCollapsed }: DashboardSidebarProps) {
                     />
                   </div>
                 ) : (
-                  <div className="h-8 w-8 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white text-sm font-bold">
+                  <div className="h-8 w-8 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white text-sm font-bold ring-2 ring-zinc-700">
                     {session.user.name?.[0]?.toUpperCase() || "U"}
                   </div>
                 )}
                 {!isCollapsed && (
                   <div className="flex flex-col items-start text-left overflow-hidden">
-                    <p className="text-sm text-slate-200 truncate max-w-[120px]">
+                    <p className="text-sm text-gray-300 truncate max-w-[120px]">
                       {session.user.name || "User"}
                     </p>
                   </div>
@@ -135,10 +135,10 @@ export function DashboardSidebar({ isCollapsed }: DashboardSidebarProps) {
             <DropdownMenuContent
               align={isCollapsed ? "center" : "start"}
               side="top"
-              className="w-56 mb-2 z-[90]"
+              className="w-56 mb-2 z-[90] bg-zinc-900 border border-zinc-700"
             >
               <DropdownMenuItem
-                className="cursor-pointer text-red-600 focus:text-red-600"
+                className="cursor-pointer text-red-400 focus:text-red-400 focus:bg-zinc-800"
                 onClick={() => signOut({ callbackUrl: "/" })}
               >
                 <LogOut className="mr-2 h-4 w-4" />

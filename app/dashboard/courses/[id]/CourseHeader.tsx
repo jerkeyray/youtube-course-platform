@@ -87,7 +87,7 @@ export default function CourseHeader({
         <h1 className="text-3xl font-bold mb-2 text-white">{course.title}</h1>
 
         {/* Subtle Stats */}
-        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+        <div className="flex items-center gap-4 text-sm text-gray-400">
           <span>{course.videos.length} videos</span>
           <span>•</span>
           <span>{completedVideos} completed</span>

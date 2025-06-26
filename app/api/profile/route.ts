@@ -2,15 +2,60 @@ import { auth } from "@/auth";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
+import { subDays, isSameDay } from "date-fns";
 
-// Define a type for the activity objects used in streak calculations
-interface Activity {
+interface UserActivity {
   id: string;
   userId: string;
-  date: string; // Assuming date is stored as an ISO string e.g., "YYYY-MM-DD"
+  date: string;
   completed: boolean;
-  createdAt: Date; // Or string if it's serialized before reaching here
-  updatedAt: Date; // Or string
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+interface VideoProgress {
+  id: string;
+  userId: string;
+  videoId: string;
+  completed: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+  video: {
+    id: string;
+    title: string;
+    courseId: string;
+  };
+}
+
+interface UserWithData {
+  id: string;
+  name: string | null;
+  email: string | null;
+  image: string | null;
+  bio: string | null;
+  createdAt: Date;
+  courses: Array<{
+    id: string;
+    title: string;
+    videos: Array<{
+      id: string;
+      title: string;
+      progress: Array<{
+        id: string;
+        completed: boolean;
+      }>;
+    }>;
+  }>;
+  activities: UserActivity[];
+  certificates: Array<{
+    id: string;
+    courseId: string;
+    course: {
+      id: string;
+      title: string;
+    };
+  }>;
+  videoProgress: VideoProgress[];
 }
 
 export async function GET() {
@@ -41,6 +86,12 @@ export async function GET() {
             course: true,
           },
         },
+        videoProgress: {
+          where: { completed: true },
+          include: {
+            video: true,
+          },
+        },
       },
     });
 
@@ -48,23 +99,42 @@ export async function GET() {
       return new NextResponse("User not found", { status: 404 });
     }
 
-    // Assuming user.activities matches the Activity[] type or can be cast
-    const activitiesForStreak: Activity[] = user.activities as Activity[];
+    // Check for completed courses without certificates and create them
+    await createMissingCertificates(user as UserWithData);
+
+    // Re-fetch user data to get the newly created certificates
+    const updatedUser = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      include: {
+        certificates: {
+          include: {
+            course: true,
+          },
+        },
+        videoProgress: {
+          where: { completed: true },
+          include: {
+            video: true,
+          },
+        },
+      },
+    });
+
+    if (!updatedUser) {
+      return new NextResponse("User not found", { status: 404 });
+    }
 
     // Calculate stats
-    const currentStreak = calculateCurrentStreak(activitiesForStreak);
-    const longestStreak = calculateLongestStreak(activitiesForStreak);
-    const coursesCompleted = user.certificates.length;
-    const totalWatchTime = calculateTotalWatchTime(activitiesForStreak);
+    const currentStreak = calculateCurrentStreak(user.activities);
+    const longestStreak = calculateLongestStreak(user.activities);
+    const coursesCompleted = updatedUser.certificates.length;
+    const totalWatchTime = calculateTotalWatchTime(updatedUser.videoProgress);
 
-    // Get completed courses
-    const completedCourses = user.courses.filter((course) => {
-      const totalVideos = course.videos.length;
-      const completedVideos = course.videos.filter((video) =>
-        video.progress.some((p) => p.completed)
-      ).length;
-      return completedVideos === totalVideos && totalVideos > 0;
-    });
+    // Get completed courses from certificates
+    const completedCourses = updatedUser.certificates.map((certificate) => ({
+      id: certificate.course.id,
+      title: certificate.course.title,
+    }));
 
     return NextResponse.json({
       user: {
@@ -81,17 +151,50 @@ export async function GET() {
         coursesCompleted,
         totalWatchTime,
       },
-      completedCourses: completedCourses.map((course) => ({
-        id: course.id,
-        title: course.title,
-      })),
+      completedCourses,
     });
   } catch (error) {
-    // console.error("Error fetching profile data:", error);
+    console.error("Error fetching profile data:", error);
     return NextResponse.json(
       { error: "Failed to fetch profile data" },
       { status: 500 }
     );
+  }
+}
+
+async function createMissingCertificates(user: UserWithData) {
+  try {
+    for (const course of user.courses) {
+      const totalVideos = course.videos.length;
+      const completedVideos = course.videos.filter((video) =>
+        video.progress.some((p) => p.completed)
+      ).length;
+
+      // Check if course is completed (all videos done)
+      if (totalVideos > 0 && completedVideos === totalVideos) {
+        // Check if certificate already exists
+        const existingCertificate = await prisma.certificate.findUnique({
+          where: {
+            userId_courseId: {
+              userId: user.id,
+              courseId: course.id,
+            },
+          },
+        });
+
+        // Create certificate if it doesn't exist
+        if (!existingCertificate) {
+          await prisma.certificate.create({
+            data: {
+              userId: user.id,
+              courseId: course.id,
+            },
+          });
+        }
+      }
+    }
+  } catch (error) {
+    console.error("Error creating missing certificates:", error);
   }
 }
 
@@ -111,7 +214,7 @@ export async function PATCH(req: Request) {
 
     return NextResponse.json(updatedUser);
   } catch (error) {
-    // console.error("Error updating profile:", error);
+    console.error("Error updating profile:", error);
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: error.errors[0].message },
@@ -125,88 +228,95 @@ export async function PATCH(req: Request) {
   }
 }
 
-function calculateCurrentStreak(activities: Activity[]) {
-  let currentStreak = 0;
+function calculateCurrentStreak(activities: UserActivity[]) {
   if (!activities || activities.length === 0) return 0;
 
-  const today = new Date().toISOString().split("T")[0];
-  const sortedActivities = activities
+  // Get completed activities sorted by date descending
+  const completedActivities = activities
     .filter((a) => a.completed)
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
-  if (sortedActivities.length === 0) return 0;
+  if (completedActivities.length === 0) return 0;
 
-  const lastActivityDateStr = sortedActivities[0].date.split("T")[0];
-  const yesterday = getPreviousDay(today);
+  const today = new Date();
+  const yesterday = subDays(today, 1);
 
-  if (lastActivityDateStr !== today && lastActivityDateStr !== yesterday) {
+  // Check if user has activity today or yesterday
+  const hasActivityToday = completedActivities.some((activity) =>
+    isSameDay(new Date(activity.date), today)
+  );
+  const hasActivityYesterday = completedActivities.some((activity) =>
+    isSameDay(new Date(activity.date), yesterday)
+  );
+
+  if (!hasActivityToday && !hasActivityYesterday) {
     return 0;
   }
 
-  let currentDate = lastActivityDateStr;
-  for (const activity of sortedActivities) {
-    const activityDateStr = activity.date.split("T")[0];
-    if (activityDateStr === currentDate) {
+  // Start counting streak from the most recent activity
+  let currentDate = hasActivityToday ? today : yesterday;
+  let currentStreak = 1;
+
+  // Count consecutive days
+  for (let i = 1; i < completedActivities.length; i++) {
+    const prevDate = subDays(currentDate, 1);
+    const hasActivity = completedActivities.some((activity) =>
+      isSameDay(new Date(activity.date), prevDate)
+    );
+
+    if (hasActivity) {
       currentStreak++;
-      currentDate = getPreviousDay(currentDate);
-    } else if (currentDate === activityDateStr) {
-      // This handles multiple activities on the same day already counted
-      continue;
+      currentDate = prevDate;
     } else {
-      break; // Streak broken
+      break;
     }
   }
+
   return currentStreak;
 }
 
-function calculateLongestStreak(activities: Activity[]) {
-  let longestStreak = 0;
-  let currentStreak = 0;
+function calculateLongestStreak(activities: UserActivity[]) {
   if (!activities || activities.length === 0) return 0;
 
-  const sortedCompletedActivities = activities
+  const completedActivities = activities
     .filter((a) => a.completed)
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
-  if (sortedCompletedActivities.length === 0) return 0;
+  if (completedActivities.length === 0) return 0;
 
-  let lastActivityDate = new Date(
-    sortedCompletedActivities[0].date.split("T")[0]
-  );
-  currentStreak = 1;
-  longestStreak = 1;
+  let longestStreak = 0;
+  let tempStreak = 0;
+  let prevDate: Date | null = null;
 
-  for (let i = 1; i < sortedCompletedActivities.length; i++) {
-    const currentActivityDate = new Date(
-      sortedCompletedActivities[i].date.split("T")[0]
-    );
-    const expectedPreviousDate = new Date(currentActivityDate);
-    expectedPreviousDate.setDate(expectedPreviousDate.getDate() - 1);
+  for (const activity of completedActivities) {
+    const currentDate = new Date(activity.date);
 
-    if (currentActivityDate.getTime() === lastActivityDate.getTime()) {
-      // Same day, streak continues (if not already counted)
-      // This logic might need refinement if multiple distinct activities on the same day don't extend the streak count itself
-      continue;
-    } else if (lastActivityDate.getTime() === expectedPreviousDate.getTime()) {
-      currentStreak++;
+    if (prevDate) {
+      const daysDiff = Math.floor(
+        (currentDate.getTime() - prevDate.getTime()) / (1000 * 60 * 60 * 24)
+      );
+
+      if (daysDiff === 1) {
+        tempStreak++;
+      } else {
+        tempStreak = 1;
+      }
     } else {
-      currentStreak = 1; // Streak broken
+      tempStreak = 1;
     }
-    lastActivityDate = currentActivityDate;
-    if (currentStreak > longestStreak) {
-      longestStreak = currentStreak;
-    }
+
+    longestStreak = Math.max(longestStreak, tempStreak);
+    prevDate = currentDate;
   }
+
   return longestStreak;
 }
 
-function calculateTotalWatchTime(activities: Activity[]) {
-  if (!activities) return 0;
-  return activities.filter((a) => a.completed).length * 30; // Assuming 30 mins per completed activity
-}
+function calculateTotalWatchTime(videoProgress: VideoProgress[]) {
+  if (!videoProgress || videoProgress.length === 0) return 0;
 
-function getPreviousDay(date: string) {
-  const d = new Date(date);
-  d.setDate(d.getDate() - 1);
-  return d.toISOString().split("T")[0];
+  // Calculate total watch time based on completed videos
+  // Assuming average video length of 15 minutes (900 seconds)
+  const averageVideoLengthMinutes = 15;
+  return videoProgress.length * averageVideoLengthMinutes;
 }

@@ -63,88 +63,111 @@ export default function MyCoursesPage() {
   if (error) {
     toast.error("Failed to load courses");
     return (
-      <main className="container py-8">
-        <div className="rounded-lg border bg-card p-8 text-center">
-          <h2 className="mb-2 text-xl font-medium">Error loading courses</h2>
-          <p className="mb-4 text-muted-foreground">
-            Please try refreshing the page
-          </p>
-        </div>
-      </main>
+      <div className="min-h-screen bg-black text-white">
+        <main className="container py-8 px-4 lg:px-6">
+          <div className="rounded-lg border bg-zinc-900 border-zinc-800 p-8 text-center">
+            <h2 className="mb-2 text-xl font-medium text-white">
+              Error loading courses
+            </h2>
+            <p className="mb-4 text-gray-400">Please try refreshing the page</p>
+          </div>
+        </main>
+      </div>
     );
   }
 
   if (isLoading) {
     return (
-      <main className="container py-8">
-        <LoadingScreen variant="fullscreen" />
-      </main>
+      <div className="min-h-screen bg-black text-white">
+        <main className="container py-8 px-4 lg:px-6">
+          <LoadingScreen variant="fullscreen" />
+        </main>
+      </div>
     );
   }
 
   return (
-    <main className="container py-8">
-      <div className="mb-8 flex flex-col justify-between gap-4 md:flex-row md:items-center">
-        <div>
-          <h1 className="text-3xl font-bold">My Courses</h1>
+    <div className="min-h-screen bg-black text-white">
+      <main className="container py-8 px-4 lg:px-6">
+        <div className="mb-8 flex flex-col justify-between gap-4 md:flex-row md:items-center">
+          <div>
+            <h1 className="text-3xl font-bold text-white">My Courses</h1>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="border-zinc-700 text-white hover:bg-zinc-800"
+                >
+                  <Filter className="h-4 w-4 mr-2" />
+                  {filter === "all"
+                    ? "All Courses"
+                    : filter === "in-progress"
+                    ? "In Progress"
+                    : "Completed"}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                align="end"
+                className="bg-zinc-900 border-zinc-800"
+              >
+                <DropdownMenuItem
+                  onClick={() => setFilter("all")}
+                  className="text-white hover:bg-zinc-800"
+                >
+                  All Courses
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => setFilter("in-progress")}
+                  className="text-white hover:bg-zinc-800"
+                >
+                  In Progress
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => setFilter("completed")}
+                  className="text-white hover:bg-zinc-800"
+                >
+                  Completed
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            <Button className="bg-blue-600 hover:bg-blue-700" asChild>
+              <Link href="/dashboard/courses/create">
+                <PlusCircle className="mr-2 h-5 w-5" />
+                Add Course
+              </Link>
+            </Button>
+          </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm">
-                <Filter className="h-4 w-4 mr-2" />
-                {filter === "all"
-                  ? "All Courses"
-                  : filter === "in-progress"
-                  ? "In Progress"
-                  : "Completed"}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => setFilter("all")}>
-                All Courses
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setFilter("in-progress")}>
-                In Progress
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setFilter("completed")}>
-                Completed
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          <Button className="bg-blue-600 hover:bg-blue-700" asChild>
-            <Link href="/dashboard/courses/create">
-              <PlusCircle className="mr-2 h-5 w-5" />
-              Add Course
-            </Link>
-          </Button>
-        </div>
-      </div>
-
-      {filteredCourses.length === 0 ? (
-        <div className="rounded-lg border bg-card p-8 text-center">
-          <h2 className="mb-2 text-xl font-medium">No courses found</h2>
-          <p className="mb-4 text-muted-foreground">
-            {filter !== "all"
-              ? "No courses match your current filter"
-              : "Create your first course to get started"}
-          </p>
-          <Button className="bg-blue-600 hover:bg-blue-700" asChild>
-            <Link href="/dashboard/courses/create">
-              <PlusCircle className="mr-2 h-5 w-5" />
-              Create New Course
-            </Link>
-          </Button>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {filteredCourses.map((course) => (
-            <CourseCard key={course.id} course={course} />
-          ))}
-        </div>
-      )}
-    </main>
+        {filteredCourses.length === 0 ? (
+          <div className="rounded-lg border bg-zinc-900 border-zinc-800 p-8 text-center">
+            <h2 className="mb-2 text-xl font-medium text-white">
+              No courses found
+            </h2>
+            <p className="mb-4 text-gray-400">
+              {filter !== "all"
+                ? "No courses match your current filter"
+                : "Create your first course to get started"}
+            </p>
+            <Button className="bg-blue-600 hover:bg-blue-700" asChild>
+              <Link href="/dashboard/courses/create">
+                <PlusCircle className="mr-2 h-5 w-5" />
+                Create New Course
+              </Link>
+            </Button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {filteredCourses.map((course) => (
+              <CourseCard key={course.id} course={course} />
+            ))}
+          </div>
+        )}
+      </main>
+    </div>
   );
 }

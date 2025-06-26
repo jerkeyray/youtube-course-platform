@@ -18,24 +18,20 @@ export default function DashboardLayout({
   const { data: session, status } = useSession();
   const [isCollapsed, setIsCollapsed] = useState(false);
 
-  if (status === "loading") {
-    return <LoadingScreen />;
-  }
-
-  if (!session) {
+  if (!session && status !== "loading") {
     redirect("/api/auth/signin");
   }
 
   return (
-    <div className="h-full relative">
+    <div className="h-full relative bg-black">
       {/* Desktop Sidebar */}
       <div
         className={cn(
-          "hidden h-full md:flex md:flex-col md:fixed md:inset-y-0 z-[80] bg-gradient-to-b from-slate-900 to-slate-950 dark:from-[#020617] dark:to-[#0f172a] transition-all duration-200 ease-in-out",
+          "hidden h-full md:flex md:flex-col md:fixed md:inset-y-0 z-[80] bg-zinc-900 border-r border-zinc-800 transition-all duration-200 ease-in-out",
           isCollapsed ? "md:w-16" : "md:w-52"
         )}
       >
-        <div className="flex items-center h-14 px-4">
+        <div className="flex items-center h-14 px-4 border-b border-zinc-800">
           <DashboardSidebarToggle
             isCollapsed={isCollapsed}
             onToggle={() => setIsCollapsed(!isCollapsed)}
@@ -43,7 +39,7 @@ export default function DashboardLayout({
           {!isCollapsed && (
             <Link
               href="/"
-              className="text-xl font-bold text-slate-100 ml-2 hover:text-slate-300 transition-opacity duration-200 ease-in-out"
+              className="text-xl font-bold text-white ml-2 hover:text-blue-400 transition-colors duration-200 ease-in-out"
             >
               yudoku
             </Link>
@@ -60,13 +56,19 @@ export default function DashboardLayout({
       {/* Main Content */}
       <main
         className={cn(
-          "transition-all duration-200 ease-in-out bg-background",
+          "transition-all duration-200 ease-in-out bg-black",
           isCollapsed ? "md:pl-16" : "md:pl-52"
         )}
       >
-        <div className="h-full p-4 md:p-8">
+        <div className="h-full">
           <div className="md:hidden h-14" /> {/* Spacer for mobile nav */}
-          {children}
+          {status === "loading" ? (
+            <div className="flex items-center justify-center min-h-screen">
+              <LoadingScreen variant="contained" />
+            </div>
+          ) : (
+            children
+          )}
         </div>
       </main>
     </div>

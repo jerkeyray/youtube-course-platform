@@ -17,9 +17,9 @@ export default function LoadingScreen({
 }: LoadingScreenProps) {
   const containerVariants = {
     fullscreen:
-      "fixed inset-0 z-50 flex flex-col items-center justify-center bg-background backdrop-blur-sm",
+      "fixed inset-0 z-50 flex flex-col items-center justify-center bg-black backdrop-blur-sm",
     contained:
-      "w-full h-full min-h-[200px] flex flex-col items-center justify-center bg-background/50 rounded-lg",
+      "w-full h-full min-h-[200px] flex flex-col items-center justify-center bg-zinc-900/50 rounded-lg",
     inline: "flex items-center justify-center py-4",
   };
 
@@ -61,9 +61,7 @@ export default function LoadingScreen({
       {" "}
       <div className="flex flex-col items-center gap-6">
         <div className="flex flex-col items-center">
-          <h1 className="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-1">
-            Yudoku
-          </h1>
+          <h1 className="text-3xl font-bold text-blue-500 mb-1">Yudoku</h1>
         </div>
 
         <motion.div
@@ -76,7 +74,7 @@ export default function LoadingScreen({
             <motion.div
               key={i}
               variants={dotVariants}
-              className="w-3 h-3 rounded-full bg-blue-500 dark:bg-blue-400"
+              className="w-3 h-3 rounded-full bg-blue-500"
             />
           ))}
         </motion.div>
@@ -86,7 +84,7 @@ export default function LoadingScreen({
             variants={textVariants}
             initial="initial"
             animate="animate"
-            className="text-blue-700 dark:text-blue-300 font-medium mt-2"
+            className="text-blue-400 font-medium mt-2"
           >
             {text}
           </motion.p>
