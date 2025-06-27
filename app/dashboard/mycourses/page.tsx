@@ -95,45 +95,6 @@ export default function MyCoursesPage() {
           </div>
 
           <div className="flex items-center gap-2">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="border-zinc-700 text-white hover:bg-zinc-800"
-                >
-                  <Filter className="h-4 w-4 mr-2" />
-                  {filter === "all"
-                    ? "All Courses"
-                    : filter === "in-progress"
-                    ? "In Progress"
-                    : "Completed"}
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                align="end"
-                className="bg-zinc-900 border-zinc-800"
-              >
-                <DropdownMenuItem
-                  onClick={() => setFilter("all")}
-                  className="text-white hover:bg-zinc-800"
-                >
-                  All Courses
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => setFilter("in-progress")}
-                  className="text-white hover:bg-zinc-800"
-                >
-                  In Progress
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => setFilter("completed")}
-                  className="text-white hover:bg-zinc-800"
-                >
-                  Completed
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-
             <Button className="bg-blue-600 hover:bg-blue-700" asChild>
               <Link href="/dashboard/courses/create">
                 <PlusCircle className="mr-2 h-5 w-5" />

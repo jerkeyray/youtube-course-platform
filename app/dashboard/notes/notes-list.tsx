@@ -89,72 +89,86 @@ const NotesList = ({ initialNotes }: NotesListProps) => {
   }, [notes, searchQuery, sortOrder]);
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-          <Input
-            placeholder="Search notes..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9 bg-zinc-800 border-zinc-700 text-white placeholder-gray-400"
-          />
+    <div className="space-y-6">
+      {/* Search & Sort Bar in Card */}
+      <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 shadow-sm mb-2">
+        <div className="flex flex-col sm:flex-row gap-4">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Input
+              placeholder="Search notes..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9 bg-zinc-800 border-zinc-700 text-white placeholder-gray-400"
+            />
+          </div>
+          <Select
+            value={sortOrder}
+            onValueChange={(value: "newest" | "oldest") => setSortOrder(value)}
+          >
+            <SelectTrigger className="w-[180px] bg-zinc-800 border-zinc-700 text-white">
+              <SelectValue placeholder="Sort by date" />
+            </SelectTrigger>
+            <SelectContent className="bg-zinc-900 border-zinc-800">
+              <SelectItem
+                value="newest"
+                className="text-white hover:bg-zinc-800"
+              >
+                Newest first
+              </SelectItem>
+              <SelectItem
+                value="oldest"
+                className="text-white hover:bg-zinc-800"
+              >
+                Oldest first
+              </SelectItem>
+            </SelectContent>
+          </Select>
         </div>
-        <Select
-          value={sortOrder}
-          onValueChange={(value: "newest" | "oldest") => setSortOrder(value)}
-        >
-          <SelectTrigger className="w-[180px] bg-zinc-800 border-zinc-700 text-white">
-            <SelectValue placeholder="Sort by date" />
-          </SelectTrigger>
-          <SelectContent className="bg-zinc-900 border-zinc-800">
-            <SelectItem value="newest" className="text-white hover:bg-zinc-800">
-              Newest first
-            </SelectItem>
-            <SelectItem value="oldest" className="text-white hover:bg-zinc-800">
-              Oldest first
-            </SelectItem>
-          </SelectContent>
-        </Select>
       </div>
 
       {filteredAndSortedNotes.length === 0 ? (
-        <div className="flex items-center justify-center min-h-[calc(100vh-16rem)]">
-          <Card className="bg-zinc-900 border-zinc-800 max-w-md w-full">
-            <CardContent className="flex flex-col items-center justify-center py-12">
-              <BookOpen className="h-12 w-12 text-gray-400 mb-4" />
-              <p className="text-lg text-gray-400 text-center">
+        <div className="flex items-center justify-center min-h-[calc(100vh-20rem)]">
+          <Card className="bg-zinc-900 border-zinc-800 max-w-md w-full shadow-lg">
+            <CardContent className="flex flex-col items-center justify-center py-16">
+              <BookOpen className="h-16 w-16 text-blue-500 mb-6" />
+              <p className="text-xl text-gray-300 font-semibold text-center mb-2">
                 {searchQuery
                   ? "No notes found matching your search."
                   : "You haven't created any notes yet."}
-                <br />
-                {!searchQuery &&
-                  "Start taking notes while watching course videos!"}
               </p>
+              {!searchQuery && (
+                <p className="text-gray-400 text-center">
+                  Start taking notes while watching course videos!
+                </p>
+              )}
             </CardContent>
           </Card>
         </div>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {filteredAndSortedNotes.map((note) => (
             <Link
               key={note.id}
               href={`/dashboard/notes/${note.id}`}
               className="block"
             >
-              <Card className="h-full hover:shadow-lg transition-all duration-300 bg-zinc-900 border-zinc-800 hover:border-zinc-700">
-                <CardHeader>
+              <Card className="h-full hover:shadow-xl transition-all duration-300 bg-zinc-900 border-zinc-800 hover:border-blue-500 relative overflow-hidden group">
+                {/* Blue left border accent */}
+                <div className="absolute left-0 top-0 h-full w-1 bg-gradient-to-b from-blue-500 to-blue-700 group-hover:from-blue-400 group-hover:to-blue-600 transition-all duration-200" />
+                <CardHeader className="pb-2">
                   <div className="flex items-start justify-between">
                     <div className="space-y-1">
-                      <CardTitle className="line-clamp-2 text-white">
+                      <CardTitle className="line-clamp-2 text-white text-lg font-bold">
                         {note.title || "Untitled Note"}
                       </CardTitle>
-                      <p className="text-sm text-gray-400 line-clamp-1">
-                        {note.course?.title || "No course"}
-                      </p>
+                      {note.course?.title && (
+                        <span className="inline-block bg-zinc-800 text-blue-400 text-xs font-semibold px-2 py-0.5 rounded-full mt-1">
+                          {note.course.title}
+                        </span>
+                      )}
                     </div>
                     <div className="flex items-center gap-2">
-                      <Clock className="h-4 w-4 text-gray-400" />
                       <Button
                         variant="ghost"
                         size="icon"
@@ -175,14 +189,14 @@ const NotesList = ({ initialNotes }: NotesListProps) => {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-2">
-                    <p className="text-sm text-gray-400 line-clamp-2">
+                  <div className="space-y-3">
+                    <p className="text-sm text-gray-300 line-clamp-3">
                       {note.content}
                     </p>
-                    <p className="text-xs text-gray-500">
+                    <span className="inline-block bg-zinc-800 text-gray-400 text-xs px-2 py-0.5 rounded-full">
                       Last updated{" "}
                       {format(new Date(note.updatedAt), "MMM d, yyyy")}
-                    </p>
+                    </span>
                   </div>
                 </CardContent>
               </Card>

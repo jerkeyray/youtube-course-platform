@@ -321,8 +321,7 @@ export default function DashboardClient({
                   {courses.length > 6 && (
                     <div className="mt-6 text-center">
                       <Button
-                        variant="outline"
-                        className="border-zinc-700 text-gray-300 hover:bg-zinc-800"
+                        className="bg-zinc-900 hover:bg-zinc-800 text-white border border-zinc-700"
                         asChild
                       >
                         <Link href="/dashboard/mycourses">

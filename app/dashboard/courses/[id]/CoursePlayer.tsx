@@ -506,91 +506,67 @@ export default function CoursePlayer({
         {videoIframe}
       </div>
 
-      {/* Current Video Info */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between mt-1 mb-4">
-        <div>
-          <h2 className="text-xl font-semibold text-gray-300">
-            {currentVideo.title}
-          </h2>
-        </div>
+      {/* Video Title Above Buttons */}
+      <div className="mt-4 mb-2">
+        <h2 className="text-xl font-semibold text-white">
+          {currentVideo.title}
+        </h2>
       </div>
 
-      {/* Video Info and Controls */}
-      <Card className="p-6 bg-zinc-900 border-zinc-800">
-        <div className="space-y-4">
-          <div className="flex flex-wrap gap-3">
-            <Button
-              onClick={() => handleVideoProgress(currentVideo.id)}
-              variant={
-                watchedVideos.has(currentVideo.id) ? "default" : "outline"
-              }
-              className={`flex items-center gap-2 font-medium ${
-                watchedVideos.has(currentVideo.id)
-                  ? "bg-black hover:bg-zinc-800 text-gray-200 border-0"
-                  : "bg-black hover:bg-zinc-800 text-gray-200 border-0"
-              }`}
-            >
-              <Check className="h-4 w-4" />
-              {watchedVideos.has(currentVideo.id)
-                ? "Completed"
-                : "Mark as Completed"}
-            </Button>
+      {/* Inline Action Buttons (YouTube style, now more visible) */}
+      <div className="flex flex-wrap items-center gap-2 mt-1">
+        <Button
+          onClick={() => handleVideoProgress(currentVideo.id)}
+          variant={watchedVideos.has(currentVideo.id) ? "default" : "outline"}
+          className={`flex items-center gap-2 font-medium bg-zinc-900 border border-zinc-700 text-white hover:bg-zinc-800 hover:border-zinc-500 transition-colors duration-150`}
+        >
+          <Check className="h-4 w-4" />
+          {watchedVideos.has(currentVideo.id)
+            ? "Completed"
+            : "Mark as Completed"}
+        </Button>
 
-            <Button
-              onClick={() => handleWatchLater(currentVideo.id)}
-              variant={
-                watchLaterVideos.has(currentVideo.id) ? "default" : "outline"
-              }
-              className={`flex items-center gap-2 font-medium ${
-                watchLaterVideos.has(currentVideo.id)
-                  ? "bg-black hover:bg-zinc-800 text-gray-200 border-0"
-                  : "bg-black hover:bg-zinc-800 text-gray-200 border-0"
-              }`}
-            >
-              <Clock className="h-4 w-4" />
-              Watch Later
-            </Button>
+        <Button
+          onClick={() => handleWatchLater(currentVideo.id)}
+          variant={
+            watchLaterVideos.has(currentVideo.id) ? "default" : "outline"
+          }
+          className={`flex items-center gap-2 font-medium bg-zinc-900 border border-zinc-700 text-white hover:bg-zinc-800 hover:border-zinc-500 transition-colors duration-150`}
+        >
+          <Clock className="h-4 w-4" />
+          Watch Later
+        </Button>
 
-            <Button
-              onClick={() =>
-                handleBookmark(currentVideo.id, currentVideo.videoId)
-              }
-              variant={
-                bookmarkedVideos.has(currentVideo.id) ? "default" : "outline"
-              }
-              className={`flex items-center gap-2 font-medium ${
-                bookmarkedVideos.has(currentVideo.id)
-                  ? "bg-black hover:bg-zinc-800 text-gray-200 border-0"
-                  : "bg-black hover:bg-zinc-800 text-gray-200 border-0"
-              }`}
-            >
-              <Bookmark className="h-4 w-4" />
-              Bookmark
-            </Button>
+        <Button
+          onClick={() => handleBookmark(currentVideo.id, currentVideo.videoId)}
+          variant={
+            bookmarkedVideos.has(currentVideo.id) ? "default" : "outline"
+          }
+          className={`flex items-center gap-2 font-medium bg-zinc-900 border border-zinc-700 text-white hover:bg-zinc-800 hover:border-zinc-500 transition-colors duration-150`}
+        >
+          <Bookmark className="h-4 w-4" />
+          Bookmark
+        </Button>
 
-            <div className="flex gap-2">
-              <Button
-                onClick={handlePreviousVideo}
-                disabled={currentVideoIndex === 0}
-                variant="outline"
-                size="icon"
-                className="bg-black hover:bg-zinc-800 text-gray-200 border-0 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <Button
-                onClick={handleNextVideo}
-                disabled={currentVideoIndex === course.videos.length - 1}
-                variant="outline"
-                size="icon"
-                className="bg-black hover:bg-zinc-800 text-gray-200 border-0 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-        </div>
-      </Card>
+        <Button
+          onClick={handlePreviousVideo}
+          disabled={currentVideoIndex === 0}
+          variant="outline"
+          size="icon"
+          className="bg-zinc-900 border border-zinc-700 text-white hover:bg-zinc-800 hover:border-zinc-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-150"
+        >
+          <ChevronLeft className="h-4 w-4" />
+        </Button>
+        <Button
+          onClick={handleNextVideo}
+          disabled={currentVideoIndex === course.videos.length - 1}
+          variant="outline"
+          size="icon"
+          className="bg-zinc-900 border border-zinc-700 text-white hover:bg-zinc-800 hover:border-zinc-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-150"
+        >
+          <ChevronRight className="h-4 w-4" />
+        </Button>
+      </div>
 
       {/* Notes Section */}
       {notesSection}
