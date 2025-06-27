@@ -33,15 +33,15 @@ export default async function NotesPage() {
   });
 
   return (
-    <main className="container py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">My Notes</h1>
-        <p className="text-muted-foreground">
-          All your notes from course videos
-        </p>
-      </div>
+    <div className="min-h-screen bg-black text-white">
+      <main className="container py-8 px-4 lg:px-6">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold mb-2 text-white">My Notes</h1>
+          <p className="text-gray-400">All your notes from course videos</p>
+        </div>
 
-      <NotesList initialNotes={notes} />
-    </main>
+        <NotesList initialNotes={notes} />
+      </main>
+    </div>
   );
 }

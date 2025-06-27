@@ -9,24 +9,28 @@ export default function ChapterPage({
   const video = { id: "", videoId: "" }; // Temporary placeholder
 
   return (
-    <>
-      {/* Video Player */}
-      <div className="aspect-video relative">
-        <iframe
-          key={video.videoId}
-          src={`https://www.youtube-nocookie.com/embed/${video.videoId}?rel=0&showinfo=0&modestbranding=1&enablejsapi=1&iv_load_policy=3&fs=1&cc_load_policy=0`}
-          title="Video Player"
-          className="w-full h-full rounded-lg border-0"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-          allowFullScreen
-          loading="lazy"
-        />
+    <div className="min-h-screen bg-black text-white">
+      <div className="bg-black min-h-screen">
+        <div className="container pt-8 pb-8 px-4 lg:px-6">
+          {/* Video Player */}
+          <div className="aspect-video relative mb-6">
+            <iframe
+              key={video.videoId}
+              src={`https://www.youtube-nocookie.com/embed/${video.videoId}?rel=0&showinfo=0&modestbranding=1&enablejsapi=1&iv_load_policy=3&fs=1&cc_load_policy=0`}
+              title="Video Player"
+              className="w-full h-full rounded-lg border-0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowFullScreen
+              loading="lazy"
+            />
+          </div>
+
+          {/* Notes Section */}
+          <NoteEditor videoId={video.id} courseId={params.courseId} />
+
+          {/* Video Title and Description */}
+        </div>
       </div>
-
-      {/* Notes Section */}
-      <NoteEditor videoId={video.id} courseId={params.courseId} />
-
-      {/* Video Title and Description */}
-    </>
+    </div>
   );
 }

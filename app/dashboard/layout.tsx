@@ -23,52 +23,55 @@ export default function DashboardLayout({
   }
 
   return (
-    <div className="h-full relative bg-black">
-      {/* Desktop Sidebar */}
-      <div
-        className={cn(
-          "hidden h-full md:flex md:flex-col md:fixed md:inset-y-0 z-[80] bg-zinc-900 border-r border-zinc-800 transition-all duration-200 ease-in-out",
-          isCollapsed ? "md:w-16" : "md:w-52"
-        )}
-      >
-        <div className="flex items-center h-14 px-4 border-b border-zinc-800">
-          <DashboardSidebarToggle
-            isCollapsed={isCollapsed}
-            onToggle={() => setIsCollapsed(!isCollapsed)}
-          />
-          {!isCollapsed && (
-            <Link
-              href="/"
-              className="text-xl font-bold text-white ml-2 hover:text-blue-400 transition-colors duration-200 ease-in-out"
-            >
-              yudoku
-            </Link>
+    <div className="h-full relative bg-black min-h-screen">
+      {/* Desktop Sidebar - Hidden during loading */}
+      {status !== "loading" && (
+        <div
+          className={cn(
+            "hidden h-full md:flex md:flex-col md:fixed md:inset-y-0 z-[80] bg-zinc-900 border-r border-zinc-800 transition-all duration-200 ease-in-out",
+            isCollapsed ? "md:w-16" : "md:w-52"
           )}
+        >
+          <div className="flex items-center h-14 px-4 border-b border-zinc-800">
+            <DashboardSidebarToggle
+              isCollapsed={isCollapsed}
+              onToggle={() => setIsCollapsed(!isCollapsed)}
+            />
+            {!isCollapsed && (
+              <Link
+                href="/"
+                className="text-xl font-bold text-white ml-2 hover:text-blue-400 transition-colors duration-200 ease-in-out"
+              >
+                yudoku
+              </Link>
+            )}
+          </div>
+          <DashboardSidebar isCollapsed={isCollapsed} />
         </div>
-        <DashboardSidebar isCollapsed={isCollapsed} />
-      </div>
+      )}
 
-      {/* Mobile Navigation */}
-      <div className="md:hidden">
-        <MobileNav />
-      </div>
+      {/* Mobile Navigation - Hidden during loading */}
+      {status !== "loading" && (
+        <div className="md:hidden">
+          <MobileNav />
+        </div>
+      )}
 
       {/* Main Content */}
       <main
         className={cn(
-          "transition-all duration-200 ease-in-out bg-black",
-          isCollapsed ? "md:pl-16" : "md:pl-52"
+          "transition-all duration-200 ease-in-out bg-black min-h-screen",
+          status === "loading"
+            ? "md:pl-0"
+            : isCollapsed
+            ? "md:pl-16"
+            : "md:pl-52"
         )}
       >
-        <div className="h-full">
-          <div className="md:hidden h-14" /> {/* Spacer for mobile nav */}
-          {status === "loading" ? (
-            <div className="flex items-center justify-center min-h-screen">
-              <LoadingScreen variant="contained" />
-            </div>
-          ) : (
-            children
-          )}
+        <div className="h-full min-h-screen bg-black">
+          {status !== "loading" && <div className="md:hidden h-14" />}{" "}
+          {/* Spacer for mobile nav */}
+          {status === "loading" ? <LoadingScreen /> : children}
         </div>
       </main>
     </div>

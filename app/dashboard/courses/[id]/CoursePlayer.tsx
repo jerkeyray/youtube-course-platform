@@ -94,6 +94,26 @@ export default function CoursePlayer({
     return () => clearTimeout(timeoutId);
   }, [currentVideoIndex]);
 
+  // Listen for video index changes from sidebar
+  useEffect(() => {
+    const handleVideoIndexChange = (event: CustomEvent) => {
+      const { videoIndex } = event.detail;
+      setCurrentVideoIndex(videoIndex);
+    };
+
+    window.addEventListener(
+      "videoIndexChange",
+      handleVideoIndexChange as EventListener
+    );
+
+    return () => {
+      window.removeEventListener(
+        "videoIndexChange",
+        handleVideoIndexChange as EventListener
+      );
+    };
+  }, []);
+
   const handleVideoProgress = useCallback(
     async (videoId: string) => {
       const isCompleted = watchedVideos.has(videoId);
@@ -373,7 +393,7 @@ export default function CoursePlayer({
                 onClick={() => setShowNoteEditor(true)}
                 variant="outline"
                 size="sm"
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 bg-black hover:bg-zinc-800 text-gray-200 border-0"
               >
                 <Pencil className="h-4 w-4" />
                 {note?.content ? "Edit Note" : "Create Note"}
@@ -396,7 +416,7 @@ export default function CoursePlayer({
                 placeholder="Write your notes here... (Markdown supported)"
                 className="min-h-[200px] font-mono text-sm resize-none focus:ring-2 focus:ring-blue-500 bg-zinc-800 border-zinc-700 text-white placeholder-gray-400"
               />
-              <div className="flex gap-2">
+              <div className="flex gap-3">
                 <Button
                   onClick={() =>
                     saveNoteMutation.mutate({
@@ -405,7 +425,7 @@ export default function CoursePlayer({
                     })
                   }
                   disabled={saveNoteMutation.isPending}
-                  className="flex-1 bg-blue-600 hover:bg-blue-700"
+                  className="flex-1 bg-black hover:bg-zinc-800 text-gray-200 font-medium border-0"
                 >
                   {saveNoteMutation.isPending ? (
                     <div className="flex items-center gap-2">
@@ -424,7 +444,7 @@ export default function CoursePlayer({
                 <Button
                   variant="outline"
                   onClick={() => setShowNoteEditor(false)}
-                  className="flex-1"
+                  className="flex-1 bg-black hover:bg-zinc-800 text-gray-200 border-0"
                 >
                   <div className="flex items-center gap-2">
                     <X className="h-4 w-4" />
@@ -480,212 +500,100 @@ export default function CoursePlayer({
   }
 
   return (
-    <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 px-4 lg:px-6">
-      {/* Video Player Section */}
-      <div className="lg:col-span-8">
-        <div className="space-y-4">
-          {/* Video Player */}
-          <div className="aspect-video w-full overflow-hidden rounded-lg bg-black">
-            {videoIframe}
-          </div>
+    <div className="space-y-4">
+      {/* Video Player */}
+      <div className="aspect-video w-full overflow-hidden rounded-lg bg-black">
+        {videoIframe}
+      </div>
 
-          {/* Video Info and Controls */}
-          <Card className="p-6 bg-zinc-900 border-zinc-800">
-            <div className="space-y-4">
-              <div>
-                <h2 className="text-2xl font-bold text-white">
-                  {currentVideo.title}
-                </h2>
-                <p className="text-gray-400">
-                  Video {currentVideoIndex + 1} of {course.videos.length}
-                </p>
-              </div>
-
-              <div className="flex flex-wrap gap-4">
-                <Button
-                  onClick={() => handleVideoProgress(currentVideo.id)}
-                  variant={
-                    watchedVideos.has(currentVideo.id) ? "default" : "outline"
-                  }
-                  className={`flex items-center gap-2 ${
-                    watchedVideos.has(currentVideo.id)
-                      ? "bg-blue-600 hover:bg-blue-700"
-                      : ""
-                  }`}
-                >
-                  <Check className="h-4 w-4" />
-                  {watchedVideos.has(currentVideo.id)
-                    ? "Completed"
-                    : "Mark as Completed"}
-                </Button>
-
-                <Button
-                  onClick={() => handleWatchLater(currentVideo.id)}
-                  variant={
-                    watchLaterVideos.has(currentVideo.id)
-                      ? "default"
-                      : "outline"
-                  }
-                  className={`flex items-center gap-2 ${
-                    watchLaterVideos.has(currentVideo.id)
-                      ? "bg-blue-600 hover:bg-blue-700"
-                      : ""
-                  }`}
-                >
-                  <Clock className="h-4 w-4" />
-                  Watch Later
-                </Button>
-
-                <Button
-                  onClick={() =>
-                    handleBookmark(currentVideo.id, currentVideo.videoId)
-                  }
-                  variant={
-                    bookmarkedVideos.has(currentVideo.id)
-                      ? "default"
-                      : "outline"
-                  }
-                  className={`flex items-center gap-2 ${
-                    bookmarkedVideos.has(currentVideo.id)
-                      ? "bg-blue-600 hover:bg-blue-700"
-                      : ""
-                  }`}
-                >
-                  <Bookmark className="h-4 w-4" />
-                  Bookmark
-                </Button>
-
-                <div className="flex gap-2">
-                  <Button
-                    onClick={handlePreviousVideo}
-                    disabled={currentVideoIndex === 0}
-                    variant="outline"
-                    size="icon"
-                  >
-                    <ChevronLeft className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    onClick={handleNextVideo}
-                    disabled={currentVideoIndex === course.videos.length - 1}
-                    variant="outline"
-                    size="icon"
-                  >
-                    <ChevronRight className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </Card>
-
-          {/* Notes Section */}
-          {notesSection}
+      {/* Current Video Info */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between mt-1 mb-4">
+        <div>
+          <h2 className="text-xl font-semibold text-gray-300">
+            {currentVideo.title}
+          </h2>
         </div>
       </div>
 
-      {/* Course Content Sidebar */}
-      <div className="lg:col-span-4">
-        <Card className="sticky top-4 bg-zinc-900 border-zinc-800 shadow-lg">
-          <div className="p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-bold text-white flex items-center gap-2">
-                <Play className="h-5 w-5 text-blue-500" />
-                Course Content
-              </h3>
-              <div className="flex flex-col items-end">
-                <div className="text-sm font-medium text-blue-400">
-                  {watchedVideos.size}/{course.videos.length} completed
-                </div>
-                <div className="w-16 h-1.5 bg-zinc-700 rounded-full mt-1 overflow-hidden">
-                  <div
-                    className="h-full bg-blue-600 rounded-full transition-all duration-300"
-                    style={{
-                      width: `${
-                        (watchedVideos.size / course.videos.length) * 100
-                      }%`,
-                    }}
-                  />
-                </div>
-              </div>
-            </div>
+      {/* Video Info and Controls */}
+      <Card className="p-6 bg-zinc-900 border-zinc-800">
+        <div className="space-y-4">
+          <div className="flex flex-wrap gap-3">
+            <Button
+              onClick={() => handleVideoProgress(currentVideo.id)}
+              variant={
+                watchedVideos.has(currentVideo.id) ? "default" : "outline"
+              }
+              className={`flex items-center gap-2 font-medium ${
+                watchedVideos.has(currentVideo.id)
+                  ? "bg-black hover:bg-zinc-800 text-gray-200 border-0"
+                  : "bg-black hover:bg-zinc-800 text-gray-200 border-0"
+              }`}
+            >
+              <Check className="h-4 w-4" />
+              {watchedVideos.has(currentVideo.id)
+                ? "Completed"
+                : "Mark as Completed"}
+            </Button>
 
-            <div className="space-y-1.5 max-h-[calc(100vh-16rem)] overflow-y-auto pr-2 -mr-2">
-              {course.videos.map((video, index) => (
-                <div
-                  key={video.id}
-                  data-video-index={index}
-                  className={`group relative rounded-lg border transition-all duration-200 cursor-pointer overflow-hidden min-h-20 ${
-                    currentVideoIndex === index
-                      ? "border-blue-400 bg-gradient-to-r from-blue-950/40 to-indigo-950/40 shadow-lg ring-2 ring-blue-500/30"
-                      : "border-zinc-700 hover:border-zinc-600 hover:bg-zinc-800/30"
-                  }`}
-                  onClick={() => setCurrentVideoIndex(index)}
-                >
-                  <div className="flex items-start gap-3 p-3">
-                    <div className="flex-shrink-0 mt-1">
-                      {watchedVideos.has(video.id) ? (
-                        <div className="w-7 h-7 rounded-full bg-green-500 flex items-center justify-center shadow-sm">
-                          <Check className="h-4 w-4 text-white" />
-                        </div>
-                      ) : currentVideoIndex === index ? (
-                        <div className="w-7 h-7 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 flex items-center justify-center shadow-md">
-                          <Play className="h-4 w-4 text-white ml-0.5" />
-                        </div>
-                      ) : (
-                        <div className="w-7 h-7 rounded-full border-2 border-zinc-600 bg-zinc-800 flex items-center justify-center text-xs font-semibold text-gray-400 transition-all duration-200 group-hover:border-blue-400 group-hover:bg-blue-950/30">
-                          {index + 1}
-                        </div>
-                      )}
-                    </div>
+            <Button
+              onClick={() => handleWatchLater(currentVideo.id)}
+              variant={
+                watchLaterVideos.has(currentVideo.id) ? "default" : "outline"
+              }
+              className={`flex items-center gap-2 font-medium ${
+                watchLaterVideos.has(currentVideo.id)
+                  ? "bg-black hover:bg-zinc-800 text-gray-200 border-0"
+                  : "bg-black hover:bg-zinc-800 text-gray-200 border-0"
+              }`}
+            >
+              <Clock className="h-4 w-4" />
+              Watch Later
+            </Button>
 
-                    <div className="flex-1 min-w-0">
-                      <h4
-                        className={`text-sm font-medium leading-5 line-clamp-2 mb-1 transition-colors ${
-                          currentVideoIndex === index
-                            ? "text-blue-100"
-                            : "text-gray-100 group-hover:text-blue-300"
-                        }`}
-                      >
-                        {video.title}
-                      </h4>
+            <Button
+              onClick={() =>
+                handleBookmark(currentVideo.id, currentVideo.videoId)
+              }
+              variant={
+                bookmarkedVideos.has(currentVideo.id) ? "default" : "outline"
+              }
+              className={`flex items-center gap-2 font-medium ${
+                bookmarkedVideos.has(currentVideo.id)
+                  ? "bg-black hover:bg-zinc-800 text-gray-200 border-0"
+                  : "bg-black hover:bg-zinc-800 text-gray-200 border-0"
+              }`}
+            >
+              <Bookmark className="h-4 w-4" />
+              Bookmark
+            </Button>
 
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-xs text-gray-400">
-                          Video {index + 1}
-                        </span>
-
-                        {watchedVideos.has(video.id) && (
-                          <span className="text-xs font-medium text-green-400">
-                            • Completed
-                          </span>
-                        )}
-
-                        {watchLaterVideos.has(video.id) && (
-                          <span className="text-xs font-medium text-orange-400">
-                            • Watch Later
-                          </span>
-                        )}
-
-                        {bookmarkedVideos.has(video.id) && (
-                          <span className="text-xs font-medium text-purple-400">
-                            • Bookmarked
-                          </span>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Play indicator for current video */}
-                    {currentVideoIndex === index && (
-                      <div className="flex-shrink-0 animate-pulse">
-                        <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))}
+            <div className="flex gap-2">
+              <Button
+                onClick={handlePreviousVideo}
+                disabled={currentVideoIndex === 0}
+                variant="outline"
+                size="icon"
+                className="bg-black hover:bg-zinc-800 text-gray-200 border-0 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <Button
+                onClick={handleNextVideo}
+                disabled={currentVideoIndex === course.videos.length - 1}
+                variant="outline"
+                size="icon"
+                className="bg-black hover:bg-zinc-800 text-gray-200 border-0 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
             </div>
           </div>
-        </Card>
-      </div>
+        </div>
+      </Card>
+
+      {/* Notes Section */}
+      {notesSection}
     </div>
   );
 }

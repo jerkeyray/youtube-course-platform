@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import CoursePlayer from "./CoursePlayer";
 import CourseHeader from "./CourseHeader";
 import type { Course, Video, VideoProgress } from "@prisma/client";
+import CourseSidebar from "./CourseSidebar";
 
 type CourseWithProgress = Course & {
   videos: (Video & {
@@ -83,13 +84,35 @@ export default async function CoursePage({
 
   return (
     <div className="min-h-screen bg-black text-white">
-      <main className="container pt-4 pb-8 px-4 lg:px-6">
-        <CourseHeader course={courseWithProgress} />
-        <CoursePlayer
-          course={courseWithProgress}
-          initialVideoIndex={initialVideoIndex}
-        />
-      </main>
+      <div className="bg-black min-h-screen">
+        <main className="container pt-8 pb-8 px-4 lg:px-6">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+            {/* Course Header - spans full width */}
+            <div className="lg:col-span-12">
+              <CourseHeader course={courseWithProgress} />
+            </div>
+
+            {/* Course Player - spans 8 columns */}
+            <div className="lg:col-span-8">
+              <CoursePlayer
+                course={courseWithProgress}
+                initialVideoIndex={initialVideoIndex}
+              />
+            </div>
+
+            {/* Sidebar - spans 4 columns */}
+            <div className="lg:col-span-4 h-full">
+              <CourseSidebar
+                course={courseWithProgress}
+                currentVideoIndex={initialVideoIndex}
+                watchedVideos={courseWithProgress.videos
+                  .filter((video) => video.progress.some((p) => p.completed))
+                  .map((video) => video.id)}
+              />
+            </div>
+          </div>
+        </main>
+      </div>
     </div>
   );
 }

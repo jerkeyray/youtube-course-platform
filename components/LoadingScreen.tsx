@@ -61,7 +61,7 @@ export default function LoadingScreen({
       {" "}
       <div className="flex flex-col items-center gap-6">
         <div className="flex flex-col items-center">
-          <h1 className="text-3xl font-bold text-blue-500 mb-1">Yudoku</h1>
+          <h1 className="text-3xl font-bold text-blue-500 mb-1">yudoku</h1>
         </div>
 
         <motion.div
