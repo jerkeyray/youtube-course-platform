@@ -77,21 +77,21 @@ export default function CourseSidebar({
   };
 
   return (
-    <Card className="sticky top-4 bg-zinc-900 border-zinc-800 shadow-lg h-[calc(100vh-2rem)] flex flex-col">
-      <div className="p-6 flex flex-col h-full">
-        <div className="flex-1 space-y-1.5 overflow-y-auto pr-2 -mr-2">
+    <Card className="sticky top-4 bg-zinc-900 border-zinc-800 shadow-lg h-fit max-h-[calc(100vh-8rem)] flex flex-col">
+      <div className="p-6 flex flex-col">
+        <div className="space-y-1.5 overflow-y-auto max-h-[calc(100vh-12rem)] pb-2">
           {course.videos.map((video, index) => (
             <div
               key={video.id}
               data-video-index={index}
-              className={`group relative rounded-lg border transition-all duration-200 cursor-pointer overflow-hidden min-h-20 ${
+              className={`group relative rounded-lg border transition-all duration-200 cursor-pointer overflow-hidden min-h-24 ${
                 localCurrentVideoIndex === index
                   ? "border-blue-400 bg-gradient-to-r from-blue-950/40 to-indigo-950/40 shadow-lg ring-2 ring-blue-500/30"
                   : "border-zinc-700 hover:border-zinc-600 hover:bg-zinc-800/30"
               }`}
               onClick={() => handleVideoClick(index)}
             >
-              <div className="flex items-start gap-3 p-3">
+              <div className="flex items-start gap-3 p-4">
                 <div className="flex-shrink-0 mt-1">
                   {localWatchedVideos.has(video.id) ? (
                     <div className="w-7 h-7 rounded-full bg-blue-500 flex items-center justify-center shadow-sm">

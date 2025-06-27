@@ -383,81 +383,23 @@ export default function CoursePlayer({
 
   // Memoize notes section to prevent unnecessary re-renders
   const notesSection = useMemo(() => {
+    // Only show notes section if there's actual content
+    if (!note?.content) {
+      return null;
+    }
+
     return (
       <Card className="p-6 bg-zinc-900 border-zinc-800">
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold text-white">Notes</h3>
-            {!showNoteEditor && (
-              <Button
-                onClick={() => setShowNoteEditor(true)}
-                variant="outline"
-                size="sm"
-                className="flex items-center gap-2 bg-black hover:bg-zinc-800 text-gray-200 border-0"
-              >
-                <Pencil className="h-4 w-4" />
-                {note?.content ? "Edit Note" : "Create Note"}
-              </Button>
-            )}
           </div>
 
-          {showNoteEditor ? (
-            <div className="space-y-4">
-              <input
-                type="text"
-                value={noteTitle}
-                onChange={(e) => setNoteTitle(e.target.value)}
-                placeholder="Note title (optional)"
-                className="w-full rounded-md border px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 bg-zinc-800 border-zinc-700 text-white placeholder-gray-400"
-              />
-              <Textarea
-                value={noteContent}
-                onChange={(e) => setNoteContent(e.target.value)}
-                placeholder="Write your notes here... (Markdown supported)"
-                className="min-h-[200px] font-mono text-sm resize-none focus:ring-2 focus:ring-blue-500 bg-zinc-800 border-zinc-700 text-white placeholder-gray-400"
-              />
-              <div className="flex gap-3">
-                <Button
-                  onClick={() =>
-                    saveNoteMutation.mutate({
-                      content: noteContent,
-                      title: noteTitle,
-                    })
-                  }
-                  disabled={saveNoteMutation.isPending}
-                  className="flex-1 bg-black hover:bg-zinc-800 text-gray-200 font-medium border-0"
-                >
-                  {saveNoteMutation.isPending ? (
-                    <div className="flex items-center gap-2">
-                      <div className="w-4 h-4">
-                        <LoadingScreen variant="inline" />
-                      </div>
-                      <span>Saving...</span>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-2">
-                      <Save className="h-4 w-4" />
-                      <span>Save Note</span>
-                    </div>
-                  )}
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => setShowNoteEditor(false)}
-                  className="flex-1 bg-black hover:bg-zinc-800 text-gray-200 border-0"
-                >
-                  <div className="flex items-center gap-2">
-                    <X className="h-4 w-4" />
-                    <span>Cancel</span>
-                  </div>
-                </Button>
-              </div>
-            </div>
-          ) : isNoteLoading ? (
+          {isNoteLoading ? (
             <div className="flex justify-center py-8">
               <LoadingScreen variant="contained" />
             </div>
-          ) : note?.content ? (
+          ) : (
             <div className="prose prose-sm max-w-none rounded-lg border bg-zinc-800 border-zinc-700 p-4 shadow-sm">
               {note.title && (
                 <h4 className="text-lg font-medium text-white mb-2">
@@ -470,26 +412,11 @@ export default function CoursePlayer({
                 </ReactMarkdown>
               </div>
             </div>
-          ) : (
-            <div className="text-center py-8 text-gray-400">
-              <p>No notes yet. Click the button above to add some!</p>
-            </div>
           )}
         </div>
       </Card>
     );
-  }, [
-    showNoteEditor,
-    note?.content,
-    note?.title,
-    noteTitle,
-    noteContent,
-    isNoteLoading,
-    saveNoteMutation.isPending,
-    setShowNoteEditor,
-    setNoteTitle,
-    setNoteContent,
-  ]);
+  }, [isNoteLoading, note?.content, note?.title]);
 
   if (!course.videos.length) {
     return (
@@ -548,6 +475,16 @@ export default function CoursePlayer({
           Bookmark
         </Button>
 
+        {/* Create/Edit Note Button - moved to left of arrow buttons */}
+        <Button
+          onClick={() => setShowNoteEditor((v) => !v)}
+          variant="outline"
+          className="flex items-center gap-2 font-medium bg-zinc-900 border border-zinc-700 text-white hover:bg-zinc-800 hover:border-blue-500 transition-colors duration-150"
+        >
+          <Pencil className="h-4 w-4" />
+          {note?.content ? "Edit Note" : "Create Note"}
+        </Button>
+
         <Button
           onClick={handlePreviousVideo}
           disabled={currentVideoIndex === 0}
@@ -568,8 +505,67 @@ export default function CoursePlayer({
         </Button>
       </div>
 
-      {/* Notes Section */}
-      {notesSection}
+      {/* Note Editor Field (revealed below buttons) */}
+      {showNoteEditor && (
+        <div className="mt-4">
+          <Card className="p-6 bg-zinc-900 border-zinc-800">
+            <div className="space-y-4">
+              <input
+                type="text"
+                value={noteTitle}
+                onChange={(e) => setNoteTitle(e.target.value)}
+                placeholder="Note title (optional)"
+                className="w-full rounded-md border px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 bg-zinc-800 border-zinc-700 text-white placeholder-gray-400"
+              />
+              <Textarea
+                value={noteContent}
+                onChange={(e) => setNoteContent(e.target.value)}
+                placeholder="Write your notes here... (Markdown supported)"
+                className="min-h-[200px] font-mono text-sm resize-none focus:ring-2 focus:ring-blue-500 bg-zinc-800 border-zinc-700 text-white placeholder-gray-400"
+              />
+              <div className="flex gap-3">
+                <Button
+                  onClick={() =>
+                    saveNoteMutation.mutate({
+                      content: noteContent,
+                      title: noteTitle,
+                    })
+                  }
+                  disabled={saveNoteMutation.isPending}
+                  className="flex-1 bg-black hover:bg-zinc-800 text-gray-200 font-medium border-0"
+                >
+                  {saveNoteMutation.isPending ? (
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4">
+                        <LoadingScreen variant="inline" />
+                      </div>
+                      <span>Saving...</span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <Save className="h-4 w-4" />
+                      <span>Save Note</span>
+                    </div>
+                  )}
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => setShowNoteEditor(false)}
+                  className="flex-1 bg-black hover:bg-zinc-800 text-gray-200 border-0"
+                >
+                  <div className="flex items-center gap-2">
+                    <X className="h-4 w-4" />
+                    <span>Cancel</span>
+                  </div>
+                </Button>
+              </div>
+            </div>
+          </Card>
+        </div>
+      )}
+
+      {/* Notes Section (display only) */}
+      {!showNoteEditor && notesSection}
     </div>
   );
 }

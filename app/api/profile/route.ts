@@ -130,11 +130,45 @@ export async function GET() {
     const coursesCompleted = updatedUser.certificates.length;
     const totalWatchTime = calculateTotalWatchTime(updatedUser.videoProgress);
 
-    // Get completed courses from certificates
-    const completedCourses = updatedUser.certificates.map((certificate) => ({
-      id: certificate.course.id,
-      title: certificate.course.title,
-    }));
+    // Get completed courses from certificates with additional data
+    const completedCourses = await Promise.all(
+      updatedUser.certificates.map(async (certificate) => {
+        // Get all videos for this course with their progress
+        const courseVideos = await prisma.video.findMany({
+          where: { courseId: certificate.courseId },
+          include: {
+            progress: {
+              where: {
+                userId: session.user.id,
+                completed: true,
+              },
+            },
+          },
+        });
+
+        // Calculate total hours (assuming average video length of 15 minutes)
+        const totalVideos = courseVideos.length;
+        const totalHours = Math.round((totalVideos * 15) / 60); // 15 minutes per video
+
+        // Get the latest completion date from video progress
+        const latestCompletion = await prisma.videoProgress.findFirst({
+          where: {
+            videoId: { in: courseVideos.map((v) => v.id) },
+            userId: session.user.id,
+            completed: true,
+          },
+          orderBy: { updatedAt: "desc" },
+        });
+
+        return {
+          id: certificate.course.id,
+          title: certificate.course.title,
+          completedAt: certificate.createdAt.toISOString(),
+          totalHours: totalHours,
+          totalVideos: totalVideos,
+        };
+      })
+    );
 
     return NextResponse.json({
       user: {
