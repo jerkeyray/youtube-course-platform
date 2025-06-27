@@ -82,17 +82,32 @@ export default function CourseHeader({
   }, [completedVideos, course.videos.length, onProgressUpdate]);
 
   return (
-    <div className="mb-6">
-      <div className="mb-4">
-        <h1 className="text-3xl font-bold mb-2 text-white">{course.title}</h1>
+    <div className="mb-3">
+      <div className="mb-2">
+        <h1 className="text-2xl font-bold mb-2 text-white">{course.title}</h1>
 
-        {/* Subtle Stats */}
-        <div className="flex items-center gap-4 text-sm text-muted-foreground">
-          <span>{course.videos.length} videos</span>
-          <span>•</span>
-          <span>{completedVideos} completed</span>
-          <span>•</span>
-          <span>{completionPercentage}% progress</span>
+        {/* Stats with better styling */}
+        <div className="flex items-center gap-6 text-sm text-gray-400">
+          <span className="flex items-center gap-1">
+            <span className="font-semibold text-blue-400">
+              {course.videos.length}
+            </span>
+            <span>videos</span>
+          </span>
+          <span className="text-zinc-600">•</span>
+          <span className="flex items-center gap-1">
+            <span className="font-semibold text-blue-400">
+              {completedVideos}
+            </span>
+            <span>completed</span>
+          </span>
+          <span className="text-zinc-600">•</span>
+          <span className="flex items-center gap-1">
+            <span className="font-semibold text-blue-400">
+              {completionPercentage}%
+            </span>
+            <span>progress</span>
+          </span>
         </div>
       </div>
     </div>

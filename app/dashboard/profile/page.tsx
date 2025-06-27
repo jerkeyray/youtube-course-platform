@@ -17,6 +17,9 @@ import {
   Edit2,
   CheckCircle,
   Flame,
+  User,
+  Calendar,
+  Mail,
 } from "lucide-react";
 
 interface UserStats {
@@ -29,6 +32,9 @@ interface UserStats {
 interface CompletedCourseType {
   id: string;
   title: string;
+  completedAt: string;
+  totalHours: number;
+  totalVideos: number;
 }
 
 interface ProfileData {
@@ -54,8 +60,6 @@ async function fetchProfileData(): Promise<ProfileData> {
 
 export default function ProfilePage() {
   const { data: session, status } = useSession();
-  const [isEditing, setIsEditing] = useState(false);
-  const [bio, setBio] = useState("");
   const queryClient = useQueryClient();
 
   const {
@@ -66,269 +70,308 @@ export default function ProfilePage() {
     queryKey: ["profile", session?.user?.id],
     queryFn: fetchProfileData,
     enabled: !!session?.user?.id,
-    staleTime: 1000 * 60 * 5,
-    gcTime: 1000 * 60 * 30,
-  });
-
-  useEffect(() => {
-    if (profileData?.user.bio) {
-      setBio(profileData.user.bio);
-    }
-  }, [profileData?.user.bio]);
-
-  const updateProfileMutation = useMutation({
-    mutationFn: async (newBio: string) => {
-      const response = await fetch("/api/profile", {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ bio: newBio }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to update profile");
-      }
-
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["profile"] });
-      toast.success("Profile updated successfully");
-      setIsEditing(false);
-    },
-    onError: () => {
-      // console.error("Error updating profile:", _error);
-      toast.error("Failed to update profile");
-    },
+    staleTime: 1000 * 60 * 10,
+    gcTime: 1000 * 60 * 60,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
   });
 
   if (status === "loading" || isLoadingProfile) {
-    return <LoadingScreen />;
+    return (
+      <div className="min-h-screen bg-black text-white">
+        <main className="container py-8 px-4">
+          <div className="max-w-3xl mx-auto space-y-8">
+            {/* Profile Header Skeleton */}
+            <Card className="bg-zinc-900/50 border-zinc-800/50 backdrop-blur-sm">
+              <CardContent className="p-8">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
+                  <div className="h-20 w-20 rounded-full bg-zinc-700 animate-pulse"></div>
+                  <div className="flex-1 min-w-0 space-y-2">
+                    <div className="h-8 w-48 bg-zinc-700 rounded animate-pulse"></div>
+                    <div className="h-4 w-32 bg-zinc-700 rounded animate-pulse"></div>
+                    <div className="h-4 w-24 bg-zinc-700 rounded animate-pulse"></div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Stats Grid Skeleton */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              {[...Array(4)].map((_, i) => (
+                <Card
+                  key={i}
+                  className="bg-zinc-900/30 border-zinc-800/50 backdrop-blur-sm"
+                >
+                  <CardContent className="p-6 text-center">
+                    <div className="h-6 w-6 bg-zinc-700 rounded mx-auto mb-3 animate-pulse"></div>
+                    <div className="h-8 w-12 bg-zinc-700 rounded mx-auto mb-1 animate-pulse"></div>
+                    <div className="h-3 w-16 bg-zinc-700 rounded mx-auto animate-pulse"></div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            {/* Completed Courses Skeleton */}
+            <Card className="bg-gradient-to-br from-zinc-900/50 to-zinc-800/30 border-zinc-700/50 backdrop-blur-sm">
+              <CardContent className="p-8">
+                <div className="text-center mb-8">
+                  <div className="h-16 w-16 bg-zinc-700 rounded-full mx-auto mb-4 animate-pulse"></div>
+                  <div className="h-8 w-48 bg-zinc-700 rounded mx-auto mb-2 animate-pulse"></div>
+                  <div className="h-4 w-32 bg-zinc-700 rounded mx-auto animate-pulse"></div>
+                </div>
+
+                <div className="grid gap-4 md:grid-cols-2">
+                  {[...Array(2)].map((_, i) => (
+                    <div
+                      key={i}
+                      className="h-32 bg-zinc-800/50 rounded-xl animate-pulse"
+                    ></div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </main>
+      </div>
+    );
   }
 
   if (profileQueryError) {
     return (
-      <main className="container py-8">
-        <div className="max-w-5xl mx-auto">
-          <div className="flex items-center justify-center min-h-[60vh]">
-            <div className="text-center space-y-4">
-              <p className="text-red-500 dark:text-red-400 text-lg">
-                {profileQueryError instanceof Error
-                  ? profileQueryError.message
-                  : "An error occurred fetching profile"}
-              </p>
-              <Button
-                className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600"
-                onClick={() =>
-                  queryClient.invalidateQueries({ queryKey: ["profile"] })
-                }
-              >
-                Try Again
-              </Button>
+      <div className="min-h-screen bg-black text-white">
+        <main className="container py-8">
+          <div className="max-w-4xl mx-auto">
+            <div className="flex items-center justify-center min-h-[60vh]">
+              <div className="text-center space-y-4">
+                <p className="text-red-400 text-lg">
+                  {profileQueryError instanceof Error
+                    ? profileQueryError.message
+                    : "An error occurred fetching profile"}
+                </p>
+                <Button
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                  onClick={() =>
+                    queryClient.invalidateQueries({ queryKey: ["profile"] })
+                  }
+                >
+                  Try Again
+                </Button>
+              </div>
             </div>
           </div>
-        </div>
-      </main>
+        </main>
+      </div>
     );
   }
 
   if (!profileData || !session?.user) {
     return (
-      <main className="container py-8">
-        <div className="max-w-5xl mx-auto">
-          <div className="flex items-center justify-center min-h-[60vh]">
-            <div className="text-center space-y-4">
-              <p className="text-blue-500 text-lg">
-                No profile data available or not signed in.
-              </p>
+      <div className="min-h-screen bg-black text-white">
+        <main className="container py-8">
+          <div className="max-w-4xl mx-auto">
+            <div className="flex items-center justify-center min-h-[60vh]">
+              <div className="text-center space-y-4">
+                <p className="text-blue-400 text-lg">
+                  No profile data available or not signed in.
+                </p>
+              </div>
             </div>
           </div>
-        </div>
-      </main>
+        </main>
+      </div>
     );
   }
 
-  const handleSubmitBio = () => {
-    updateProfileMutation.mutate(bio);
-  };
-
   return (
-    <div className="min-h-screen">
-      <main className="container py-3 md:py-8">
-        <div className="max-w-5xl mx-auto space-y-6">
-          {/* Profile Details Section */}
-          <Card className="border-0 shadow-xl bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/70 dark:to-indigo-900/70 hover:shadow-2xl transition-all duration-300">
-            <CardContent className="p-3 md:p-8 space-y-4 md:space-y-6">
-              <div className="flex flex-col md:flex-row items-center md:items-start gap-3 md:gap-8">
-                {session.user.image ? (
-                  <div className="relative h-20 w-20 md:h-32 md:w-32 overflow-hidden rounded-full ring-4 ring-blue-100 dark:ring-blue-800 shadow-md">
-                    <Image
-                      src={session.user.image}
-                      alt={session.user.name || "Profile"}
-                      fill
-                      className="object-cover"
-                      sizes="(max-width: 768px) 80px, 128px"
-                      quality={100}
-                      priority
-                    />
-                  </div>
-                ) : (
-                  <div className="h-20 w-20 md:h-32 md:w-32 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white text-2xl md:text-4xl font-bold shadow-md">
-                    {session.user.name?.[0]?.toUpperCase() || "U"}
-                  </div>
-                )}
-                <div className="space-y-1 md:space-y-2 text-center md:text-left">
-                  <h2 className="text-xl md:text-3xl font-bold text-blue-900 dark:text-blue-100">
-                    {session.user.name || "User"}
-                  </h2>
-                  <p className="text-blue-700 dark:text-blue-300 text-sm md:text-lg">
-                    {session.user.email}
-                  </p>
-                  <p className="text-blue-500 dark:text-blue-400 text-xs md:text-base">
-                    Joined{" "}
-                    {format(new Date(profileData.user.createdAt), "MMMM yyyy")}
-                  </p>
-                </div>
-              </div>
-
-              {/* Bio Section - Below profile details */}
-              <div className="space-y-3 pt-4 border-t border-blue-200 dark:border-blue-700">
-                <div className="flex justify-between items-center">
-                  <label className="text-base md:text-lg font-medium text-blue-800 dark:text-blue-200">
-                    Bio
-                  </label>
-                  {!isEditing && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-blue-600 dark:text-blue-300 hover:text-blue-800 dark:hover:text-blue-100 hover:bg-blue-100 dark:hover:bg-blue-800/50"
-                      onClick={() => setIsEditing(true)}
-                    >
-                      <Edit2 className="mr-2 h-4 w-4" /> Edit
-                    </Button>
+    <div className="min-h-screen bg-black text-white">
+      <main className="container py-8 px-4">
+        <div className="max-w-3xl mx-auto space-y-8">
+          {/* Profile Header */}
+          <Card className="bg-zinc-900/50 border-zinc-800/50 backdrop-blur-sm">
+            <CardContent className="p-8">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
+                {/* Profile Image */}
+                <div className="flex-shrink-0">
+                  {session.user.image ? (
+                    <div className="relative h-20 w-20 overflow-hidden rounded-full ring-2 ring-zinc-700">
+                      <Image
+                        src={session.user.image}
+                        alt={session.user.name || "Profile"}
+                        fill
+                        className="object-cover"
+                        sizes="80px"
+                        quality={85}
+                        priority
+                        loading="eager"
+                      />
+                    </div>
+                  ) : (
+                    <div className="h-20 w-20 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center text-white text-2xl font-bold ring-2 ring-zinc-700">
+                      {session.user.name?.[0]?.toUpperCase() || "U"}
+                    </div>
                   )}
                 </div>
-                {isEditing ? (
-                  <>
-                    <Textarea
-                      value={bio}
-                      onChange={(e) => setBio(e.target.value)}
-                      placeholder="Tell us about yourself..."
-                      className="min-h-[80px] text-sm md:text-base rounded-xl border-blue-200 dark:border-blue-700 focus:border-blue-500 dark:focus:border-blue-400 bg-white/70 dark:bg-blue-950/50 transition-all duration-300"
-                    />
-                    <div className="flex justify-end gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="border-blue-200 dark:border-blue-700 text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-800/50"
-                        onClick={() => {
-                          setIsEditing(false);
-                          setBio(profileData.user.bio || "");
-                        }}
-                      >
-                        Cancel
-                      </Button>
-                      <Button
-                        size="sm"
-                        className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600"
-                        onClick={handleSubmitBio}
-                        disabled={updateProfileMutation.isPending}
-                      >
-                        {updateProfileMutation.isPending
-                          ? "Saving..."
-                          : "Save Changes"}
-                      </Button>
+
+                {/* Profile Info */}
+                <div className="flex-1 min-w-0">
+                  <h1 className="text-2xl font-bold text-white mb-2">
+                    {session.user.name || "User"}
+                  </h1>
+                  <div className="space-y-1 text-sm text-gray-400">
+                    <div className="flex items-center gap-2">
+                      <Mail className="h-4 w-4" />
+                      <span>{session.user.email}</span>
                     </div>
-                  </>
-                ) : (
-                  <p className="text-blue-700 dark:text-blue-300 text-sm md:text-base min-h-[40px] leading-relaxed">
-                    {bio || "No bio yet. Click edit to add one!"}
-                  </p>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Stats Section - Horizontal layout below profile */}
-          <Card className="border border-blue-100 dark:border-blue-800 shadow bg-blue-50/50 dark:bg-blue-900/30 hover:shadow-lg transition-all duration-300">
-            <CardContent className="p-4 md:p-6">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
-                <div className="text-center space-y-2">
-                  <div className="flex items-center justify-center gap-2">
-                    <Flame className="h-5 w-5 text-orange-500" />
-                    <h3 className="text-sm md:text-base font-semibold text-blue-900 dark:text-blue-100">
-                      Current Streak
-                    </h3>
+                    <div className="flex items-center gap-2">
+                      <Calendar className="h-4 w-4" />
+                      <span>
+                        Joined{" "}
+                        {format(
+                          new Date(profileData.user.createdAt),
+                          "MMMM yyyy"
+                        )}
+                      </span>
+                    </div>
                   </div>
-                  <p className="text-2xl md:text-3xl font-bold text-blue-700 dark:text-blue-300">
-                    {profileData.stats.currentStreak} days
-                  </p>
-                </div>
-
-                <div className="text-center space-y-2">
-                  <div className="flex items-center justify-center gap-2">
-                    <Trophy className="h-5 w-5 text-yellow-500" />
-                    <h3 className="text-sm md:text-base font-semibold text-blue-900 dark:text-blue-100">
-                      Longest Streak
-                    </h3>
-                  </div>
-                  <p className="text-2xl md:text-3xl font-bold text-blue-700 dark:text-blue-300">
-                    {profileData.stats.longestStreak} days
-                  </p>
-                </div>
-
-                <div className="text-center space-y-2">
-                  <div className="flex items-center justify-center gap-2">
-                    <BookOpen className="h-5 w-5 text-blue-500" />
-                    <h3 className="text-sm md:text-base font-semibold text-blue-900 dark:text-blue-100">
-                      Courses Completed
-                    </h3>
-                  </div>
-                  <p className="text-2xl md:text-3xl font-bold text-blue-700 dark:text-blue-300">
-                    {profileData.stats.coursesCompleted}
-                  </p>
-                </div>
-
-                <div className="text-center space-y-2">
-                  <div className="flex items-center justify-center gap-2">
-                    <Clock className="h-5 w-5 text-blue-500" />
-                    <h3 className="text-sm md:text-base font-semibold text-blue-900 dark:text-blue-100">
-                      Total Watch Time
-                    </h3>
-                  </div>
-                  <p className="text-2xl md:text-3xl font-bold text-blue-700 dark:text-blue-300">
-                    {Math.round(profileData.stats.totalWatchTime / 60)} hours
-                  </p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
+          {/* Stats Grid */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <Card className="bg-zinc-900/30 border-zinc-800/50 backdrop-blur-sm">
+              <CardContent className="p-6 text-center">
+                <div className="flex items-center justify-center mb-3">
+                  <Flame className="h-6 w-6 text-orange-500" />
+                </div>
+                <div className="text-2xl font-bold text-white mb-1">
+                  {profileData.stats.currentStreak}
+                </div>
+                <div className="text-xs text-gray-400 uppercase tracking-wide">
+                  Current Streak
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-zinc-900/30 border-zinc-800/50 backdrop-blur-sm">
+              <CardContent className="p-6 text-center">
+                <div className="flex items-center justify-center mb-3">
+                  <Trophy className="h-6 w-6 text-yellow-500" />
+                </div>
+                <div className="text-2xl font-bold text-white mb-1">
+                  {profileData.stats.longestStreak}
+                </div>
+                <div className="text-xs text-gray-400 uppercase tracking-wide">
+                  Longest Streak
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-zinc-900/30 border-zinc-800/50 backdrop-blur-sm">
+              <CardContent className="p-6 text-center">
+                <div className="flex items-center justify-center mb-3">
+                  <BookOpen className="h-6 w-6 text-blue-500" />
+                </div>
+                <div className="text-2xl font-bold text-white mb-1">
+                  {profileData.stats.coursesCompleted}
+                </div>
+                <div className="text-xs text-gray-400 uppercase tracking-wide">
+                  Completed
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-zinc-900/30 border-zinc-800/50 backdrop-blur-sm">
+              <CardContent className="p-6 text-center">
+                <div className="flex items-center justify-center mb-3">
+                  <Clock className="h-6 w-6 text-green-500" />
+                </div>
+                <div className="text-2xl font-bold text-white mb-1">
+                  {Math.round(profileData.stats.totalWatchTime / 60)}
+                </div>
+                <div className="text-xs text-gray-400 uppercase tracking-wide">
+                  Hours Watched
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Completed Courses */}
           {profileData.completedCourses.length > 0 && (
-            <div className="mt-8">
-              <h2 className="text-2xl font-bold mb-4 text-blue-900 dark:text-blue-100">
-                Completed Courses
-              </h2>
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {profileData.completedCourses.map((course) => (
-                  <Card
-                    key={course.id}
-                    className="border border-blue-100 dark:border-blue-800 shadow bg-blue-50/50 dark:bg-blue-900/30 hover:shadow-lg transition-all duration-300"
-                  >
-                    <CardContent className="p-4">
-                      <h3 className="font-semibold mb-2 text-blue-800 dark:text-blue-200">
-                        {course.title}
-                      </h3>
-                      <div className="flex items-center gap-2 text-sm text-blue-600 dark:text-blue-400">
-                        <CheckCircle className="h-4 w-4 text-green-500" />
-                        <span>Completed</span>
+            <Card className="bg-gradient-to-br from-zinc-900/50 to-zinc-800/30 border-zinc-700/50 backdrop-blur-sm">
+              <CardContent className="p-8">
+                <div className="text-center mb-8">
+                  <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full mb-4">
+                    <Trophy className="h-8 w-8 text-white" />
+                  </div>
+                  <h2 className="text-2xl font-bold text-white mb-2">
+                    Your Achievements
+                  </h2>
+                  <p className="text-gray-400 text-sm">
+                    {profileData.completedCourses.length} course
+                    {profileData.completedCourses.length !== 1 ? "s" : ""}{" "}
+                    completed
+                  </p>
+                </div>
+
+                <div className="grid gap-4 md:grid-cols-2">
+                  {profileData.completedCourses.map((course) => (
+                    <div
+                      key={course.id}
+                      className="group relative overflow-hidden rounded-xl bg-gradient-to-br from-zinc-800/50 to-zinc-700/30 border border-zinc-600/50 hover:border-zinc-500/50 transition-all duration-300 hover:shadow-lg hover:shadow-green-500/10"
+                    >
+                      <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-emerald-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+
+                      <div className="relative p-6">
+                        <h3 className="text-lg font-semibold text-white mb-4 leading-tight">
+                          {course.title}
+                        </h3>
+
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2 text-sm text-gray-400">
+                              <Clock className="h-4 w-4" />
+                              <span>{course.totalHours} hours</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-sm text-gray-400">
+                              <BookOpen className="h-4 w-4" />
+                              <span>{course.totalVideos} videos</span>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-2 text-sm text-gray-500">
+                            <Calendar className="h-4 w-4" />
+                            <span>
+                              Completed{" "}
+                              {format(
+                                new Date(course.completedAt),
+                                "MMM d, yyyy"
+                              )}
+                            </span>
+                          </div>
+                        </div>
                       </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Empty State for No Completed Courses */}
+          {profileData.completedCourses.length === 0 && (
+            <Card className="bg-zinc-900/30 border-zinc-800/50 backdrop-blur-sm">
+              <CardContent className="p-8 text-center">
+                <BookOpen className="h-12 w-12 text-gray-500 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-white mb-2">
+                  No completed courses yet
+                </h3>
+                <p className="text-gray-400 text-sm">
+                  Start learning and complete your first course to see it here.
+                </p>
+              </CardContent>
+            </Card>
           )}
         </div>
       </main>

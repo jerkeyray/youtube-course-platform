@@ -13,6 +13,8 @@ import {
   Plus,
   Video,
   ArrowUpRight,
+  TrendingUp,
+  Target,
 } from "lucide-react";
 import { format } from "date-fns";
 
@@ -61,7 +63,19 @@ export default function DashboardClient({
   activities,
 }: DashboardClientProps) {
   const coursesWithDeadlines = courses
-    .filter((course) => course.deadline)
+    .filter((course) => {
+      // Only include courses with deadlines
+      if (!course.deadline) return false;
+
+      // Check if course is completed (all videos are completed)
+      const totalVideos = course.videos.length;
+      const completedVideos = course.videos.filter((video) =>
+        video.progress.some((p) => p.completed)
+      ).length;
+
+      // Return false if course is completed (all videos watched)
+      return totalVideos > 0 && completedVideos < totalVideos;
+    })
     .sort(
       (a, b) =>
         new Date(a.deadline!).getTime() - new Date(b.deadline!).getTime()
@@ -87,6 +101,29 @@ export default function DashboardClient({
         new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
     )
     .slice(0, 6);
+
+  // Get the last 6 courses that have been recently watched
+  const recentlyWatchedCourses = courses
+    .map((course) => {
+      // Find the most recent video progress for this course
+      const mostRecentProgress = course.videos
+        .flatMap((video) => video.progress)
+        .sort(
+          (a, b) =>
+            new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+        )[0];
+
+      return {
+        course,
+        lastActivity: mostRecentProgress
+          ? new Date(mostRecentProgress.updatedAt)
+          : new Date(0),
+      };
+    })
+    .filter(({ lastActivity }) => lastActivity.getTime() > 0) // Only courses with some progress
+    .sort((a, b) => b.lastActivity.getTime() - a.lastActivity.getTime())
+    .slice(0, 6)
+    .map(({ course }) => course);
 
   // Calculate current streak
   let currentStreak = 0;
@@ -125,182 +162,223 @@ export default function DashboardClient({
     }
   }
 
+  // Calculate total completed videos
+  const totalCompletedVideos = courses.reduce(
+    (total, course) =>
+      total +
+      course.videos.filter((video) => video.progress.some((p) => p.completed))
+        .length,
+    0
+  );
+
+  // Calculate total videos
+  const totalVideos = courses.reduce(
+    (total, course) => total + course.videos.length,
+    0
+  );
+
   return (
-    <main className="space-y-8 min-h-screen bg-background p-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-card p-6 rounded-lg border shadow-sm">
-        <div>
-          <h1 className="text-4xl font-bold tracking-tight text-foreground">
-            Dashboard
-          </h1>
+    <div className="min-h-screen bg-black text-white">
+      <main className="space-y-8 p-6">
+        {/* Header Section */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-4xl font-bold tracking-tight text-white">
+              Dashboard
+            </h1>
+          </div>
+          <Button className="gap-2 bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-xl transition-all duration-200">
+            <Plus size={16} />
+            <Link href="/dashboard/courses/create">Add Course</Link>
+          </Button>
         </div>
-        <Button className="gap-2 bg-blue-600 hover:bg-blue-700 shadow-sm">
-          <Plus size={16} />
-          <Link href="/dashboard/courses/create">Add Course</Link>
-        </Button>
-      </div>
 
-      <div className="grid gap-8 grid-cols-1">
-        {/* Updated Activity Section */}
-        <div className="bg-blue-50 dark:bg-blue-950/50 rounded-lg p-4 md:p-6 border border-blue-100 dark:border-blue-900 shadow-sm">
-          <div className="flex flex-col md:flex-row items-center gap-6">
-            <div className="w-full md:w-3/4 lg:w-2/3 flex justify-center md:justify-start py-4 order-last md:order-first">
-              <ActivityHeatmap activities={activities} cellSize={18} />
-            </div>
-
-            <div className="w-full md:w-1/4 lg:w-1/3 flex flex-col justify-center text-center md:text-left">
-              <div className="flex items-center gap-3 mb-4 justify-center md:justify-start">
-                <div className="bg-blue-100 dark:bg-blue-800 p-2 rounded-full">
-                  <Flame className="h-8 w-8 text-blue-600 dark:text-blue-300" />
-                </div>
-                <h2 className="text-3xl font-bold text-blue-600 dark:text-blue-300">
-                  {currentStreak || 0} day streak
-                </h2>
+        <div className="grid gap-8 grid-cols-1">
+          {/* Activity Heatmap Section */}
+          <div className="bg-zinc-900 rounded-xl p-6 border border-zinc-800">
+            <div className="flex flex-col lg:flex-row items-center gap-8">
+              <div className="w-full lg:w-2/3 flex justify-center lg:justify-start">
+                <ActivityHeatmap activities={activities} cellSize={18} />
               </div>
-              <p className="text-gray-700 dark:text-gray-200 text-lg mt-1">
-                {currentStreak
-                  ? `${currentStreak} days? Cool. Still not enough to explain anything without Googling. 😉`
-                  : "Start watching videos to build your streak!"}
-              </p>
+
+              <div className="w-full lg:w-1/3 flex flex-col justify-center text-center lg:text-left">
+                <div className="flex items-center gap-3 mb-4 justify-center lg:justify-start">
+                  <div className="bg-blue-600/20 p-3 rounded-full">
+                    <Flame className="h-8 w-8 text-blue-400" />
+                  </div>
+                  <h2 className="text-3xl font-bold text-white">
+                    {currentStreak || 0} day streak
+                  </h2>
+                </div>
+                <p className="text-gray-300 text-lg">
+                  {currentStreak
+                    ? `Keep up the great work! You're on fire! 🔥`
+                    : "Start watching videos to build your streak!"}
+                </p>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Upcoming Deadlines Section */}
-        {coursesWithDeadlines.length > 0 && (
-          <Card className="border-blue-100 dark:border-blue-900 shadow-sm hover:shadow-md transition-shadow bg-blue-50 dark:bg-blue-950/50">
-            <CardHeader className="pb-2 bg-blue-50 dark:bg-blue-950/50">
-              <CardTitle className="text-xl font-semibold flex items-center">
-                <Clock className="h-5 w-5 mr-2 text-blue-600 dark:text-blue-300" />{" "}
-                Upcoming Deadlines
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="bg-blue-50 dark:bg-blue-950/50">
-              <div className="grid gap-3 grid-cols-1 md:grid-cols-3">
-                {coursesWithDeadlines.map((course) => {
-                  const deadlineDate = new Date(course.deadline!);
-                  const daysRemaining = Math.ceil(
-                    (deadlineDate.getTime() - new Date().getTime()) /
-                      (1000 * 60 * 60 * 24)
-                  );
-                  const isUrgent = daysRemaining <= 3;
+          {/* Upcoming Deadlines Section */}
+          {coursesWithDeadlines.length > 0 && (
+            <div className="bg-zinc-900 rounded-xl border border-zinc-800">
+              <div className="p-6 border-b border-zinc-800">
+                <h2 className="text-xl font-semibold flex items-center text-white">
+                  <Clock className="h-5 w-5 mr-2 text-blue-400" />
+                  Upcoming Deadlines
+                </h2>
+              </div>
+              <div className="p-6">
+                <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                  {coursesWithDeadlines.map((course) => {
+                    const deadlineDate = new Date(course.deadline!);
+                    const daysRemaining = Math.ceil(
+                      (deadlineDate.getTime() - new Date().getTime()) /
+                        (1000 * 60 * 60 * 24)
+                    );
+                    const isUrgent = daysRemaining <= 3;
 
-                  return (
-                    <div
-                      key={course.id}
-                      className={`flex items-center justify-between p-3 rounded-lg border shadow-sm ${
-                        isUrgent
-                          ? "border-amber-300 bg-amber-50 dark:bg-amber-900/20 dark:border-amber-800"
-                          : "border-gray-200 bg-white dark:bg-blue-900/20 dark:border-blue-800"
-                      }`}
-                    >
-                      <div>
-                        <h3 className="font-medium truncate max-w-[200px]">
-                          {course.title}
-                        </h3>
-                        <p
-                          className={`text-sm ${
+                    return (
+                      <Link
+                        key={course.id}
+                        href={`/dashboard/courses/${course.id}`}
+                        className="block"
+                      >
+                        <div
+                          className={`flex items-center justify-between p-4 rounded-lg border transition-all duration-200 cursor-pointer ${
                             isUrgent
-                              ? "text-amber-600"
-                              : "text-muted-foreground"
+                              ? "border-red-500/50 bg-red-500/10 hover:bg-red-500/20"
+                              : "border-zinc-700 bg-zinc-800/50 hover:bg-zinc-800/70 hover:border-zinc-600"
                           }`}
                         >
-                          {daysRemaining} days remaining
-                        </p>
+                          <div className="overflow-hidden flex-1">
+                            <h3 className="font-medium text-white truncate max-w-[200px]">
+                              {course.title}
+                            </h3>
+                            <p
+                              className={`text-sm ${
+                                isUrgent ? "text-red-400" : "text-gray-400"
+                              }`}
+                            >
+                              {daysRemaining} days remaining
+                            </p>
+                          </div>
+                          <div className="flex-shrink-0 ml-2">
+                            <ArrowUpRight className="h-4 w-4 text-blue-400" />
+                          </div>
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Recently Watched Videos Section */}
+          {recentlyWatchedVideos.length > 0 && (
+            <div className="bg-zinc-900 rounded-xl border border-zinc-800">
+              <div className="p-6 border-b border-zinc-800">
+                <h2 className="text-xl font-semibold flex items-center text-white">
+                  <Video className="h-5 w-5 mr-2 text-blue-400" />
+                  Recently Watched
+                </h2>
+              </div>
+              <div className="p-6">
+                <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                  {recentlyWatchedVideos.map((video) => (
+                    <Link
+                      key={video.id}
+                      href={`/dashboard/courses/${video.courseId}?videoId=${video.id}`}
+                      className="block"
+                    >
+                      <div className="flex items-center justify-between p-4 rounded-lg border border-zinc-700 bg-zinc-800/50 hover:bg-zinc-800/70 hover:border-zinc-600 transition-all duration-200 cursor-pointer">
+                        <div className="overflow-hidden flex-1">
+                          <h3 className="font-medium text-white truncate max-w-[200px]">
+                            {video.title}
+                          </h3>
+                          <p className="text-sm text-gray-400 truncate">
+                            {video.courseTitle}
+                          </p>
+                        </div>
+                        <div className="flex-shrink-0 ml-2">
+                          <ArrowUpRight className="h-4 w-4 text-blue-400" />
+                        </div>
                       </div>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Courses Section */}
+          <div className="bg-zinc-900 rounded-xl border border-zinc-800">
+            <div className="p-6 border-b border-zinc-800">
+              <h2 className="text-xl font-semibold flex items-center text-white">
+                <BookOpen className="h-5 w-5 mr-2 text-blue-400" />
+                Continue Learning
+              </h2>
+            </div>
+            <div className="p-6">
+              {recentlyWatchedCourses.length > 0 ? (
+                <div>
+                  <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+                    {recentlyWatchedCourses.map((course) => (
+                      <CourseCard key={course.id} course={course} />
+                    ))}
+                  </div>
+                  {courses.length > 6 && (
+                    <div className="mt-6 text-center">
                       <Button
-                        variant="ghost"
-                        size="icon"
-                        className="shrink-0"
+                        className="bg-zinc-900 hover:bg-zinc-800 text-white border border-zinc-700"
                         asChild
                       >
-                        <Link href={`/courses/${course.id}`}>
-                          <ArrowUpRight className="h-4 w-4" />
+                        <Link href="/dashboard/mycourses">
+                          View All Courses
                         </Link>
                       </Button>
                     </div>
-                  );
-                })}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Courses Section */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-xl font-semibold flex items-center">
-              <BookOpen className="h-5 w-5 mr-2 text-blue-600 dark:text-blue-300" />{" "}
-              My Courses
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {courses.length > 0 ? (
-              <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-                {courses.map((course) => (
-                  <CourseCard key={course.id} course={course} />
-                ))}
-              </div>
-            ) : (
-              <div className="p-8 text-center">
-                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                  <BookOpen className="h-8 w-8 text-blue-600 dark:text-blue-400" />
+                  )}
                 </div>
-                <p className="text-blue-600/70 dark:text-blue-400/90 mb-4">
-                  You haven't added any courses yet.
-                </p>
-                <Button className="mt-2 bg-blue-600 hover:bg-blue-700" asChild>
-                  <Link href="/dashboard/courses/create">
-                    Add Your First Course
-                  </Link>
-                </Button>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Recently Watched Videos Section */}
-        {recentlyWatchedVideos.length > 0 && (
-          <Card className="border-blue-100 dark:border-blue-900 shadow-sm hover:shadow-md transition-shadow bg-blue-50 dark:bg-blue-950/50">
-            <CardHeader className="pb-2 bg-blue-50 dark:bg-blue-950/50">
-              <CardTitle className="text-xl font-semibold flex items-center">
-                <Video className="h-5 w-5 mr-2 text-blue-600 dark:text-blue-300" />{" "}
-                Recently Watched
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="bg-blue-50 dark:bg-blue-950/50">
-              <div className="grid gap-3 grid-cols-1 md:grid-cols-3">
-                {recentlyWatchedVideos.map((video) => (
-                  <div
-                    key={video.id}
-                    className="flex items-center justify-between p-3 rounded-lg border border-blue-200 dark:border-blue-800 bg-white dark:bg-blue-900/20 hover:bg-blue-50 dark:hover:bg-blue-800/30 transition-colors"
-                  >
-                    <div className="overflow-hidden">
-                      <h3 className="font-medium truncate max-w-[200px]">
-                        {video.title}
-                      </h3>
-                      <p className="text-sm text-muted-foreground truncate">
-                        {video.courseTitle}
-                      </p>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="shrink-0"
-                      asChild
-                    >
-                      <Link
-                        href={`/courses/${video.courseId}/videos/${video.videoId}`}
-                      >
-                        <ArrowUpRight className="h-4 w-4" />
-                      </Link>
-                    </Button>
+              ) : courses.length > 0 ? (
+                <div className="p-8 text-center">
+                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-blue-600/20 flex items-center justify-center">
+                    <BookOpen className="h-8 w-8 text-blue-400" />
                   </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-      </div>
-    </main>
+                  <p className="text-gray-300 mb-4">
+                    Start watching videos to see your recently watched courses
+                    here.
+                  </p>
+                  <Button
+                    className="mt-2 bg-blue-600 hover:bg-blue-700"
+                    asChild
+                  >
+                    <Link href="/dashboard/mycourses">View All Courses</Link>
+                  </Button>
+                </div>
+              ) : (
+                <div className="p-8 text-center">
+                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-blue-600/20 flex items-center justify-center">
+                    <BookOpen className="h-8 w-8 text-blue-400" />
+                  </div>
+                  <p className="text-gray-300 mb-4">
+                    You haven't added any courses yet.
+                  </p>
+                  <Button
+                    className="mt-2 bg-blue-600 hover:bg-blue-700"
+                    asChild
+                  >
+                    <Link href="/dashboard/courses/create">
+                      Add Your First Course
+                    </Link>
+                  </Button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
   );
 }

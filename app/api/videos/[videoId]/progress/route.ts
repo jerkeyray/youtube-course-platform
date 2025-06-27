@@ -25,7 +25,7 @@ export async function POST(
       create: { userId, videoId: params.videoId, completed },
     });
 
-    // If video is completed, record activity for today
+    // If video is completed, record activity for today and check course completion
     if (completed) {
       const today = format(startOfDay(new Date()), "yyyy-MM-dd");
 
@@ -46,6 +46,9 @@ export async function POST(
           },
         });
       }
+
+      // Check if course is completed and create certificate if needed
+      await checkAndCreateCertificate(userId, params.videoId);
     }
 
     return NextResponse.json(progress);
@@ -61,5 +64,62 @@ export async function POST(
       { error: "Failed to update video progress" },
       { status: 500 }
     );
+  }
+}
+
+async function checkAndCreateCertificate(userId: string, videoId: string) {
+  try {
+    // Get the video and its course
+    const video = await prisma.video.findUnique({
+      where: { id: videoId },
+      include: {
+        course: {
+          include: {
+            videos: {
+              include: {
+                progress: {
+                  where: { userId },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!video || !video.course) {
+      return;
+    }
+
+    const course = video.course;
+    const totalVideos = course.videos.length;
+    const completedVideos = course.videos.filter((v) =>
+      v.progress.some((p) => p.completed)
+    ).length;
+
+    // Check if all videos are completed
+    if (totalVideos > 0 && completedVideos === totalVideos) {
+      // Check if certificate already exists
+      const existingCertificate = await prisma.certificate.findUnique({
+        where: {
+          userId_courseId: {
+            userId,
+            courseId: course.id,
+          },
+        },
+      });
+
+      // Create certificate if it doesn't exist
+      if (!existingCertificate) {
+        await prisma.certificate.create({
+          data: {
+            userId,
+            courseId: course.id,
+          },
+        });
+      }
+    }
+  } catch (error) {
+    console.error("Error checking course completion:", error);
   }
 }

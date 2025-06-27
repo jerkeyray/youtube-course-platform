@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import VideoCard from "@/components/VideoCard";
 import LoadingScreen from "@/components/LoadingScreen";
+import { Clock } from "lucide-react";
 
 interface Video {
   id: string;
@@ -39,53 +40,69 @@ export default function WatchLaterPage() {
   if (error) {
     toast.error("Failed to load watch later videos");
     return (
-      <main className="container py-8">
-        <div className="rounded-lg border bg-card dark:bg-blue-900/50 p-8 text-center">
-          <h2 className="mb-2 text-xl font-medium dark:text-blue-100">
-            Error loading videos
-          </h2>
-          <p className="mb-4 text-muted-foreground">
-            Please try refreshing the page
-          </p>
+      <div className="min-h-screen bg-black text-white">
+        <div className="p-6 md:p-8">
+          <div className="max-w-4xl mx-auto">
+            <div className="rounded-lg border border-zinc-800 bg-zinc-900 p-8 text-center">
+              <h2 className="mb-2 text-xl font-medium text-white">
+                Error loading videos
+              </h2>
+              <p className="mb-4 text-gray-400">
+                Please try refreshing the page
+              </p>
+            </div>
+          </div>
         </div>
-      </main>
+      </div>
     );
   }
 
   if (isLoading) {
-    return (
-      <main className="container py-8">
-        <LoadingScreen variant="fullscreen" />
-      </main>
-    );
+    return <LoadingScreen />;
   }
 
   return (
-    <main className="container py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold dark:text-white">Watch Later</h1>
-      </div>
+    <div className="min-h-screen bg-black text-white">
+      <div className="p-6 md:p-8">
+        <div className="max-w-7xl mx-auto">
+          {/* Header */}
+          <div className="mb-8">
+            <div className="flex items-center gap-3 mb-2">
+              <Clock className="h-8 w-8 text-blue-500" />
+              <h1 className="text-3xl font-bold text-white">Watch Later</h1>
+            </div>
+            <p className="text-gray-400">Videos you've saved to watch later</p>
+          </div>
 
-      {videos.length === 0 ? (
-        <div className="rounded-lg border bg-card dark:bg-blue-900/50 p-8 text-center">
-          <h2 className="mb-2 text-xl font-medium dark:text-blue-100">
-            No videos in watch later
-          </h2>
-          <p className="text-muted-foreground">
-            Add videos to your watch later list while browsing courses
-          </p>
+          {videos.length === 0 ? (
+            <div className="flex items-center justify-center min-h-[60vh]">
+              <div className="text-center space-y-4">
+                <div className="mx-auto w-16 h-16 bg-zinc-900 rounded-full flex items-center justify-center border border-zinc-800">
+                  <Clock className="h-8 w-8 text-gray-500" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-medium text-white mb-2">
+                    No videos in watch later
+                  </h2>
+                  <p className="text-gray-400">
+                    Add videos to your watch later list while browsing courses
+                  </p>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6">
+              {videos.map((video) => (
+                <VideoCard
+                  key={video.id}
+                  video={video}
+                  onRemove={() => refetch()}
+                />
+              ))}
+            </div>
+          )}
         </div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 max-w-screen-xl mx-auto">
-          {videos.map((video) => (
-            <VideoCard
-              key={video.id}
-              video={video}
-              onRemove={() => refetch()}
-            />
-          ))}
-        </div>
-      )}
-    </main>
+      </div>
+    </div>
   );
 }

@@ -3,6 +3,7 @@
 import React, { useState, useMemo } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { PlusCircle, Filter } from "lucide-react";
 import CourseCard from "@/components/CourseCard";
 import LoadingScreen from "@/components/LoadingScreen";
@@ -36,6 +37,9 @@ export default function MyCoursesPage() {
   } = useQuery({
     queryKey: ["courses"],
     queryFn: getCourses,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    gcTime: 1000 * 60 * 30, // 30 minutes
+    refetchOnWindowFocus: false,
   });
 
   const filteredCourses = useMemo(() => {
@@ -63,88 +67,108 @@ export default function MyCoursesPage() {
   if (error) {
     toast.error("Failed to load courses");
     return (
-      <main className="container py-8">
-        <div className="rounded-lg border bg-card p-8 text-center">
-          <h2 className="mb-2 text-xl font-medium">Error loading courses</h2>
-          <p className="mb-4 text-muted-foreground">
-            Please try refreshing the page
-          </p>
-        </div>
-      </main>
+      <div className="min-h-screen bg-black text-white">
+        <main className="container py-8 px-4 lg:px-6">
+          <div className="rounded-lg border bg-zinc-900 border-zinc-800 p-8 text-center">
+            <h2 className="mb-2 text-xl font-medium text-white">
+              Error loading courses
+            </h2>
+            <p className="mb-4 text-gray-400">Please try refreshing the page</p>
+          </div>
+        </main>
+      </div>
     );
   }
 
   if (isLoading) {
     return (
-      <main className="container py-8">
-        <LoadingScreen variant="fullscreen" />
-      </main>
+      <div className="min-h-screen bg-black text-white">
+        <main className="container py-8 px-4 lg:px-6">
+          <div className="mb-8 flex flex-col justify-between gap-4 md:flex-row md:items-center">
+            <div>
+              <h1 className="text-3xl font-bold text-white">My Courses</h1>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button className="bg-blue-600 hover:bg-blue-700" asChild>
+                <Link href="/dashboard/courses/create">
+                  <PlusCircle className="mr-2 h-5 w-5" />
+                  Add Course
+                </Link>
+              </Button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {[...Array(6)].map((_, i) => (
+              <Card
+                key={i}
+                className="bg-zinc-900 border-zinc-800 overflow-hidden"
+              >
+                <CardContent className="p-6">
+                  <div className="space-y-4">
+                    <div className="h-4 bg-zinc-700 rounded animate-pulse w-3/4"></div>
+                    <div className="h-3 bg-zinc-700 rounded animate-pulse w-1/2"></div>
+                    <div className="space-y-2">
+                      <div className="h-2 bg-zinc-700 rounded animate-pulse"></div>
+                      <div className="h-2 bg-zinc-700 rounded animate-pulse w-4/5"></div>
+                    </div>
+                    <div className="flex items-center justify-between pt-2">
+                      <div className="h-3 bg-zinc-700 rounded animate-pulse w-16"></div>
+                      <div className="h-6 bg-zinc-700 rounded animate-pulse w-20"></div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </main>
+      </div>
     );
   }
 
   return (
-    <main className="container py-8">
-      <div className="mb-8 flex flex-col justify-between gap-4 md:flex-row md:items-center">
-        <div>
-          <h1 className="text-3xl font-bold">My Courses</h1>
+    <div className="min-h-screen bg-black text-white">
+      <main className="container py-8 px-4 lg:px-6">
+        <div className="mb-8 flex flex-col justify-between gap-4 md:flex-row md:items-center">
+          <div>
+            <h1 className="text-3xl font-bold text-white">My Courses</h1>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Button className="bg-blue-600 hover:bg-blue-700" asChild>
+              <Link href="/dashboard/courses/create">
+                <PlusCircle className="mr-2 h-5 w-5" />
+                Add Course
+              </Link>
+            </Button>
+          </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm">
-                <Filter className="h-4 w-4 mr-2" />
-                {filter === "all"
-                  ? "All Courses"
-                  : filter === "in-progress"
-                  ? "In Progress"
-                  : "Completed"}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => setFilter("all")}>
-                All Courses
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setFilter("in-progress")}>
-                In Progress
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setFilter("completed")}>
-                Completed
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          <Button className="bg-blue-600 hover:bg-blue-700" asChild>
-            <Link href="/dashboard/courses/create">
-              <PlusCircle className="mr-2 h-5 w-5" />
-              Add Course
-            </Link>
-          </Button>
-        </div>
-      </div>
-
-      {filteredCourses.length === 0 ? (
-        <div className="rounded-lg border bg-card p-8 text-center">
-          <h2 className="mb-2 text-xl font-medium">No courses found</h2>
-          <p className="mb-4 text-muted-foreground">
-            {filter !== "all"
-              ? "No courses match your current filter"
-              : "Create your first course to get started"}
-          </p>
-          <Button className="bg-blue-600 hover:bg-blue-700" asChild>
-            <Link href="/dashboard/courses/create">
-              <PlusCircle className="mr-2 h-5 w-5" />
-              Create New Course
-            </Link>
-          </Button>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {filteredCourses.map((course) => (
-            <CourseCard key={course.id} course={course} />
-          ))}
-        </div>
-      )}
-    </main>
+        {filteredCourses.length === 0 ? (
+          <div className="rounded-lg border bg-zinc-900 border-zinc-800 p-8 text-center">
+            <h2 className="mb-2 text-xl font-medium text-white">
+              No courses found
+            </h2>
+            <p className="mb-4 text-gray-400">
+              {filter !== "all"
+                ? "No courses match your current filter"
+                : "Create your first course to get started"}
+            </p>
+            <Button className="bg-blue-600 hover:bg-blue-700" asChild>
+              <Link href="/dashboard/courses/create">
+                <PlusCircle className="mr-2 h-5 w-5" />
+                Create New Course
+              </Link>
+            </Button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {filteredCourses.map((course) => (
+              <CourseCard key={course.id} course={course} />
+            ))}
+          </div>
+        )}
+      </main>
+    </div>
   );
 }

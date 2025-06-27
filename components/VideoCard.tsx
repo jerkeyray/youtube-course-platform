@@ -88,11 +88,13 @@ export default function VideoCard({
   return (
     <div
       className={cn(
-        "group relative overflow-hidden rounded-lg border border-blue-100 dark:border-blue-800 bg-blue-50/50 dark:bg-blue-900/30 transition-all hover:shadow-md hover:border-blue-200 dark:hover:border-blue-700 flex flex-col w-full max-w-xs mx-auto"
+        "group relative overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900 transition-all duration-200 hover:border-zinc-700 hover:bg-zinc-800/50 flex flex-col w-full max-w-xs mx-auto cursor-pointer"
       )}
       onClick={() => {
         if (video.courseId) {
-          router.push(`/dashboard/courses/${video.courseId}?video=${video.id}`);
+          router.push(
+            `/dashboard/courses/${video.courseId}?videoId=${video.id}`
+          );
         } else {
           toast.error("Course information is missing for this video");
           // eslint-disable-next-line no-console
@@ -116,33 +118,33 @@ export default function VideoCard({
           }}
         />
         {video.duration && (
-          <div className="absolute bottom-2 right-2 rounded bg-blue-900/90 px-1.5 py-0.5 text-xs text-white">
+          <div className="absolute bottom-2 right-2 rounded bg-black/80 px-2 py-1 text-xs text-white font-medium">
             {video.duration}
           </div>
         )}
       </div>
-      <div className="p-3 md:p-4 flex flex-col flex-grow justify-between min-h-0">
+      <div className="p-4 flex flex-col flex-grow justify-between min-h-0">
         <div>
-          <h3 className="font-medium text-base mb-1 line-clamp-2 min-h-[2.5rem] text-gray-800 dark:text-gray-200">
+          <h3 className="font-semibold text-base mb-2 line-clamp-2 min-h-[2.5rem] text-white group-hover:text-blue-400 transition-colors duration-200">
             {video.title}
           </h3>
           <p
-            className="text-sm font-semibold text-blue-600 dark:text-blue-400 line-clamp-1 mb-1"
+            className="text-sm font-medium text-blue-400 line-clamp-1 mb-2"
             title={video.courseTitle || "Unknown Course"}
           >
             {video.courseTitle || "Unknown Course"}
           </p>
         </div>
-        <div className="flex items-center justify-between mt-2">
-          <div className="flex items-center text-sm text-blue-500 dark:text-blue-400">
-            <Clock className="mr-1 h-4 w-4" />
+        <div className="flex items-center justify-between mt-3 pt-3 border-t border-zinc-800">
+          <div className="flex items-center text-sm text-gray-400">
+            <Clock className="mr-2 h-4 w-4" />
             {type === "watch-later" ? "Watch Later" : "Bookmark"}
           </div>
           {onRemove && (
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8 hover:bg-red-100 dark:hover:bg-red-900/30 hover:text-red-600 dark:hover:text-red-400 transition-colors duration-200"
+              className="h-8 w-8 hover:bg-red-900/30 hover:text-red-400 transition-colors duration-200 opacity-0 group-hover:opacity-100"
               onClick={handleRemove}
             >
               <Trash2 className="h-4 w-4" />

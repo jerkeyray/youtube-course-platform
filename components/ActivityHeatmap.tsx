@@ -86,39 +86,33 @@ export default function ActivityHeatmap({
                             width: `${squareSize}px`,
                             height: `${squareSize}px`,
                           }}
-                          className={`rounded-sm ${
+                          className={`rounded-sm transition-all duration-200 ${
                             cell.active
-                              ? "bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-500"
-                              : "bg-slate-50 hover:bg-slate-100 dark:bg-blue-950 dark:hover:bg-blue-900"
-                          } ${
-                            isToday
-                              ? "ring-1 ring-blue-600 dark:ring-blue-400"
-                              : ""
-                          }`}
+                              ? "bg-blue-500 hover:bg-blue-600"
+                              : "bg-zinc-800 hover:bg-zinc-700"
+                          } ${isToday ? "ring-2 ring-blue-400" : ""}`}
                         />
                       </TooltipTrigger>
                       <TooltipContent
                         side="top"
-                        className="text-xs p-2 bg-white dark:bg-blue-950 border border-blue-100 dark:border-blue-800 shadow-md"
+                        className="text-xs p-3 bg-zinc-900 border border-zinc-700 shadow-xl"
                       >
-                        <p className="font-medium text-blue-800 dark:text-blue-300">
+                        <p className="font-medium text-white">
                           {format(cell.date, "EEEE, MMMM d, yyyy")}
                         </p>
-                        <div className="flex items-center mt-1">
+                        <div className="flex items-center mt-2">
                           <div
-                            className={`w-2 h-2 rounded-full mr-1.5 ${
-                              cell.active
-                                ? "bg-blue-500 dark:bg-blue-400"
-                                : "bg-slate-200 dark:bg-blue-800"
+                            className={`w-2 h-2 rounded-full mr-2 ${
+                              cell.active ? "bg-blue-400" : "bg-zinc-600"
                             }`}
                           ></div>
-                          <p className="dark:text-blue-200">
+                          <p className="text-gray-300">
                             {cell.active ? "Activity completed" : "No activity"}
                           </p>
                         </div>
                         {isToday && (
-                          <p className="font-semibold text-blue-600 dark:text-blue-300 mt-1 flex items-center">
-                            <span className="w-1.5 h-1.5 bg-blue-600 dark:bg-blue-400 rounded-full mr-1"></span>
+                          <p className="font-semibold text-blue-400 mt-2 flex items-center">
+                            <span className="w-1.5 h-1.5 bg-blue-400 rounded-full mr-1"></span>
                             Today
                           </p>
                         )}
