@@ -63,7 +63,19 @@ export default function DashboardClient({
   activities,
 }: DashboardClientProps) {
   const coursesWithDeadlines = courses
-    .filter((course) => course.deadline)
+    .filter((course) => {
+      // Only include courses with deadlines
+      if (!course.deadline) return false;
+
+      // Check if course is completed (all videos are completed)
+      const totalVideos = course.videos.length;
+      const completedVideos = course.videos.filter((video) =>
+        video.progress.some((p) => p.completed)
+      ).length;
+
+      // Return false if course is completed (all videos watched)
+      return totalVideos > 0 && completedVideos < totalVideos;
+    })
     .sort(
       (a, b) =>
         new Date(a.deadline!).getTime() - new Date(b.deadline!).getTime()
@@ -227,37 +239,35 @@ export default function DashboardClient({
                     const isUrgent = daysRemaining <= 3;
 
                     return (
-                      <div
+                      <Link
                         key={course.id}
-                        className={`flex items-center justify-between p-4 rounded-lg border transition-all duration-200 ${
-                          isUrgent
-                            ? "border-red-500/50 bg-red-500/10 hover:bg-red-500/20"
-                            : "border-zinc-700 bg-zinc-800/50 hover:bg-zinc-800/70"
-                        }`}
+                        href={`/dashboard/courses/${course.id}`}
+                        className="block"
                       >
-                        <div>
-                          <h3 className="font-medium text-white truncate max-w-[200px]">
-                            {course.title}
-                          </h3>
-                          <p
-                            className={`text-sm ${
-                              isUrgent ? "text-red-400" : "text-gray-400"
-                            }`}
-                          >
-                            {daysRemaining} days remaining
-                          </p>
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="shrink-0 text-gray-400 hover:text-white"
-                          asChild
+                        <div
+                          className={`flex items-center justify-between p-4 rounded-lg border transition-all duration-200 cursor-pointer ${
+                            isUrgent
+                              ? "border-red-500/50 bg-red-500/10 hover:bg-red-500/20"
+                              : "border-zinc-700 bg-zinc-800/50 hover:bg-zinc-800/70 hover:border-zinc-600"
+                          }`}
                         >
-                          <Link href={`/courses/${course.id}`}>
-                            <ArrowUpRight className="h-4 w-4" />
-                          </Link>
-                        </Button>
-                      </div>
+                          <div className="overflow-hidden flex-1">
+                            <h3 className="font-medium text-white truncate max-w-[200px]">
+                              {course.title}
+                            </h3>
+                            <p
+                              className={`text-sm ${
+                                isUrgent ? "text-red-400" : "text-gray-400"
+                              }`}
+                            >
+                              {daysRemaining} days remaining
+                            </p>
+                          </div>
+                          <div className="flex-shrink-0 ml-2">
+                            <ArrowUpRight className="h-4 w-4 text-blue-400" />
+                          </div>
+                        </div>
+                      </Link>
                     );
                   })}
                 </div>

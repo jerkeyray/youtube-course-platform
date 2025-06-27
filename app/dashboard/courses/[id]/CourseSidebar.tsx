@@ -140,6 +140,8 @@ export default function CourseSidebar({
               className={`group relative rounded-lg border transition-all duration-200 cursor-pointer overflow-hidden min-h-24 ${
                 localCurrentVideoIndex === index
                   ? "border-blue-400 bg-gradient-to-r from-blue-950/40 to-indigo-950/40 shadow-lg ring-2 ring-blue-500/30"
+                  : localWatchedVideos.has(video.id)
+                  ? "border-green-500/50 bg-gradient-to-r from-green-950/30 to-emerald-950/30 hover:border-green-400/70 hover:bg-green-950/40"
                   : "border-zinc-700 hover:border-zinc-600 hover:bg-zinc-800/30"
               }`}
               onClick={() => handleVideoClick(index)}
@@ -147,7 +149,7 @@ export default function CourseSidebar({
               <div className="flex items-start gap-3 p-4">
                 <div className="flex-shrink-0 mt-1">
                   {localWatchedVideos.has(video.id) ? (
-                    <div className="w-7 h-7 rounded-full bg-blue-500 flex items-center justify-center shadow-sm">
+                    <div className="w-7 h-7 rounded-full bg-gradient-to-r from-green-500 to-emerald-600 flex items-center justify-center shadow-sm">
                       <Check className="h-4 w-4 text-white" />
                     </div>
                   ) : localCurrentVideoIndex === index ? (
@@ -166,6 +168,8 @@ export default function CourseSidebar({
                     className={`text-sm font-medium leading-5 line-clamp-2 mb-1 transition-colors ${
                       localCurrentVideoIndex === index
                         ? "text-blue-100"
+                        : localWatchedVideos.has(video.id)
+                        ? "text-green-100"
                         : "text-gray-100 group-hover:text-blue-300"
                     }`}
                   >
@@ -178,7 +182,7 @@ export default function CourseSidebar({
                     </span>
 
                     {localWatchedVideos.has(video.id) && (
-                      <span className="text-xs font-medium text-blue-400">
+                      <span className="text-xs font-medium text-green-400">
                         • Completed
                       </span>
                     )}
