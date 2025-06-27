@@ -32,9 +32,11 @@ export async function GET() {
       where: { userId },
       include: {
         videos: {
-          include: {
+          select: {
+            id: true,
             progress: {
               where: { userId },
+              select: { completed: true },
             },
           },
         },

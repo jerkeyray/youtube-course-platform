@@ -82,9 +82,9 @@ export default function CourseHeader({
   }, [completedVideos, course.videos.length, onProgressUpdate]);
 
   return (
-    <div className="mb-4">
-      <div className="mb-3">
-        <h1 className="text-3xl font-bold mb-3 text-white">{course.title}</h1>
+    <div className="mb-3">
+      <div className="mb-2">
+        <h1 className="text-2xl font-bold mb-2 text-white">{course.title}</h1>
 
         {/* Stats with better styling */}
         <div className="flex items-center gap-6 text-sm text-gray-400">

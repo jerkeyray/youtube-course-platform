@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Course, Video, VideoProgress } from "@prisma/client";
 import { Card } from "@/components/ui/card";
 import { Check, Play } from "lucide-react";
@@ -28,6 +28,7 @@ export default function CourseSidebar({
   const [localWatchedVideos, setLocalWatchedVideos] = useState<Set<string>>(
     new Set(watchedVideos)
   );
+  const playlistContainerRef = useRef<HTMLDivElement>(null);
 
   // Update local state when props change
   useEffect(() => {
@@ -37,6 +38,55 @@ export default function CourseSidebar({
   useEffect(() => {
     setLocalWatchedVideos(new Set(watchedVideos));
   }, [watchedVideos]);
+
+  // Auto-scroll to current video when video index changes
+  useEffect(() => {
+    const scrollToCurrentVideo = () => {
+      if (playlistContainerRef.current) {
+        const container = playlistContainerRef.current;
+        const videoElements = container.querySelectorAll("[data-video-index]");
+
+        // Scroll to the video before the current one (or first if current is first)
+        const targetIndex = Math.max(0, localCurrentVideoIndex - 1);
+        const targetVideoElement = Array.from(videoElements).find(
+          (el) => el.getAttribute("data-video-index") === targetIndex.toString()
+        );
+
+        if (targetVideoElement) {
+          targetVideoElement.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+            inline: "nearest",
+          });
+        }
+      }
+    };
+
+    // Add a small delay to ensure DOM is fully rendered
+    const timeoutId = setTimeout(scrollToCurrentVideo, 100);
+
+    return () => clearTimeout(timeoutId);
+  }, [localCurrentVideoIndex]);
+
+  // Listen for video index changes from CoursePlayer
+  useEffect(() => {
+    const handleVideoIndexChange = (event: CustomEvent) => {
+      const { videoIndex } = event.detail;
+      setLocalCurrentVideoIndex(videoIndex);
+    };
+
+    window.addEventListener(
+      "videoIndexChange",
+      handleVideoIndexChange as EventListener
+    );
+
+    return () => {
+      window.removeEventListener(
+        "videoIndexChange",
+        handleVideoIndexChange as EventListener
+      );
+    };
+  }, []);
 
   // Listen for progress updates
   useEffect(() => {
@@ -79,7 +129,10 @@ export default function CourseSidebar({
   return (
     <Card className="sticky top-4 bg-zinc-900 border-zinc-800 shadow-lg h-fit max-h-[calc(100vh-8rem)] flex flex-col">
       <div className="p-6 flex flex-col">
-        <div className="space-y-1.5 overflow-y-auto max-h-[calc(100vh-12rem)] pb-2">
+        <div
+          ref={playlistContainerRef}
+          className="space-y-1.5 overflow-y-auto max-h-[calc(100vh-12rem)] pb-4 pt-2"
+        >
           {course.videos.map((video, index) => (
             <div
               key={video.id}

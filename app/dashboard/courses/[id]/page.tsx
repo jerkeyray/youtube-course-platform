@@ -83,17 +83,17 @@ export default async function CoursePage({
   };
 
   return (
-    <div className="min-h-screen bg-black text-white">
-      <div className="bg-black min-h-screen">
-        <main className="container pt-8 pb-8 px-4 lg:px-6">
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+    <div className="h-screen bg-black text-white overflow-hidden">
+      <div className="bg-black h-full">
+        <main className="container h-full pt-6 pb-6 px-4 lg:px-6">
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-12 h-full">
             {/* Course Header - spans full width */}
             <div className="lg:col-span-12">
               <CourseHeader course={courseWithProgress} />
             </div>
 
             {/* Course Player - spans 8 columns */}
-            <div className="lg:col-span-8">
+            <div className="lg:col-span-8 h-full">
               <CoursePlayer
                 course={courseWithProgress}
                 initialVideoIndex={initialVideoIndex}

@@ -6,9 +6,10 @@ import Link from "next/link";
 import { DashboardSidebar } from "@/components/DashboardSidebar";
 import { MobileNav } from "@/components/MobileNav";
 import { DashboardSidebarToggle } from "@/components/DashboardSidebarToggle";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import LoadingScreen from "@/components/LoadingScreen";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function DashboardLayout({
   children,
@@ -17,6 +18,20 @@ export default function DashboardLayout({
 }) {
   const { data: session, status } = useSession();
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isPageLoading, setIsPageLoading] = useState(false);
+
+  // Show loading state for page transitions
+  useEffect(() => {
+    const handleStart = () => setIsPageLoading(true);
+    const handleComplete = () => setIsPageLoading(false);
+
+    // Listen for route changes
+    window.addEventListener("beforeunload", handleStart);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleStart);
+    };
+  }, []);
 
   if (!session && status !== "loading") {
     redirect("/api/auth/signin");
@@ -71,7 +86,29 @@ export default function DashboardLayout({
         <div className="h-full min-h-screen bg-black">
           {status !== "loading" && <div className="md:hidden h-14" />}{" "}
           {/* Spacer for mobile nav */}
-          {status === "loading" ? <LoadingScreen /> : children}
+          <AnimatePresence mode="wait">
+            {status === "loading" ? (
+              <motion.div
+                key="loading"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <LoadingScreen />
+              </motion.div>
+            ) : (
+              <motion.div
+                key="content"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.3, ease: "easeOut" }}
+              >
+                {children}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </main>
     </div>

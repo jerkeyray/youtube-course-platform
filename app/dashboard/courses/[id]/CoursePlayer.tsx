@@ -1,7 +1,7 @@
 // components/CoursePlayer.tsx
 "use client";
 
-import { useState, useCallback, useEffect, useMemo, useRef } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import { Course, Video, VideoProgress } from "@prisma/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -63,36 +63,6 @@ export default function CoursePlayer({
   const [noteContent, setNoteContent] = useState("");
   const [noteTitle, setNoteTitle] = useState("");
   const queryClient = useQueryClient();
-  const playlistContainerRef = useRef<HTMLDivElement>(null);
-
-  // Auto-scroll to current video when component loads or video index changes
-  useEffect(() => {
-    const scrollToCurrentVideo = () => {
-      if (playlistContainerRef.current) {
-        const container = playlistContainerRef.current;
-        const videoElements = container.querySelectorAll("[data-video-index]");
-
-        // Calculate which video to scroll to (one before current, or first if current is first)
-        const targetIndex = Math.max(0, currentVideoIndex - 1);
-        const targetVideoElement = Array.from(videoElements).find(
-          (el) => el.getAttribute("data-video-index") === targetIndex.toString()
-        );
-
-        if (targetVideoElement) {
-          targetVideoElement.scrollIntoView({
-            behavior: "smooth",
-            block: "start",
-            inline: "nearest",
-          });
-        }
-      }
-    };
-
-    // Add a small delay to ensure DOM is fully rendered
-    const timeoutId = setTimeout(scrollToCurrentVideo, 100);
-
-    return () => clearTimeout(timeoutId);
-  }, [currentVideoIndex]);
 
   // Listen for video index changes from sidebar
   useEffect(() => {

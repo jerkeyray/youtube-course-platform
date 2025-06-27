@@ -70,12 +70,70 @@ export default function ProfilePage() {
     queryKey: ["profile", session?.user?.id],
     queryFn: fetchProfileData,
     enabled: !!session?.user?.id,
-    staleTime: 1000 * 60 * 5,
-    gcTime: 1000 * 60 * 30,
+    staleTime: 1000 * 60 * 10,
+    gcTime: 1000 * 60 * 60,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
   });
 
   if (status === "loading" || isLoadingProfile) {
-    return <LoadingScreen />;
+    return (
+      <div className="min-h-screen bg-black text-white">
+        <main className="container py-8 px-4">
+          <div className="max-w-3xl mx-auto space-y-8">
+            {/* Profile Header Skeleton */}
+            <Card className="bg-zinc-900/50 border-zinc-800/50 backdrop-blur-sm">
+              <CardContent className="p-8">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
+                  <div className="h-20 w-20 rounded-full bg-zinc-700 animate-pulse"></div>
+                  <div className="flex-1 min-w-0 space-y-2">
+                    <div className="h-8 w-48 bg-zinc-700 rounded animate-pulse"></div>
+                    <div className="h-4 w-32 bg-zinc-700 rounded animate-pulse"></div>
+                    <div className="h-4 w-24 bg-zinc-700 rounded animate-pulse"></div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Stats Grid Skeleton */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              {[...Array(4)].map((_, i) => (
+                <Card
+                  key={i}
+                  className="bg-zinc-900/30 border-zinc-800/50 backdrop-blur-sm"
+                >
+                  <CardContent className="p-6 text-center">
+                    <div className="h-6 w-6 bg-zinc-700 rounded mx-auto mb-3 animate-pulse"></div>
+                    <div className="h-8 w-12 bg-zinc-700 rounded mx-auto mb-1 animate-pulse"></div>
+                    <div className="h-3 w-16 bg-zinc-700 rounded mx-auto animate-pulse"></div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            {/* Completed Courses Skeleton */}
+            <Card className="bg-gradient-to-br from-zinc-900/50 to-zinc-800/30 border-zinc-700/50 backdrop-blur-sm">
+              <CardContent className="p-8">
+                <div className="text-center mb-8">
+                  <div className="h-16 w-16 bg-zinc-700 rounded-full mx-auto mb-4 animate-pulse"></div>
+                  <div className="h-8 w-48 bg-zinc-700 rounded mx-auto mb-2 animate-pulse"></div>
+                  <div className="h-4 w-32 bg-zinc-700 rounded mx-auto animate-pulse"></div>
+                </div>
+
+                <div className="grid gap-4 md:grid-cols-2">
+                  {[...Array(2)].map((_, i) => (
+                    <div
+                      key={i}
+                      className="h-32 bg-zinc-800/50 rounded-xl animate-pulse"
+                    ></div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </main>
+      </div>
+    );
   }
 
   if (profileQueryError) {
@@ -142,8 +200,9 @@ export default function ProfilePage() {
                         fill
                         className="object-cover"
                         sizes="80px"
-                        quality={100}
+                        quality={85}
                         priority
+                        loading="eager"
                       />
                     </div>
                   ) : (
