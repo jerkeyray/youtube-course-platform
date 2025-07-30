@@ -226,10 +226,6 @@ export default function LandingPage() {
           <h2 className="text-5xl md:text-7xl font-bold mb-8 tracking-tight bg-gradient-to-b from-white to-slate-300 bg-clip-text text-transparent">
             Ready to transform your learning?
           </h2>
-          <p className="text-xl text-slate-400 mb-12 max-w-2xl mx-auto leading-relaxed">
-            Join thousands of learners who have already discovered the power of
-            distraction-free education with yudoku.
-          </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Button
               size="lg"
@@ -239,14 +235,11 @@ export default function LandingPage() {
               <Link href={getStartedLink} className="flex items-center gap-2">
                 {status === "authenticated"
                   ? "Go to Dashboard"
-                  : "Start Your Journey Free"}
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                  : "Start Your Journey"}
               </Link>
             </Button>
           </div>
-          <p className="text-slate-500 text-sm mt-6">
-            No credit card required • Free forever
-          </p>
+
         </div>
       </section>
 
