@@ -142,15 +142,6 @@ export async function DELETE(
         },
       });
 
-      // Delete all watch later entries for videos in this course
-      await tx.watchLater.deleteMany({
-        where: {
-          video: {
-            courseId,
-          },
-        },
-      });
-
       // Delete all video progress for videos in this course
       await tx.videoProgress.deleteMany({
         where: {

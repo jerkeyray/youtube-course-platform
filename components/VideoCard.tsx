@@ -3,7 +3,7 @@
 import React from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { Clock, Trash2 } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -19,13 +19,11 @@ interface VideoCardProps {
     courseId?: string;
   };
   onRemove?: () => void;
-  type?: "watch-later" | "bookmark";
 }
 
 export default function VideoCard({
   video,
   onRemove,
-  type = "watch-later",
 }: VideoCardProps) {
   const router = useRouter();
   const [imgSrc, setImgSrc] = React.useState(
@@ -38,29 +36,17 @@ export default function VideoCard({
     e.stopPropagation();
 
     try {
-      const endpoint =
-        type === "watch-later"
-          ? `/api/videos/${video.id}/watch-later`
-          : `/api/bookmarks/${video.youtubeId}`;
-
-      // Debug the endpoint
-      // eslint-disable-next-line no-console
-      console.log(`Removing ${type} with endpoint: ${endpoint}`);
+      const endpoint = `/api/bookmarks/${video.youtubeId}`;
 
       const response = await fetch(endpoint, {
-        method: type === "watch-later" ? "POST" : "DELETE",
+        method: "DELETE",
         headers: {
           "Content-Type": "application/json",
         },
-        ...(type === "watch-later" && {
-          body: JSON.stringify({
-            watchLater: false,
-          }),
-        }),
       });
 
       if (response.status === 404) {
-        toast.info(`Already removed from ${type}`);
+        toast.info("Already removed from bookmarks");
         if (onRemove) {
           onRemove();
         }
@@ -68,17 +54,17 @@ export default function VideoCard({
       }
 
       if (!response.ok) {
-        throw new Error(`Failed to remove from ${type}`);
+        throw new Error("Failed to remove from bookmarks");
       }
 
-      toast.success(`Successfully removed from ${type}`);
+      toast.success("Successfully removed from bookmarks");
       if (onRemove) {
         onRemove();
       }
     } catch (error) {
       // eslint-disable-next-line no-console
-      console.error(`Error removing from ${type}:`, error);
-      toast.error(`Failed to remove from ${type}`);
+      console.error("Error removing from bookmarks:", error);
+      toast.error("Failed to remove from bookmarks");
     }
   };
 
@@ -137,8 +123,7 @@ export default function VideoCard({
         </div>
         <div className="flex items-center justify-between mt-3 pt-3 border-t border-zinc-800">
           <div className="flex items-center text-sm text-gray-400">
-            <Clock className="mr-2 h-4 w-4" />
-            {type === "watch-later" ? "Watch Later" : "Bookmark"}
+            Bookmark
           </div>
           {onRemove && (
             <Button

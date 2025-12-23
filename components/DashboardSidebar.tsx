@@ -18,7 +18,6 @@ import {
   LayoutDashboard,
   BookOpen,
   Bookmark,
-  Clock,
   User,
   Pencil,
   LogOut,
@@ -47,11 +46,6 @@ const toolRoutes = [
     label: "Bookmarks",
     icon: Bookmark,
     href: "/dashboard/bookmarks",
-  },
-  {
-    label: "Watch Later",
-    icon: Clock,
-    href: "/dashboard/watch-later",
   },
 ];
 

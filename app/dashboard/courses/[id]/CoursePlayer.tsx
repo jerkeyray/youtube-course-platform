@@ -15,7 +15,6 @@ import {
   Check,
   ChevronLeft,
   ChevronRight,
-  Clock,
   Play,
   Bookmark,
   Pencil,
@@ -111,9 +110,6 @@ export default function CoursePlayer({
         .map((video) => video.id)
     )
   );
-  const [watchLaterVideos, setWatchLaterVideos] = useState<Set<string>>(
-    new Set()
-  );
   const [bookmarkedVideos, setBookmarkedVideos] = useState<Set<string>>(
     new Set()
   );
@@ -197,59 +193,6 @@ export default function CoursePlayer({
       }
     },
     [watchedVideos]
-  );
-
-  const handleWatchLater = useCallback(
-    async (videoId: string) => {
-      const isWatchLater = watchLaterVideos.has(videoId);
-      const newWatchLaterStatus = !isWatchLater;
-
-      // Optimistically update UI
-      setWatchLaterVideos((prev) => {
-        const newSet = new Set(prev);
-        if (newWatchLaterStatus) {
-          newSet.add(videoId);
-        } else {
-          newSet.delete(videoId);
-        }
-        return newSet;
-      });
-
-      try {
-        const response = await fetch(`/api/videos/${videoId}/watch-later`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            watchLater: newWatchLaterStatus,
-          }),
-        });
-
-        if (!response.ok) {
-          throw new Error("Failed to update watch later status");
-        }
-
-        if (newWatchLaterStatus) {
-          toast.success("Added to watch later");
-        } else {
-          toast.success("Removed from watch later");
-        }
-      } catch {
-        // Revert optimistic update on error
-        setWatchLaterVideos((prev) => {
-          const newSet = new Set(prev);
-          if (newWatchLaterStatus) {
-            newSet.delete(videoId);
-          } else {
-            newSet.add(videoId);
-          }
-          return newSet;
-        });
-        toast.error("Failed to update watch later status");
-      }
-    },
-    [watchLaterVideos]
   );
 
   const handleBookmark = useCallback(
@@ -558,20 +501,6 @@ export default function CoursePlayer({
             <ChevronRight className="h-4 w-4" />
           </Button>
 
-          {/* Pause for later - heavily demoted */}
-          <Button
-            onClick={() => handleWatchLater(currentVideo.id)}
-            variant="outline"
-            size="icon"
-            className={`flex items-center gap-2 bg-transparent border border-white/5 text-neutral-500 hover:text-neutral-400 hover:bg-white/5 hover:border-white/10 transition-colors duration-150 opacity-60 ${
-              watchLaterVideos.has(currentVideo.id)
-                ? "text-neutral-400 border-white/10"
-                : ""
-            }`}
-            title="Pause for later"
-          >
-            <Clock className="h-3.5 w-3.5" />
-          </Button>
         </div>
       </div>
 
