@@ -594,25 +594,15 @@ export default function CoursePlayer({
             />
           </Button>
 
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  onClick={() => setShowNoteEditor((v) => !v)}
-                  variant="outline"
-                  size="icon"
-                  className="flex items-center gap-2 bg-transparent border border-white/10 text-neutral-400 hover:text-white hover:bg-white/5 hover:border-white/20 transition-colors duration-150"
-                >
-                  <Pencil className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>
-                  {note?.content ? "Edit Note" : "Capture what you learned"}
-                </p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          <Button
+            onClick={() => setShowNoteEditor((v) => !v)}
+            variant="outline"
+            size="icon"
+            className="flex items-center gap-2 bg-transparent border border-white/10 text-neutral-400 hover:text-white hover:bg-white/5 hover:border-white/20 transition-colors duration-150"
+            title={note?.content ? "Edit Note" : "Capture what you learned"}
+          >
+            <Pencil className="h-4 w-4" />
+          </Button>
 
           <Button
             onClick={handlePreviousVideo}
