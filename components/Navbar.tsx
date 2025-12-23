@@ -17,9 +17,10 @@ export function Navbar() {
   const isSignedIn = status === "authenticated";
 
   return (
-    <div className="fixed w-full z-50 flex justify-between items-center py-2 px-4 border-b border-slate-800 bg-[#0D1117]/95 backdrop-blur-sm h-16">
-      <div className="flex items-center">
-        <Link href="/" className="flex items-center">
+    <div className="fixed w-full z-50 border-b border-white/5 bg-[#020817]/80 backdrop-blur-md">
+      <div className="max-w-7xl mx-auto flex justify-between items-center h-16 px-6">
+        <div className="flex items-center">
+          <Link href="/" className="flex items-center">
           <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-blue-500 bg-clip-text text-transparent">
             yudoku
           </h1>
@@ -92,6 +93,7 @@ export function Navbar() {
             <Link href="/sign-in">Sign In</Link>
           </Button>
         )}
+      </div>
       </div>
     </div>
   );

@@ -72,23 +72,27 @@ function ProductMockup() {
             </span>
           </div>
           <div className="space-y-1">
-            {[1, 2, 3].map((i) => (
-              <div
-                key={i}
-                className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm ${
-                  i === 2
-                    ? "bg-blue-600/10 text-blue-400"
-                    : "text-slate-400 hover:bg-white/5"
-                }`}
-              >
-                {i === 1 ? (
-                  <CheckCircle className="h-4 w-4 text-green-500/50" />
-                ) : (
-                  <div className="h-4 w-4 rounded-full border border-current opacity-40" />
-                )}
-                <span className="truncate">Chapter {i}: Fundamentals</span>
-              </div>
-            ))}
+            {["Fundamentals", "Advanced Hooks", "State Management"].map(
+              (title, i) => (
+                <div
+                  key={i}
+                  className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm ${
+                    i === 1
+                      ? "bg-blue-600/10 text-blue-400"
+                      : "text-slate-400 hover:bg-white/5"
+                  }`}
+                >
+                  {i === 0 ? (
+                    <CheckCircle className="h-4 w-4 text-green-500/50" />
+                  ) : (
+                    <div className="h-4 w-4 rounded-full border border-current opacity-40" />
+                  )}
+                  <span className="truncate">
+                    Chapter {i + 1}: {title}
+                  </span>
+                </div>
+              )
+            )}
           </div>
         </div>
 
@@ -136,9 +140,9 @@ export default function LandingPage() {
                 <span className="text-blue-500">Completed Courses</span>.
               </h1>
               <p className="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto leading-relaxed mb-10">
-                Stop abandoning tutorials. Yudoku gives you the structure,
-                tracking, and distraction-free focus you need to actually learn
-                from YouTube.
+                YouTube wants your retention. You want to learn. We strip away
+                the algorithm, comments, and sidebars so you can actually finish
+                what you start.
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
@@ -148,14 +152,6 @@ export default function LandingPage() {
                   asChild
                 >
                   <Link href={getStartedLink}>Start Learning for Free</Link>
-                </Button>
-                <Button
-                  variant="secondary"
-                  size="lg"
-                  className="h-12 px-8 text-slate-200 bg-white/10 hover:bg-white/20 border border-white/5 rounded-lg"
-                  asChild
-                >
-                  <Link href="#how-it-works">How it works</Link>
                 </Button>
               </div>
             </FadeIn>
@@ -178,19 +174,19 @@ export default function LandingPage() {
                 icon: Layout,
                 problem: "YouTube is built for retention.",
                 solution: "Yudoku is built for completion.",
-                desc: "We strip away the sidebar, comments, and recommendations so you can focus on the content, not the algorithm.",
+                desc: "The algorithm wants you to click the next recommended video. We want you to finish the one you're watching.",
               },
               {
                 icon: Trophy,
-                problem: "Tutorial hell is real.",
+                problem: "Passive watching isn't learning.",
                 solution: "Track your actual progress.",
-                desc: "Visualize your journey with chapter completion rates, streaks, and time-spent metrics that keep you motivated.",
+                desc: "Stop casually viewing tutorials. Visualize your journey with chapter completion rates and streaks.",
               },
               {
                 icon: BookOpen,
-                problem: "Playlists are messy.",
-                solution: "Courses are structured.",
-                desc: "We automatically organize chaotic playlists into clean, linear course chapters with progress saving.",
+                problem: "Playlists are chaotic.",
+                solution: "Turn them into a curriculum.",
+                desc: "We automatically organize scattered videos into linear course chapters with progress saving.",
               },
             ].map((item, i) => (
               <FadeIn key={i} delay={i * 0.1}>
@@ -232,18 +228,18 @@ export default function LandingPage() {
             {[
               {
                 step: 1,
-                title: "Paste URL",
-                desc: "Copy any YouTube playlist link",
+                title: "Import Playlist",
+                desc: "Paste any YouTube playlist URL",
               },
               {
                 step: 2,
-                title: "Structure",
+                title: "Get a Curriculum",
                 desc: "We organize it into chapters",
               },
               {
                 step: 3,
-                title: "Learn",
-                desc: "Track progress distraction-free",
+                title: "Track Progress",
+                desc: "Mark as done when you actually understand",
               },
             ].map((item, i) => (
               <FadeIn
@@ -268,11 +264,12 @@ export default function LandingPage() {
       <section className="py-32 px-6 border-t border-white/5 bg-[#0B0D12]">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-4xl md:text-5xl font-bold text-white mb-8">
-            Stop watching. Start learning.
+            Stop collecting tutorials. <br />
+            Start finishing them.
           </h2>
           <p className="text-xl text-slate-400 mb-10 max-w-2xl mx-auto">
-            Join thousands of developers and learners who have switched from
-            passive watching to active course completion.
+            Build your personal library of completed courses. No algorithms, no
+            distractions.
           </p>
           <Button
             size="lg"
