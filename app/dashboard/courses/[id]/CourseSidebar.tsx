@@ -2,8 +2,29 @@
 
 import { useState, useEffect, useRef } from "react";
 import { Course, Video, VideoProgress } from "@prisma/client";
-import { Card } from "@/components/ui/card";
-import { Check, Play } from "lucide-react";
+import { Check } from "lucide-react";
+
+// Helper to clean video titles for sidebar
+function cleanSidebarTitle(title: string): string {
+  // Remove common YouTube patterns
+  let cleaned = title
+    .replace(/^(Lecture|Video|Episode|Part|Chapter)\s*\d+[\.\-\:]?\s*/i, '')
+    .replace(/^Statistics\s+(Lecture|Video|Lec)?\s*\d+[\.\-\:]?\s*/i, '')
+    .trim();
+  
+  // Extract meaningful part after colon or dash
+  const colonMatch = cleaned.match(/^[^:]+:\s*(.+)$/);
+  if (colonMatch) {
+    return colonMatch[1].trim();
+  }
+  
+  const dashMatch = cleaned.match(/^[^-]+-\s*(.+)$/);
+  if (dashMatch) {
+    return dashMatch[1].trim();
+  }
+  
+  return cleaned || title;
+}
 
 type CourseWithProgress = Course & {
   videos: (Video & {
@@ -126,80 +147,101 @@ export default function CourseSidebar({
     );
   };
 
+  const totalVideos = course.videos.length;
+  const [showFullOutline, setShowFullOutline] = useState(false);
+  
+  // Determine visible lessons: current + next 2-3 lessons by default
+  const visibleEnd = showFullOutline 
+    ? totalVideos 
+    : Math.min(totalVideos, localCurrentVideoIndex + 3);
+  const visibleVideos = course.videos.slice(0, visibleEnd);
+  
+  const hasMoreLessons = !showFullOutline && visibleEnd < totalVideos;
+
   return (
-    <Card className="sticky top-4 bg-zinc-900 border-zinc-800 shadow-lg h-fit max-h-[calc(100vh-8rem)] flex flex-col">
-      <div className="p-6 flex flex-col">
+    <div className="pt-4">
+      <div className="sticky top-4 flex flex-col h-fit max-h-[calc(100vh-8rem)]">
+        {/* Header */}
+        <div className="px-4 pt-3 pb-3 border-b border-white/5">
+          <h3 className="text-xs font-medium text-neutral-400 uppercase tracking-wider mb-2">
+            Course outline
+          </h3>
+          <p className="text-xs text-neutral-500">
+            Lesson {localCurrentVideoIndex + 1} of {totalVideos}
+          </p>
+        </div>
+        
+        {/* Lesson list */}
         <div
           ref={playlistContainerRef}
-          className="space-y-1.5 overflow-y-auto max-h-[calc(100vh-12rem)] pb-4 pt-2"
+          className="flex-1 overflow-y-auto max-h-[calc(100vh-12rem)]"
         >
-          {course.videos.map((video, index) => (
-            <div
-              key={video.id}
-              data-video-index={index}
-              className={`group relative rounded-lg border transition-all duration-200 cursor-pointer overflow-hidden min-h-24 ${
-                localCurrentVideoIndex === index
-                  ? "border-blue-400 bg-gradient-to-r from-blue-950/40 to-indigo-950/40 shadow-lg ring-2 ring-blue-500/30"
-                  : localWatchedVideos.has(video.id)
-                  ? "border-green-500/50 bg-gradient-to-r from-green-950/30 to-emerald-950/30 hover:border-green-400/70 hover:bg-green-950/40"
-                  : "border-zinc-700 hover:border-zinc-600 hover:bg-zinc-800/30"
-              }`}
-              onClick={() => handleVideoClick(index)}
-            >
-              <div className="flex items-start gap-3 p-4">
-                <div className="flex-shrink-0 mt-1">
-                  {localWatchedVideos.has(video.id) ? (
-                    <div className="w-7 h-7 rounded-full bg-gradient-to-r from-green-500 to-emerald-600 flex items-center justify-center shadow-sm">
-                      <Check className="h-4 w-4 text-white" />
-                    </div>
-                  ) : localCurrentVideoIndex === index ? (
-                    <div className="w-7 h-7 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 flex items-center justify-center shadow-md">
-                      <Play className="h-4 w-4 text-white ml-0.5" />
-                    </div>
-                  ) : (
-                    <div className="w-7 h-7 rounded-full border-2 border-zinc-600 bg-zinc-800 flex items-center justify-center text-xs font-semibold text-gray-400 transition-all duration-200 group-hover:border-blue-400 group-hover:bg-blue-950/30">
-                      {index + 1}
-                    </div>
-                  )}
-                </div>
-
-                <div className="flex-1 min-w-0">
-                  <h4
-                    className={`text-sm font-medium leading-5 line-clamp-2 mb-1 transition-colors ${
-                      localCurrentVideoIndex === index
-                        ? "text-blue-100"
-                        : localWatchedVideos.has(video.id)
-                        ? "text-green-100"
-                        : "text-gray-100 group-hover:text-blue-300"
-                    }`}
-                  >
-                    {video.title}
-                  </h4>
-
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-xs text-gray-400">
-                      Video {index + 1}
-                    </span>
-
-                    {localWatchedVideos.has(video.id) && (
-                      <span className="text-xs font-medium text-green-400">
-                        • Completed
-                      </span>
+          <div>
+            {visibleVideos.map((video) => {
+              const index = course.videos.findIndex(v => v.id === video.id);
+              const isActive = localCurrentVideoIndex === index;
+              const isCompleted = localWatchedVideos.has(video.id);
+              const isUpcoming = index > localCurrentVideoIndex;
+              const cleanedTitle = cleanSidebarTitle(video.title);
+              
+              return (
+                <button
+                  key={video.id}
+                  data-video-index={index}
+                  onClick={() => handleVideoClick(index)}
+                  className={`w-full relative text-left transition-colors border-b border-white/10 ${
+                    isActive
+                      ? "bg-white/10"
+                      : "hover:bg-white/5"
+                  }`}
+                  title={video.title}
+                >
+                  <div className="flex items-center gap-3 px-4 py-2.5">
+                    {/* Left accent bar for active lesson */}
+                    {isActive && (
+                      <div className="absolute left-0 top-0 bottom-0 w-1 bg-white" />
                     )}
+                    
+                    {/* State indicator - only show check for completed, nothing for others */}
+                    <div className="flex-shrink-0">
+                      {isCompleted && !isActive && (
+                        <Check className="h-3.5 w-3.5 text-neutral-500" />
+                      )}
+                    </div>
+                    
+                    {/* Title */}
+                    <div className="flex-1 min-w-0">
+                      <p
+                        className={`line-clamp-2 leading-snug ${
+                          isActive
+                            ? "text-white text-sm font-semibold"
+                            : isCompleted
+                            ? "text-neutral-500 text-sm"
+                            : isUpcoming
+                            ? "text-neutral-400 text-sm"
+                            : "text-neutral-500 text-sm"
+                        }`}
+                      >
+                        {cleanedTitle}
+                      </p>
+                    </div>
                   </div>
-                </div>
-
-                {/* Play indicator for current video */}
-                {localCurrentVideoIndex === index && (
-                  <div className="flex-shrink-0 animate-pulse">
-                    <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
-                  </div>
-                )}
-              </div>
-            </div>
-          ))}
+                </button>
+              );
+            })}
+            
+            {/* Show full outline toggle */}
+            {hasMoreLessons && (
+              <button
+                onClick={() => setShowFullOutline(!showFullOutline)}
+                className="w-full px-4 py-2 text-xs text-neutral-500 hover:text-neutral-400 hover:bg-white/3 transition-colors text-left"
+              >
+                {showFullOutline ? "Show current section" : `Show full outline (${totalVideos} lessons)`}
+              </button>
+            )}
+          </div>
         </div>
       </div>
-    </Card>
+    </div>
   );
 }

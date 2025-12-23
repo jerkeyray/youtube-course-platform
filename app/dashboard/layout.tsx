@@ -1,7 +1,7 @@
 "use client";
 
 import { useSession } from "next-auth/react";
-import { redirect } from "next/navigation";
+import { redirect, usePathname } from "next/navigation";
 import Link from "next/link";
 import { DashboardSidebar } from "@/components/DashboardSidebar";
 import { MobileNav } from "@/components/MobileNav";
@@ -17,8 +17,10 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const { data: session, status } = useSession();
+  const pathname = usePathname();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isPageLoading, setIsPageLoading] = useState(false);
+  const isCoursePage = pathname?.includes('/courses/') && pathname.match(/\/courses\/[^\/]+$/);
 
   // Show loading state for page transitions
   useEffect(() => {
@@ -43,11 +45,12 @@ export default function DashboardLayout({
       {status !== "loading" && (
         <div
           className={cn(
-            "hidden h-full md:flex md:flex-col md:fixed md:inset-y-0 z-[80] bg-zinc-900 border-r border-zinc-800 transition-all duration-200 ease-in-out",
-            isCollapsed ? "md:w-16" : "md:w-52"
+            "hidden h-full md:flex md:flex-col md:fixed md:inset-y-0 z-[80] bg-[#0A0A0A] border-r border-white/5 transition-all duration-200 ease-in-out",
+            isCollapsed ? "md:w-16" : "md:w-64",
+            isCoursePage && "opacity-50"
           )}
         >
-          <div className="flex items-center h-14 px-4 border-b border-zinc-800">
+          <div className="flex items-center h-16 px-6 border-b border-white/5">
             <DashboardSidebarToggle
               isCollapsed={isCollapsed}
               onToggle={() => setIsCollapsed(!isCollapsed)}
@@ -55,7 +58,7 @@ export default function DashboardLayout({
             {!isCollapsed && (
               <Link
                 href="/"
-                className="text-xl font-bold text-white ml-2 hover:text-blue-400 transition-colors duration-200 ease-in-out"
+                className="text-xl font-medium tracking-tighter text-white ml-3 hover:text-neutral-300 transition-colors duration-200"
               >
                 yudoku
               </Link>
@@ -80,7 +83,7 @@ export default function DashboardLayout({
             ? "md:pl-0"
             : isCollapsed
             ? "md:pl-16"
-            : "md:pl-52"
+            : "md:pl-64"
         )}
       >
         <div className="h-full min-h-screen bg-black">

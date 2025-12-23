@@ -41,6 +41,64 @@ interface CoursePlayerProps {
   initialVideoIndex?: number;
 }
 
+// Helper function to clean YouTube titles
+function cleanVideoTitle(title: string, lessonNumber: number, courseTitle: string): { primary: string; secondary?: string } {
+  // Extract course name (simplify "Statistics" from title patterns)
+  const courseName = courseTitle.split(' ')[0] || 'Course';
+  
+  // Look for patterns like "Topic: Description" or "Topic - Description"
+  const colonMatch = title.match(/^([^:]+?):\s*(.+)$/);
+  if (colonMatch) {
+    const before = colonMatch[1].trim();
+    const after = colonMatch[2].trim();
+    
+    // Extract lesson number from before part if it exists
+    const lessonMatch = before.match(/(?:Lecture|Lec|Video|Episode|Part)\s*(\d+[\.\d]*)/i);
+    const lessonNum = lessonMatch ? lessonMatch[1] : lessonNumber.toString();
+    
+    return {
+      primary: after,
+      secondary: `${courseName} · Lecture ${lessonNum}`
+    };
+  }
+  
+  // Look for dash patterns
+  const dashMatch = title.match(/^([^-]+?)\s*-\s*(.+)$/);
+  if (dashMatch) {
+    const before = dashMatch[1].trim();
+    const after = dashMatch[2].trim();
+    
+    const lessonMatch = before.match(/(?:Lecture|Lec|Video|Episode|Part)\s*(\d+[\.\d]*)/i);
+    const lessonNum = lessonMatch ? lessonMatch[1] : lessonNumber.toString();
+    
+    return {
+      primary: after,
+      secondary: `${courseName} · Lecture ${lessonNum}`
+    };
+  }
+  
+  // Try to remove common prefixes
+  let cleaned = title
+    .replace(/^(Lecture|Video|Episode|Part|Chapter)\s*\d+[\.\-\:]?\s*/i, '')
+    .replace(/^Statistics\s+(Lecture|Video|Lec)?\s*\d+[\.\-\:]?\s*/i, '')
+    .replace(/^[^:]+:\s*/, '') // Remove anything before colon
+    .trim();
+  
+  // If we cleaned it significantly, use the cleaned version
+  if (cleaned !== title && cleaned.length > 0) {
+    return {
+      primary: cleaned,
+      secondary: `${courseName} · Lecture ${lessonNumber}`
+    };
+  }
+  
+  // Fallback: just return the title as primary
+  return { 
+    primary: title,
+    secondary: `${courseName} · Lecture ${lessonNumber}`
+  };
+}
+
 export default function CoursePlayer({
   course,
   initialVideoIndex = 0,
@@ -396,8 +454,18 @@ export default function CoursePlayer({
     );
   }
 
+  const totalVideos = course.videos.length;
+  const currentLessonNumber = currentVideoIndex + 1;
+  const titleInfo = cleanVideoTitle(currentVideo.title, currentLessonNumber, course.title);
+  const isVideoCompleted = watchedVideos.has(currentVideo.id);
+
   return (
     <div className="space-y-4">
+      {/* Lesson indicator above video */}
+      <p className="text-sm text-neutral-500">
+        Lesson {currentLessonNumber} of {totalVideos}
+      </p>
+
       {/* Video Player */}
       <div className="aspect-video w-full overflow-hidden rounded-lg bg-black">
         {videoIframe}
@@ -406,92 +474,124 @@ export default function CoursePlayer({
       {/* Video Title Above Buttons */}
       <div className="mt-4 mb-2">
         <h2 className="text-xl font-semibold text-white">
-          {currentVideo.title}
+          {titleInfo.primary}
         </h2>
+        {titleInfo.secondary && (
+          <p className="text-xs text-neutral-500 mt-1.5">
+            {titleInfo.secondary}
+          </p>
+        )}
       </div>
 
-      {/* Inline Action Buttons (YouTube style, now more visible) */}
-      <div className="flex flex-wrap items-center gap-2 mt-1">
-        <Button
-          onClick={() => handleVideoProgress(currentVideo.id)}
-          variant={watchedVideos.has(currentVideo.id) ? "default" : "outline"}
-          className={`flex items-center gap-2 font-medium bg-zinc-900 border border-zinc-700 text-white hover:bg-zinc-800 hover:border-zinc-500 transition-colors duration-150`}
-        >
-          <Check className="h-4 w-4" />
-          {watchedVideos.has(currentVideo.id)
-            ? "Completed"
-            : "Mark as Completed"}
-        </Button>
+      {/* Action Buttons with hierarchy */}
+      <div className="space-y-6">
+        {/* Primary action: Mark as Completed - conclusion, not a button */}
+        <div>
+          <Button
+            onClick={() => handleVideoProgress(currentVideo.id)}
+            className={`w-full flex items-center justify-center gap-2 font-medium transition-colors duration-150 ${
+              isVideoCompleted
+                ? "bg-white text-black hover:bg-neutral-200 border-0"
+                : "bg-white text-black hover:bg-neutral-200 border-0"
+            }`}
+          >
+            <Check className="h-4 w-4" />
+            {isVideoCompleted
+              ? "Completed"
+              : "Mark as Completed"}
+          </Button>
+        </div>
 
-        <Button
-          onClick={() => handleWatchLater(currentVideo.id)}
-          variant={
-            watchLaterVideos.has(currentVideo.id) ? "default" : "outline"
-          }
-          className={`flex items-center gap-2 font-medium bg-zinc-900 border border-zinc-700 text-white hover:bg-zinc-800 hover:border-zinc-500 transition-colors duration-150`}
-        >
-          <Clock className="h-4 w-4" />
-          Watch Later
-        </Button>
+        {/* Secondary actions row */}
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            onClick={() => handleBookmark(currentVideo.id, currentVideo.videoId)}
+            variant="outline"
+            size="icon"
+            className={`flex items-center gap-2 bg-transparent border border-white/10 hover:bg-white/5 hover:border-white/20 transition-colors duration-150 ${
+              bookmarkedVideos.has(currentVideo.id)
+                ? "text-white border-white/30"
+                : "text-neutral-400 hover:text-white"
+            }`}
+            title="Bookmark"
+          >
+            <Bookmark className="h-4 w-4" />
+          </Button>
 
-        <Button
-          onClick={() => handleBookmark(currentVideo.id, currentVideo.videoId)}
-          variant={
-            bookmarkedVideos.has(currentVideo.id) ? "default" : "outline"
-          }
-          className={`flex items-center gap-2 font-medium bg-zinc-900 border border-zinc-700 text-white hover:bg-zinc-800 hover:border-zinc-500 transition-colors duration-150`}
-        >
-          <Bookmark className="h-4 w-4" />
-          Bookmark
-        </Button>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  onClick={() => setShowNoteEditor((v) => !v)}
+                  variant="outline"
+                  size="icon"
+                  className="flex items-center gap-2 bg-transparent border border-white/10 text-neutral-400 hover:text-white hover:bg-white/5 hover:border-white/20 transition-colors duration-150"
+                >
+                  <Pencil className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{note?.content ? "Edit Note" : "Capture what you learned"}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
 
-        {/* Create/Edit Note Button - moved to left of arrow buttons */}
-        <Button
-          onClick={() => setShowNoteEditor((v) => !v)}
-          variant="outline"
-          className="flex items-center gap-2 font-medium bg-zinc-900 border border-zinc-700 text-white hover:bg-zinc-800 hover:border-blue-500 transition-colors duration-150"
-        >
-          <Pencil className="h-4 w-4" />
-          {note?.content ? "Edit Note" : "Create Note"}
-        </Button>
+          <Button
+            onClick={handlePreviousVideo}
+            disabled={currentVideoIndex === 0}
+            variant="outline"
+            size="icon"
+            className="bg-transparent border border-white/10 text-neutral-400 hover:text-white hover:bg-white/5 hover:border-white/20 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-150"
+            title="Previous lesson"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
 
-        <Button
-          onClick={handlePreviousVideo}
-          disabled={currentVideoIndex === 0}
-          variant="outline"
-          size="icon"
-          className="bg-zinc-900 border border-zinc-700 text-white hover:bg-zinc-800 hover:border-zinc-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-150"
-        >
-          <ChevronLeft className="h-4 w-4" />
-        </Button>
-        <Button
-          onClick={handleNextVideo}
-          disabled={currentVideoIndex === course.videos.length - 1}
-          variant="outline"
-          size="icon"
-          className="bg-zinc-900 border border-zinc-700 text-white hover:bg-zinc-800 hover:border-zinc-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-150"
-        >
-          <ChevronRight className="h-4 w-4" />
-        </Button>
+          <Button
+            onClick={handleNextVideo}
+            disabled={currentVideoIndex === course.videos.length - 1}
+            variant="outline"
+            size="icon"
+            className="bg-transparent border border-white/10 text-neutral-400 hover:text-white hover:bg-white/5 hover:border-white/20 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-150"
+            title="Next lesson"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+
+          {/* Pause for later - heavily demoted */}
+          <Button
+            onClick={() => handleWatchLater(currentVideo.id)}
+            variant="outline"
+            size="icon"
+            className={`flex items-center gap-2 bg-transparent border border-white/5 text-neutral-500 hover:text-neutral-400 hover:bg-white/5 hover:border-white/10 transition-colors duration-150 opacity-60 ${
+              watchLaterVideos.has(currentVideo.id)
+                ? "text-neutral-400 border-white/10"
+                : ""
+            }`}
+            title="Pause for later"
+          >
+            <Clock className="h-3.5 w-3.5" />
+          </Button>
+        </div>
       </div>
 
       {/* Note Editor Field (revealed below buttons) */}
       {showNoteEditor && (
         <div className="mt-4">
-          <Card className="p-6 bg-zinc-900 border-zinc-800">
+          <Card className="p-6 bg-[#0D1016] border-white/5">
             <div className="space-y-4">
               <input
                 type="text"
                 value={noteTitle}
                 onChange={(e) => setNoteTitle(e.target.value)}
                 placeholder="Note title (optional)"
-                className="w-full rounded-md border px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 bg-zinc-800 border-zinc-700 text-white placeholder-gray-400"
+                className="w-full rounded-md border px-3 py-2 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-white bg-black/50 border-white/10 text-white placeholder-neutral-500"
               />
               <Textarea
                 value={noteContent}
                 onChange={(e) => setNoteContent(e.target.value)}
                 placeholder="Write your notes here... (Markdown supported)"
-                className="min-h-[200px] font-mono text-sm resize-none focus:ring-2 focus:ring-blue-500 bg-zinc-800 border-zinc-700 text-white placeholder-gray-400"
+                className="min-h-[200px] font-mono text-sm resize-none focus:ring-1 focus:ring-white bg-black/50 border-white/10 text-white placeholder-neutral-500"
               />
               <div className="flex gap-3">
                 <Button
@@ -502,7 +602,7 @@ export default function CoursePlayer({
                     })
                   }
                   disabled={saveNoteMutation.isPending}
-                  className="flex-1 bg-black hover:bg-zinc-800 text-gray-200 font-medium border-0"
+                  className="flex-1 bg-white text-black hover:bg-neutral-200 font-medium border-0"
                 >
                   {saveNoteMutation.isPending ? (
                     <div className="flex items-center gap-2">
@@ -521,7 +621,7 @@ export default function CoursePlayer({
                 <Button
                   variant="outline"
                   onClick={() => setShowNoteEditor(false)}
-                  className="flex-1 bg-black hover:bg-zinc-800 text-gray-200 border-0"
+                  className="flex-1 bg-transparent border border-white/10 text-neutral-300 hover:text-white hover:bg-white/5 hover:border-white/20"
                 >
                   <div className="flex items-center gap-2">
                     <X className="h-4 w-4" />

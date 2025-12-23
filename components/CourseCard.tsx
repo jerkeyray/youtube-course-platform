@@ -104,30 +104,33 @@ const CourseCard: React.FC<CourseCardProps> = ({ course }) => {
 
   return (
     <>
-      <div className="bg-zinc-900 text-white overflow-hidden rounded-xl border border-zinc-800 shadow-lg transition-all duration-200 hover:shadow-xl hover:border-zinc-700">
+      <div className="bg-[#0D1016] text-white overflow-hidden rounded-xl border border-white/5 shadow-lg transition-all duration-200 hover:shadow-xl hover:border-white/10">
         <div className="p-6">
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="truncate text-xl font-bold text-white">
+            <h2 className="truncate text-xl font-medium text-white tracking-tight">
               {course.title}
             </h2>
             <Button
               variant="ghost"
               size="icon"
-              className="text-gray-400 hover:text-red-400 hover:bg-red-500/10"
+              className="text-neutral-500 hover:text-white hover:bg-white/5"
               onClick={() => setIsDeleteDialogOpen(true)}
             >
               <Trash2 className="h-4 w-4" />
             </Button>
           </div>
 
-          <p className="text-gray-400 mb-4">{course.videos.length} videos</p>
+          <p className="text-neutral-500 mb-4 font-light text-sm uppercase tracking-wide">{course.videos.length} videos</p>
 
           {/* Progress bar and percentage */}
           <div className="mb-6">
-            
-            <div className="h-2.5 w-full rounded-full bg-zinc-800">
+            <div className="flex justify-between text-xs text-neutral-400 mb-2 font-mono">
+                 <span>Progress</span>
+                 <span>{completionPercentage}%</span>
+            </div>
+            <div className="h-1.5 w-full rounded-full bg-white/5">
               <div
-                className="h-2.5 rounded-full bg-gradient-to-r from-blue-500 to-blue-600"
+                className="h-1.5 rounded-full bg-white"
                 style={{ width: `${completionPercentage}%` }}
               ></div>
             </div>
@@ -136,8 +139,7 @@ const CourseCard: React.FC<CourseCardProps> = ({ course }) => {
           <div className="mt-4">
             <Button
               asChild
-              variant="default"
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+              className="w-full bg-white text-black hover:bg-neutral-200 shadow-none hover:shadow-lg transition-all duration-200 border-0 font-medium"
               disabled={!nextVideo}
             >
               <Link

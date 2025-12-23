@@ -1,14 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/hooks";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { ArrowLeft, Youtube } from "lucide-react";
-import { parse, isValid, isBefore } from "date-fns";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { format, parse, isValid, isBefore } from "date-fns";
+import { Card, CardContent } from "@/components/ui/card";
 import Link from "next/link";
 import LoadingScreen from "@/components/LoadingScreen";
 
@@ -18,6 +18,30 @@ export default function CreateCourse() {
   const [isLoading, setIsLoading] = useState(false);
   const [deadline, setDeadline] = useState<Date | undefined>(undefined);
   const [dateInput, setDateInput] = useState("");
+
+  useEffect(() => {
+    if (deadline) {
+        setDateInput(format(deadline, "MM/dd/yyyy"));
+    }
+  }, [deadline]);
+
+  const handleDateInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setDateInput(val);
+    
+    // Only attempt to parse if input length is sufficient (e.g., could be a full date)
+    if (val.length >= 8) {
+        const parsed = parse(val, "MM/dd/yyyy", new Date());
+        if (isValid(parsed) && !isBefore(parsed, new Date())) {
+            setDeadline(parsed);
+        }
+        // Don't unset deadline on invalid input immediately to avoid jumping UI,
+        // but maybe we should if the user clears it?
+        if (val === "") setDeadline(undefined);
+    } else if (val === "") {
+        setDeadline(undefined);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -59,125 +83,109 @@ export default function CreateCourse() {
   };
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-white">
-      <main className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
-        <div className="container max-w-2xl py-8">
-          <div className="mb-8 flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-white">
-                Create New Course
-              </h1>
-              <p className="text-gray-400 mt-1">
-                Add a YouTube playlist to start learning
-              </p>
-            </div>
+    <div className="min-h-screen bg-black text-white font-sans">
+      <main className="min-h-[calc(100vh-4rem)] flex items-center justify-center p-6">
+        <div className="w-full max-w-xl space-y-8">
+          {/* Header */}
+          <div className="flex items-center justify-between">
             <Button
-              className="bg-blue-600 hover:bg-blue-700 text-white"
+              variant="ghost"
+              className="text-neutral-400 hover:text-white hover:bg-white/5 -ml-4"
               asChild
             >
-              <Link href="/dashboard">
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Back to Dashboard
+              <Link href="/dashboard" className="flex items-center gap-2">
+                <ArrowLeft className="h-4 w-4" />
+                Back
               </Link>
             </Button>
           </div>
 
-          <Card className="shadow-lg bg-zinc-900 border-zinc-800">
-            <CardHeader>
-              <CardTitle className="text-white">Course Details</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="space-y-2">
+          <div className="space-y-2">
+            <h1 className="text-3xl font-medium tracking-tight text-white">
+              Create a course
+            </h1>
+            <p className="text-neutral-400 font-light text-lg">
+              We'll process your playlist and organize it into a structured learning path. This usually takes a few moments.
+            </p>
+          </div>
+
+          <Card className="border border-white/15 bg-[#0F0F0F] shadow-2xl">
+            <CardContent className="p-8">
+              <form onSubmit={handleSubmit} className="space-y-8">
+                <div className="space-y-3">
                   <label
                     htmlFor="title"
-                    className="text-sm font-medium text-white"
+                    className="text-sm font-medium text-neutral-200"
                   >
                     Course Title
                   </label>
-                  <p className="text-xs text-gray-400 mb-2">
-                    This will appear on your completion certificate
-                  </p>
                   <Input
                     id="title"
                     name="title"
                     required
-                    placeholder="Enter course title"
-                    className="w-full bg-zinc-800 border-zinc-700 text-white placeholder-gray-400"
+                    placeholder="e.g. Introduction to TypeScript"
+                    className="bg-[#0A0A0A] border-white/10 text-white placeholder:text-neutral-600 focus-visible:ring-1 focus-visible:ring-white focus-visible:border-white h-12"
                   />
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-3">
                   <label
                     htmlFor="playlistUrl"
-                    className="text-sm font-medium text-white"
+                    className="text-sm font-medium text-neutral-200"
                   >
                     YouTube Playlist URL
                   </label>
-                  <p className="text-xs text-gray-400 mb-2">
-                    Paste the URL of your YouTube playlist
-                  </p>
                   <div className="relative">
-                    <Youtube className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500">
+                      <Youtube className="h-5 w-5" />
+                    </div>
                     <Input
                       id="playlistUrl"
                       name="playlistUrl"
                       required
                       type="url"
-                      placeholder="https://www.youtube.com/playlist?list=..."
-                      className="w-full pl-10 bg-zinc-800 border-zinc-700 text-white placeholder-gray-400"
+                      placeholder="https://youtube.com/playlist?list=..."
+                      className="pl-10 bg-[#0A0A0A] border-white/10 text-white placeholder:text-neutral-600 focus-visible:ring-1 focus-visible:ring-white focus-visible:border-white h-12"
                     />
                   </div>
+                  <p className="text-xs text-neutral-500 mt-1">
+                    Works with public YouTube playlists.
+                  </p>
                 </div>
 
-                <div className="space-y-2">
-                  <label
-                    htmlFor="deadline"
-                    className="text-sm font-medium text-white"
-                  >
-                    Completion Deadline
+                <div className="space-y-3 flex flex-col">
+                  <label className="text-sm font-normal text-neutral-400">
+                    Target Completion Date <span className="text-neutral-500 font-normal ml-1">(Optional)</span>
                   </label>
-                  <p className="text-xs text-gray-400 mb-2">
-                    Set a target date to complete the course (optional,
-                    MM/DD/YYYY)
-                  </p>
                   <Input
-                    id="deadline"
-                    type="text"
-                    value={dateInput}
-                    onChange={(e) => {
-                      const val = e.target.value;
-                      setDateInput(val);
-                      if (!val) {
-                        setDeadline(undefined);
-                        return;
-                      }
-                      const parsed = parse(val, "MM/dd/yyyy", new Date());
-                      if (isValid(parsed) && !isBefore(parsed, new Date())) {
-                        setDeadline(parsed);
-                      } else {
-                        setDeadline(undefined);
-                      }
-                    }}
                     placeholder="MM/DD/YYYY"
-                    className="w-full bg-zinc-800 border-zinc-700 text-white placeholder-gray-400"
-                    autoComplete="off"
+                    value={dateInput}
+                    onChange={handleDateInputChange}
+                    className="bg-[#0A0A0A] border-white/10 text-white placeholder:text-neutral-600 focus-visible:ring-1 focus-visible:ring-white focus-visible:border-white h-12"
                   />
                 </div>
 
+                <div className="space-y-3">
                 <Button
                   type="submit"
-                  className="w-full bg-blue-600 hover:bg-blue-700"
+                  className="w-full h-12 bg-white text-black hover:bg-neutral-200 font-medium text-base transition-all border-0"
                   disabled={isLoading}
                 >
                   {isLoading ? (
                     <div className="flex items-center gap-2">
-                      <span className="animate-pulse">Creating...</span>
+                      <div className="w-4 h-4">
+                        <LoadingScreen variant="inline" />
+                      </div>
+                      <span>Creating...</span>
                     </div>
                   ) : (
-                    "Create Course"
+                      "Create course"
                   )}
                 </Button>
+                  <p className="text-xs text-neutral-500 text-center">
+                    You can change details later.
+                  </p>
+                </div>
               </form>
             </CardContent>
           </Card>

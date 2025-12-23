@@ -81,33 +81,32 @@ export default function CourseHeader({
     }
   }, [completedVideos, course.videos.length, onProgressUpdate]);
 
+  const totalVideos = course.videos.length;
+  const showPercentage = completedVideos > 0;
+
   return (
-    <div className="mb-3">
-      <div className="mb-2">
-        <h1 className="text-2xl font-bold mb-2 text-white">{course.title}</h1>
+    <div className="mb-6 border-b border-white/5 pb-6">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="space-y-1.5">
+          <div className="flex items-center gap-2 text-xs font-mono text-neutral-500 uppercase tracking-widest">
+            <span>Course</span>
+            <span>/</span>
+            <span>Playing</span>
+          </div>
+          <h1 className="text-3xl md:text-4xl font-medium tracking-tight text-white">Lesson</h1>
+          <p className="text-sm text-neutral-500">{course.title}</p>
+        </div>
 
         {/* Stats with better styling */}
-        <div className="flex items-center gap-6 text-sm text-gray-400">
-          <span className="flex items-center gap-1">
-            <span className="font-semibold text-blue-400">
-              {course.videos.length}
+        <div className="flex items-center gap-8 text-sm">
+          <div className="flex flex-col items-end">
+            <span className="text-lg font-medium text-white">
+              {completedVideos} of {totalVideos} lessons completed
             </span>
-            <span>videos</span>
-          </span>
-          <span className="text-zinc-600">•</span>
-          <span className="flex items-center gap-1">
-            <span className="font-semibold text-blue-400">
-              {completedVideos}
-            </span>
-            <span>completed</span>
-          </span>
-          <span className="text-zinc-600">•</span>
-          <span className="flex items-center gap-1">
-            <span className="font-semibold text-blue-400">
-              {completionPercentage}%
-            </span>
-            <span>progress</span>
-          </span>
+            {showPercentage && (
+              <span className="text-xs text-neutral-500 mt-0.5">{completionPercentage}%</span>
+            )}
+          </div>
         </div>
       </div>
     </div>
