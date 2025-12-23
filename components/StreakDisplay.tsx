@@ -118,17 +118,7 @@ export function StreakDisplay({ activities }: StreakDisplayProps) {
   }
 
   return (
-    <div className="grid grid-cols-1 gap-4 w-full">
-       <Card className="bg-[#0D1016] border-white/5">
-        <CardContent className="p-4 flex items-center justify-between">
-          <div>
-            <p className="text-sm text-neutral-500 font-medium">Last active</p>
-            <p className="text-xl font-medium text-white">{lastActiveString}</p>
-          </div>
-          <History className="h-4 w-4 text-neutral-600" />
-        </CardContent>
-      </Card>
-
+    <div className="grid grid-cols-2 gap-4 w-full">
       <Card className="bg-[#0D1016] border-white/5">
         <CardContent className="p-4 flex items-center justify-between">
           <div>

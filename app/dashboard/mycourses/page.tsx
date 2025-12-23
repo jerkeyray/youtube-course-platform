@@ -1,22 +1,14 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useMemo } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { PlusCircle, Filter } from "lucide-react";
-import CourseCard from "@/components/CourseCard";
+import { PlusCircle } from "lucide-react";
+import CourseCard, { SerializedCourse } from "@/components/CourseCard";
 import LoadingScreen from "@/components/LoadingScreen";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
-
-type FilterType = "all" | "in-progress" | "completed";
 
 async function getCourses() {
   const response = await fetch("/api/courses");
@@ -28,8 +20,6 @@ async function getCourses() {
 }
 
 export default function MyCoursesPage() {
-  const [filter, setFilter] = useState<FilterType>("all");
-
   const {
     data: courses = [],
     isLoading,
@@ -42,27 +32,19 @@ export default function MyCoursesPage() {
     refetchOnWindowFocus: false,
   });
 
-  const filteredCourses = useMemo(() => {
-    let filtered = [...courses];
+  const sortedCourses = useMemo(() => {
+    return [...courses].sort((a, b) => {
+      // Primary sort: Completion status (Incomplete first)
+      const aCompleted = a.completionPercentage === 100;
+      const bCompleted = b.completionPercentage === 100;
 
-    // Apply filters
-    switch (filter) {
-      case "in-progress":
-        filtered = filtered.filter(
-          (course) =>
-            course.completionPercentage > 0 && course.completionPercentage < 100
-        );
-        break;
-      case "completed":
-        filtered = filtered.filter(
-          (course) => course.completionPercentage === 100
-        );
-        break;
-      // "all" case doesn't need filtering
-    }
+      if (aCompleted && !bCompleted) return 1;
+      if (!aCompleted && bCompleted) return -1;
 
-    return filtered;
-  }, [courses, filter]);
+      // Secondary sort: Recently updated
+      return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+    });
+  }, [courses]);
 
   if (error) {
     toast.error("Failed to load courses");
@@ -89,7 +71,10 @@ export default function MyCoursesPage() {
               <h1 className="text-3xl font-bold text-white">My Courses</h1>
             </div>
             <div className="flex items-center gap-2">
-              <Button className="bg-blue-600 hover:bg-blue-700" asChild>
+              <Button
+                className="bg-white text-black hover:bg-neutral-200"
+                asChild
+              >
                 <Link href="/dashboard/courses/create">
                   <PlusCircle className="mr-2 h-5 w-5" />
                   Add Course
@@ -135,7 +120,10 @@ export default function MyCoursesPage() {
           </div>
 
           <div className="flex items-center gap-2">
-            <Button className="bg-blue-600 hover:bg-blue-700" asChild>
+            <Button
+              className="bg-white text-black hover:bg-neutral-200"
+              asChild
+            >
               <Link href="/dashboard/courses/create">
                 <PlusCircle className="mr-2 h-5 w-5" />
                 Add Course
@@ -144,17 +132,18 @@ export default function MyCoursesPage() {
           </div>
         </div>
 
-        {filteredCourses.length === 0 ? (
+        {sortedCourses.length === 0 ? (
           <div className="rounded-lg border bg-zinc-900 border-zinc-800 p-8 text-center">
             <h2 className="mb-2 text-xl font-medium text-white">
               No courses found
             </h2>
             <p className="mb-4 text-gray-400">
-              {filter !== "all"
-                ? "No courses match your current filter"
-                : "Create your first course to get started"}
+              Create your first course to get started
             </p>
-            <Button className="bg-blue-600 hover:bg-blue-700" asChild>
+            <Button
+              className="bg-white text-black hover:bg-neutral-200"
+              asChild
+            >
               <Link href="/dashboard/courses/create">
                 <PlusCircle className="mr-2 h-5 w-5" />
                 Create New Course
@@ -163,8 +152,14 @@ export default function MyCoursesPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {filteredCourses.map((course) => (
-              <CourseCard key={course.id} course={course} />
+            {sortedCourses.map((course: SerializedCourse, index: number) => (
+              <CourseCard
+                key={course.id}
+                course={course}
+                isPrimary={
+                  index === 0 && (course.completionPercentage ?? 0) < 100
+                }
+              />
             ))}
           </div>
         )}

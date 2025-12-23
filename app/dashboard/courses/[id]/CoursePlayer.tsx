@@ -41,60 +41,68 @@ interface CoursePlayerProps {
 }
 
 // Helper function to clean YouTube titles
-function cleanVideoTitle(title: string, lessonNumber: number, courseTitle: string): { primary: string; secondary?: string } {
+function cleanVideoTitle(
+  title: string,
+  lessonNumber: number,
+  courseTitle: string
+): { primary: string; secondary?: string } {
   // Extract course name (simplify "Statistics" from title patterns)
-  const courseName = courseTitle.split(' ')[0] || 'Course';
-  
+  const courseName = courseTitle.split(" ")[0] || "Course";
+
   // Look for patterns like "Topic: Description" or "Topic - Description"
   const colonMatch = title.match(/^([^:]+?):\s*(.+)$/);
   if (colonMatch) {
     const before = colonMatch[1].trim();
     const after = colonMatch[2].trim();
-    
+
     // Extract lesson number from before part if it exists
-    const lessonMatch = before.match(/(?:Lecture|Lec|Video|Episode|Part)\s*(\d+[\.\d]*)/i);
+    const lessonMatch = before.match(
+      /(?:Lecture|Lec|Video|Episode|Part)\s*(\d+[\.\d]*)/i
+    );
     const lessonNum = lessonMatch ? lessonMatch[1] : lessonNumber.toString();
-    
+
     return {
       primary: after,
-      secondary: `${courseName} · Lecture ${lessonNum}`
+      secondary: `${courseName} · Lecture ${lessonNum}`,
     };
   }
-  
+
   // Look for dash patterns
   const dashMatch = title.match(/^([^-]+?)\s*-\s*(.+)$/);
   if (dashMatch) {
     const before = dashMatch[1].trim();
     const after = dashMatch[2].trim();
-    
-    const lessonMatch = before.match(/(?:Lecture|Lec|Video|Episode|Part)\s*(\d+[\.\d]*)/i);
+
+    const lessonMatch = before.match(
+      /(?:Lecture|Lec|Video|Episode|Part)\s*(\d+[\.\d]*)/i
+    );
     const lessonNum = lessonMatch ? lessonMatch[1] : lessonNumber.toString();
-    
+
     return {
       primary: after,
-      secondary: `${courseName} · Lecture ${lessonNum}`
+      secondary: `${courseName} · Lecture ${lessonNum}`,
     };
   }
-  
+
   // Try to remove common prefixes
   let cleaned = title
-    .replace(/^(Lecture|Video|Episode|Part|Chapter)\s*\d+[\.\-\:]?\s*/i, '')
-    .replace(/^Statistics\s+(Lecture|Video|Lec)?\s*\d+[\.\-\:]?\s*/i, '')
-    .replace(/^[^:]+:\s*/, '') // Remove anything before colon
+    .replace(/^(Lecture|Video|Episode|Part|Chapter)\s*\d+[\.\-\:]?\s*/i, "")
+    .replace(/^Statistics\s+(Lecture|Video|Lec)?\s*\d+[\.\-\:]?\s*/i, "")
+    .replace(/^[^:]+:\s*/, "") // Remove anything before colon
     .trim();
-  
+
   // If we cleaned it significantly, use the cleaned version
   if (cleaned !== title && cleaned.length > 0) {
     return {
       primary: cleaned,
-      secondary: `${courseName} · Lecture ${lessonNumber}`
+      secondary: `${courseName} · Lecture ${lessonNumber}`,
     };
   }
-  
+
   // Fallback: just return the title as primary
-  return { 
+  return {
     primary: title,
-    secondary: `${courseName} · Lecture ${lessonNumber}`
+    secondary: `${courseName} · Lecture ${lessonNumber}`,
   };
 }
 
@@ -211,27 +219,37 @@ export default function CoursePlayer({
         return newSet;
       });
 
-      try {
-        const response = await fetch("/api/bookmarks", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            videoId: youtubeVideoId,
-            courseId: course.id,
-            courseVideoId: videoId,
-          }),
-        });
+      // Optimistic toast for immediate feedback
+      if (newBookmarkStatus) {
+        toast.success("Video bookmarked");
+      } else {
+        toast.success("Bookmark removed");
+      }
 
-        if (!response.ok) {
-          throw new Error("Failed to bookmark video");
+      try {
+        let response;
+        if (newBookmarkStatus) {
+          // Add bookmark
+          response = await fetch("/api/bookmarks", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              videoId: videoId,
+              courseId: course.id,
+              courseVideoId: videoId,
+            }),
+          });
+        } else {
+          // Remove bookmark
+          response = await fetch(`/api/bookmarks/${youtubeVideoId}`, {
+            method: "DELETE",
+          });
         }
 
-        if (newBookmarkStatus) {
-          toast.success("Video bookmarked");
-        } else {
-          toast.success("Bookmark removed");
+        if (!response.ok) {
+          throw new Error("Failed to update bookmark");
         }
       } catch {
         // Revert optimistic update on error
@@ -244,7 +262,7 @@ export default function CoursePlayer({
           }
           return newSet;
         });
-        toast.error("Failed to bookmark video");
+        toast.error("Failed to update bookmark");
       }
     },
     [bookmarkedVideos, course.id]
@@ -399,7 +417,11 @@ export default function CoursePlayer({
 
   const totalVideos = course.videos.length;
   const currentLessonNumber = currentVideoIndex + 1;
-  const titleInfo = cleanVideoTitle(currentVideo.title, currentLessonNumber, course.title);
+  const titleInfo = cleanVideoTitle(
+    currentVideo.title,
+    currentLessonNumber,
+    course.title
+  );
   const isVideoCompleted = watchedVideos.has(currentVideo.id);
 
   return (
@@ -439,26 +461,30 @@ export default function CoursePlayer({
             }`}
           >
             <Check className="h-4 w-4" />
-            {isVideoCompleted
-              ? "Completed"
-              : "Mark as Completed"}
+            {isVideoCompleted ? "Completed" : "Mark as Completed"}
           </Button>
         </div>
 
         {/* Secondary actions row */}
         <div className="flex flex-wrap items-center gap-2">
           <Button
-            onClick={() => handleBookmark(currentVideo.id, currentVideo.videoId)}
+            onClick={() =>
+              handleBookmark(currentVideo.id, currentVideo.videoId)
+            }
             variant="outline"
             size="icon"
             className={`flex items-center gap-2 bg-transparent border border-white/10 hover:bg-white/5 hover:border-white/20 transition-colors duration-150 ${
               bookmarkedVideos.has(currentVideo.id)
-                ? "text-white border-white/30"
+                ? "text-white border-white/30 bg-white/10"
                 : "text-neutral-400 hover:text-white"
             }`}
             title="Bookmark"
           >
-            <Bookmark className="h-4 w-4" />
+            <Bookmark
+              className={`h-4 w-4 ${
+                bookmarkedVideos.has(currentVideo.id) ? "fill-current" : ""
+              }`}
+            />
           </Button>
 
           <TooltipProvider>
@@ -474,7 +500,9 @@ export default function CoursePlayer({
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
-                <p>{note?.content ? "Edit Note" : "Capture what you learned"}</p>
+                <p>
+                  {note?.content ? "Edit Note" : "Capture what you learned"}
+                </p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
@@ -500,7 +528,6 @@ export default function CoursePlayer({
           >
             <ChevronRight className="h-4 w-4" />
           </Button>
-
         </div>
       </div>
 

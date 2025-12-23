@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, CheckCircle, Trash2 } from "lucide-react";
+import { ArrowRight, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { DeleteCourseDialog } from "./DeleteCourseDialog";
@@ -26,7 +26,7 @@ interface SerializedVideo {
   progress: VideoProgress[];
 }
 
-interface SerializedCourse {
+export interface SerializedCourse {
   id: string;
   title: string;
   playlistId: string;
@@ -35,13 +35,15 @@ interface SerializedCourse {
   createdAt: string;
   updatedAt: string;
   videos: SerializedVideo[];
+  completionPercentage?: number;
 }
 
 interface CourseCardProps {
   course: SerializedCourse;
+  isPrimary?: boolean;
 }
 
-const CourseCard: React.FC<CourseCardProps> = ({ course }) => {
+const CourseCard: React.FC<CourseCardProps> = ({ course, isPrimary }) => {
   const router = useRouter();
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
@@ -49,9 +51,13 @@ const CourseCard: React.FC<CourseCardProps> = ({ course }) => {
     (video) => video.progress?.[0]?.completed
   ).length;
 
-  const completionPercentage = Math.round(
-    (completedVideos / course.videos.length) * 100
-  );
+  const completionPercentage =
+    course.completionPercentage ??
+    Math.round((completedVideos / course.videos.length) * 100);
+
+  const isCompleted = completionPercentage === 100;
+  const isStarted = completionPercentage > 0;
+  const isInProgress = isStarted && !isCompleted;
 
   // Find the next unwatched video
   const getNextUnwatchedVideo = () => {
@@ -104,7 +110,15 @@ const CourseCard: React.FC<CourseCardProps> = ({ course }) => {
 
   return (
     <>
-      <div className="bg-[#0D1016] text-white overflow-hidden rounded-xl border border-white/5 shadow-lg transition-all duration-200 hover:shadow-xl hover:border-white/10">
+      <div
+        className={`bg-[#0D1016] text-white overflow-hidden rounded-xl border transition-all duration-200 ${
+          isCompleted
+            ? "border-white/5 shadow-sm opacity-60 hover:opacity-100"
+            : isPrimary
+            ? "border-blue-500/30 shadow-lg shadow-blue-900/10 hover:border-blue-500/50 hover:shadow-blue-900/20"
+            : "border-white/10 shadow-lg hover:shadow-xl hover:border-white/20"
+        }`}
+      >
         <div className="p-6">
           <div className="mb-4 flex items-center justify-between">
             <h2 className="truncate text-xl font-medium text-white tracking-tight">
@@ -120,13 +134,15 @@ const CourseCard: React.FC<CourseCardProps> = ({ course }) => {
             </Button>
           </div>
 
-          <p className="text-neutral-500 mb-4 font-light text-sm uppercase tracking-wide">{course.videos.length} videos</p>
+          <p className="text-neutral-500 mb-4 font-light text-sm uppercase tracking-wide">
+            {course.videos.length} videos
+          </p>
 
           {/* Progress bar and percentage */}
           <div className="mb-6">
             <div className="flex justify-between text-xs text-neutral-400 mb-2 font-mono">
-                 <span>Progress</span>
-                 <span>{completionPercentage}%</span>
+              <span>Progress</span>
+              <span>{completionPercentage}%</span>
             </div>
             <div className="h-1.5 w-full rounded-full bg-white/5">
               <div
@@ -149,7 +165,7 @@ const CourseCard: React.FC<CourseCardProps> = ({ course }) => {
                     : `/dashboard/courses/${course.id}`
                 }
               >
-                Continue
+                {isCompleted ? "Review" : isInProgress ? "Resume" : "Start"}
                 <ArrowRight className="ml-1 h-4 w-4" />
               </Link>
             </Button>

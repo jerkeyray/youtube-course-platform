@@ -1,26 +1,17 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import ActivityHeatmap from "@/components/ActivityHeatmap";
-import CourseCard from "@/components/CourseCard";
 import { StreakDisplay } from "@/components/StreakDisplay";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  BookOpen,
-  Clock,
-  Flame,
   Plus,
-  Video,
-  ArrowUpRight,
-  TrendingUp,
-  Target,
   Play,
-  AlertCircle,
-  BarChart,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
-import { format, differenceInDays, subWeeks, isSameWeek, parseISO } from "date-fns";
+import { differenceInDays, parseISO } from "date-fns";
 
 interface SerializedCourse {
   id: string;
@@ -142,14 +133,13 @@ export default function DashboardClient({
   const thisWeekCount = last7Days.filter(a => a.completed).length;
   const lastWeekCount = previous7Days.filter(a => a.completed).length;
 
-  let heatmapContextString = "Consistent effort builds mastery.";
+  let heatmapContextString = "Activity over time.";
   if (thisWeekCount > lastWeekCount) {
-      heatmapContextString = `You studied more this week than last. Great momentum.`;
+      heatmapContextString = `Activity this week.`;
   } else if (thisWeekCount < lastWeekCount && lastWeekCount > 0) {
-      const drop = Math.round(((lastWeekCount - thisWeekCount) / lastWeekCount) * 100);
-      heatmapContextString = `You studied ${drop}% less this week than last.`;
+      heatmapContextString = `Activity this week.`;
   } else if (thisWeekCount === lastWeekCount && thisWeekCount > 0) {
-      heatmapContextString = "You're maintaining a steady pace compared to last week.";
+      heatmapContextString = "Activity over time.";
   }
 
   // --- LOGIC: Deadlines with Teeth ---
@@ -174,7 +164,7 @@ export default function DashboardClient({
             daysRemaining,
             remainingVideos,
             pace: Number(pace),
-            isUrgent: daysRemaining <= 3
+            isUrgent: daysRemaining <= 3 && daysRemaining >= 0
         };
     })
     .filter((c): c is NonNullable<typeof c> => c !== null)
@@ -199,127 +189,102 @@ export default function DashboardClient({
       (a, b) =>
         new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
     )
-    .slice(0, 4);
+    .slice(0, 3); // Reduced from 4 to 3 for balance
+
+  const [isAnalyticsOpen, setIsAnalyticsOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-black text-white">
-      <main className="space-y-8 p-6 max-w-7xl mx-auto">
+      <main className="space-y-10 p-6 max-w-5xl mx-auto">
         {/* Header Section */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight text-white">
-              Dashboard
-            </h1>
-            <p className="text-neutral-400 mt-1 font-light">Focus on what matters.</p>
-          </div>
-          <Button className="gap-2 bg-white text-black hover:bg-neutral-200 transition-all duration-200 rounded-md h-10 px-4 font-medium border-0">
-            <Plus size={16} />
-            <Link href="/dashboard/courses/create">Add Course</Link>
-          </Button>
+        <div className="flex items-center justify-between">
+            {/* Minimal Header */}
+            <div />
+             <Button variant="ghost" className="gap-2 text-neutral-400 hover:text-white" asChild>
+                <Link href="/dashboard/courses/create">
+                    <Plus size={16} />
+                    <span>Add Course</span>
+                </Link>
+            </Button>
         </div>
 
-        {/* 1. DOMINANT CONTINUE CARD */}
+        {/* 1. DOMINANT PRIMARY ACTION */}
         {nextTask ? (
             <div className="w-full">
-                <Link href={`/dashboard/courses/${nextTask.courseId}?videoId=${nextTask.videoId}`}>
-                    <div className="group relative overflow-hidden rounded-xl bg-[#0D1016] border border-white/10 hover:border-white/20 transition-all duration-300 p-8 cursor-pointer shadow-2xl">
-                        <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
-                            <Play size={120} className="text-white" fill="currentColor" />
-                        </div>
-                        <div className="relative z-10">
-                            <div className="flex items-center gap-2 text-white/70 mb-3 font-medium tracking-wide text-xs uppercase">
-                                <span className="flex items-center gap-1"><Video size={14}/> Continue Learning</span>
+                <Link 
+                    href={`/dashboard/courses/${nextTask.courseId}?videoId=${nextTask.videoId}`}
+                    className="block focus:outline-none focus:ring-2 focus:ring-white/20 focus:ring-offset-2 focus:ring-offset-black rounded-2xl"
+                >
+                    <div className="group relative overflow-hidden rounded-2xl bg-[#0D1016] border-2 border-white/10 hover:border-white/30 focus-within:border-white/30 transition-all duration-300 p-8 sm:p-12 cursor-pointer shadow-2xl hover:shadow-white/5 active:scale-[0.998]">
+                        {/* Background subtle effect */}
+                        <div className="absolute inset-0 bg-gradient-to-r from-white/[0.05] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                        
+                        <div className="relative z-10 flex flex-col items-start gap-6">
+                            <div className="flex items-center gap-3">
+                                <span className="flex items-center justify-center w-8 h-8 rounded-full bg-white text-black group-hover:scale-110 transition-transform duration-300">
+                                    <Play size={14} fill="currentColor" />
+                                </span>
+                                <span className="text-white font-semibold tracking-wider text-sm uppercase">Resume</span>
                             </div>
-                            <h2 className="text-3xl sm:text-4xl font-medium tracking-tight text-white mb-2 group-hover:text-neutral-200 transition-colors">
-                                {nextTask.courseTitle}
-                            </h2>
-                            <div className="flex flex-col sm:flex-row sm:items-center gap-4 text-neutral-400 mt-6">
-                                <div className="flex items-center gap-2 bg-white/5 px-3 py-1.5 rounded-md border border-white/5">
-                                    <Target className="text-white h-3.5 w-3.5"/>
-                                    <span className="font-mono text-sm text-neutral-300">Next: {nextTask.videoTitle}</span>
-                                </div>
-                                <div className="flex items-center gap-2 bg-white/5 px-3 py-1.5 rounded-md border border-white/5">
-                                    <BarChart className="text-white h-3.5 w-3.5"/>
-                                    <span className="font-mono text-sm text-neutral-300">{nextTask.remainingInCourse} lessons remaining</span>
-                                </div>
+                            
+                            <div className="space-y-3 w-full">
+                                <h2 className="text-4xl sm:text-6xl font-semibold tracking-tight text-white leading-tight">
+                                    {nextTask.videoTitle}
+                                </h2>
+                                <p className="text-sm text-neutral-500 font-normal">
+                                    {nextTask.courseTitle}
+                                </p>
+                            </div>
+
+                            <div className="flex items-center gap-4 text-neutral-600 mt-1">
+                                <span className="text-xs font-normal flex items-center gap-1.5">
+                                    {nextTask.remainingInCourse} remaining
+                                </span>
                             </div>
                         </div>
                     </div>
                 </Link>
             </div>
         ) : (
-             <div className="bg-[#0D1016] rounded-xl p-8 border border-white/5 text-center">
-                 <h2 className="text-2xl font-medium text-white mb-2">Ready to start?</h2>
-                 <p className="text-neutral-400 mb-6 font-light">You don't have any active courses. Add one to get started.</p>
-                 <Button asChild className="bg-white text-black hover:bg-neutral-200 border-0">
-                    <Link href="/dashboard/courses/create">Create a Course</Link>
+             <div className="bg-[#0D1016] rounded-xl p-12 border border-white/5 text-center">
+                 <h2 className="text-2xl font-medium text-white mb-2">Ready to start learning?</h2>
+                 <p className="text-neutral-400 mb-8 font-light">Add your first YouTube course to get started.</p>
+                 <Button asChild className="bg-white text-black hover:bg-neutral-200 px-8 h-12 text-base border-0">
+                    <Link href="/dashboard/courses/create">Create Course</Link>
                  </Button>
              </div>
         )}
 
-        {/* 2. STATS & HEATMAP GRID */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-             {/* Heatmap Section - Spans 8 cols */}
-            <div className="lg:col-span-8 bg-[#0D1016] rounded-xl p-6 border border-white/5 flex flex-col justify-between">
-                <div>
-                    <h3 className="text-lg font-medium text-white mb-4 flex items-center gap-2">
-                        <Flame className="h-5 w-5 text-white" />
-                        Activity Log
-                    </h3>
-                    <div className="w-full overflow-x-auto pb-2">
-                         <ActivityHeatmap activities={activities} cellSize={14} />
-                    </div>
-                </div>
-                <div className="mt-4 pt-4 border-t border-white/5">
-                    <p className="text-sm text-neutral-400 font-mono">
-                        <span className="text-white font-medium mr-2">INSIGHT:</span> 
-                        {heatmapContextString}
-                    </p>
-                </div>
-            </div>
-
-            {/* Streak Stats - Spans 4 cols */}
-            <div className="lg:col-span-4 flex flex-col gap-6">
-                <StreakDisplay activities={activities} />
-            </div>
-        </div>
-
-        {/* 3. DEADLINES WITH TEETH */}
+        {/* 2. CRITICAL DEADLINES (Forward Looking) */}
         {coursesWithDeadlines.length > 0 && (
-            <div className="space-y-4">
-                <div className="flex items-center gap-2">
-                    <AlertCircle className="text-white h-5 w-5" />
-                    <h2 className="text-xl font-medium text-white">Critical Deadlines</h2>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="space-y-3">
+                <h3 className="text-base font-medium text-neutral-400">Priorities</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                     {coursesWithDeadlines.map((course) => (
                          <Link key={course.id} href={`/dashboard/courses/${course.id}`} className="block h-full">
-                            <div className={`h-full flex flex-col justify-between p-5 rounded-xl border transition-all duration-200 group ${
+                            <div className={`h-full flex flex-col justify-between p-4 rounded-lg border transition-all duration-200 ${
                                 course.isUrgent 
-                                ? "bg-red-950/20 border-red-500/20 hover:bg-red-950/30 hover:border-red-500/30" 
-                                : "bg-[#0D1016] border-white/5 hover:border-white/10"
+                                ? "bg-[#0D1016] border-orange-500/20 hover:border-orange-500/30" 
+                                : "bg-[#0D1016] border-white/5 hover:border-white/8"
                             }`}>
                                 <div>
-                                    <div className="flex justify-between items-start mb-2">
-                                        <h3 className="font-medium text-lg text-white group-hover:text-neutral-200 transition-colors line-clamp-1">{course.title}</h3>
-                                        <span className={`text-xs font-bold px-2 py-1 rounded-full ${
-                                            course.isUrgent ? "bg-red-500/20 text-red-400" : "bg-white/10 text-neutral-400"
-                                        }`}>
-                                            {course.daysRemaining <= 0 ? "Overdue" : `${course.daysRemaining} days left`}
+                                    <h4 className="text-sm font-medium text-neutral-300 mb-1 line-clamp-1">{course.title}</h4>
+                                    <div className="flex items-baseline gap-2">
+                                         <span className={`text-xl font-medium ${course.isUrgent ? "text-orange-400" : "text-neutral-400"}`}>
+                                            {course.daysRemaining <= 0 ? "Due" : course.daysRemaining}
                                         </span>
-                                    </div>
-                                    <div className="text-sm text-neutral-500 mt-2 font-light">
-                                        <span className="text-white font-medium">{course.remainingVideos}</span> lessons remaining
+                                        <span className="text-xs text-neutral-600">
+                                            {course.daysRemaining <= 0 ? "today" : "days left"}
+                                        </span>
                                     </div>
                                 </div>
                                 
-                                <div className="mt-4 pt-4 border-t border-white/5">
-                                    <div className="flex items-center justify-between text-xs">
-                                        <span className="text-neutral-500 uppercase tracking-wider">Required Pace</span>
-                                        <span className={`font-mono font-medium ${course.isUrgent ? "text-red-400" : "text-white"}`}>
-                                            {course.pace > 0 ? `${course.pace} lessons/day` : "On track"}
-                                        </span>
-                                    </div>
+                                <div className="mt-3 pt-3 border-t border-white/5">
+                                    <p className="text-xs text-neutral-500">
+                                        {course.isUrgent 
+                                            ? "Continue today." 
+                                            : "Continue when ready."}
+                                    </p>
                                 </div>
                             </div>
                         </Link>
@@ -328,65 +293,80 @@ export default function DashboardClient({
             </div>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-             {/* 4. RECENTLY WATCHED (Secondary) */}
-             {recentlyWatchedVideos.length > 0 && (
-                <div className="bg-[#0D1016] rounded-xl border border-white/5 p-6">
-                    <h2 className="text-lg font-medium flex items-center text-neutral-300 mb-4">
-                        <HistoryIcon className="h-4 w-4 mr-2" />
-                        Recently Watched
-                    </h2>
-                    <div className="space-y-3">
-                        {recentlyWatchedVideos.map((video) => (
-                             <Link
-                                key={video.id}
-                                href={`/dashboard/courses/${video.courseId}?videoId=${video.id}`}
-                                className="block"
-                             >
-                                <div className="flex items-center justify-between p-3 rounded-lg border border-white/5 bg-white/[0.02] hover:bg-white/5 transition-all duration-200">
-                                    <div className="overflow-hidden">
-                                        <h4 className="text-sm font-medium text-white truncate">{video.title}</h4>
-                                        <p className="text-xs text-neutral-500 truncate">{video.courseTitle}</p>
+        {/* 3. SECONDARY ACTIONS (Library / History) */}
+        {(recentlyWatchedVideos.length > 0 || courses.length > 0) && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                 {/* Recently Watched List */}
+                 {recentlyWatchedVideos.length > 0 && (
+                    <div>
+                        <h3 className="text-base font-medium text-neutral-400 mb-3">Recent</h3>
+                        <div className="space-y-1.5">
+                            {recentlyWatchedVideos.map((video) => (
+                                 <Link
+                                    key={video.id}
+                                    href={`/dashboard/courses/${video.courseId}?videoId=${video.id}`}
+                                    className="block group"
+                                 >
+                                    <div className="flex items-center justify-between p-3 rounded-lg border border-white/5 bg-[#0D1016] hover:bg-white/5 hover:border-white/8 transition-all duration-200">
+                                        <div className="overflow-hidden mr-4">
+                                            <h4 className="text-sm font-normal text-neutral-300 group-hover:text-neutral-200 truncate">{video.title}</h4>
+                                            <p className="text-xs text-neutral-600 truncate mt-0.5">{video.courseTitle}</p>
+                                        </div>
+                                        <Play size={12} className="text-neutral-700 group-hover:text-neutral-500 transition-colors shrink-0" />
                                     </div>
-                                    <Play size={14} className="text-neutral-600 group-hover:text-white" />
-                                </div>
-                             </Link>
-                        ))}
+                                 </Link>
+                            ))}
+                        </div>
+                    </div>
+                 )}
+                 
+                 {/* Simple Library Link */}
+                 {courses.length > 0 && (
+                    <div>
+                        <h3 className="text-base font-medium text-neutral-400 mb-3">Library</h3>
+                         <Link href="/dashboard/mycourses" className="block group h-full">
+                            <div className="h-full flex flex-col justify-center items-center p-5 rounded-lg border border-white/5 bg-[#0D1016] hover:bg-white/5 hover:border-white/8 transition-all duration-200 text-center">
+                                <span className="text-neutral-300 font-normal mb-1 group-hover:text-neutral-200">View All Courses</span>
+                                <span className="text-xs text-neutral-600">Access your full collection</span>
+                            </div>
+                         </Link>
+                    </div>
+                 )}
+            </div>
+        )}
+
+        {/* 4. ANALYTICS (Demoted) */}
+        <div className="pt-6 border-t border-white/5">
+            <Button 
+                variant="ghost" 
+                className="w-full flex items-center justify-between p-0 hover:bg-transparent text-neutral-600 hover:text-neutral-400 font-normal group"
+                onClick={() => setIsAnalyticsOpen(!isAnalyticsOpen)}
+            >
+                <span className="text-sm">Activity History</span>
+                <div className="bg-neutral-900 rounded-full p-1 text-neutral-600 group-hover:text-neutral-400 transition-colors">
+                    {isAnalyticsOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                </div>
+            </Button>
+            
+            {isAnalyticsOpen && (
+                 <div className="mt-4 animate-in fade-in slide-in-from-top-2 duration-200">
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+                        <div className="lg:col-span-8 bg-[#0D1016] rounded-lg p-5 border border-white/5">
+                             <div className="w-full overflow-x-auto pb-2">
+                                 <ActivityHeatmap activities={activities} cellSize={12} />
+                            </div>
+                            <p className="text-xs text-neutral-600 mt-3 font-normal">
+                                {heatmapContextString}
+                            </p>
+                        </div>
+                        <div className="lg:col-span-4">
+                            <StreakDisplay activities={activities} />
+                        </div>
                     </div>
                 </div>
-             )}
-             
-             {/* Link to all courses if not handled elsewhere */}
-             <div className="bg-[#0D1016] rounded-xl border border-white/5 p-6 flex flex-col items-center justify-center text-center">
-                 <h2 className="text-lg font-medium text-neutral-300 mb-2">Course Library</h2>
-                 <p className="text-sm text-neutral-500 mb-4 font-light">Access all your active courses and materials.</p>
-                 <Button variant="outline" className="border-white/10 hover:bg-white/5 text-white hover:text-white" asChild>
-                     <Link href="/dashboard/mycourses">View All Courses</Link>
-                 </Button>
-             </div>
+            )}
         </div>
       </main>
     </div>
   );
 }
-
-function HistoryIcon(props: React.SVGProps<SVGSVGElement>) {
-    return (
-      <svg
-        {...props}
-        xmlns="http://www.w3.org/2000/svg"
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74-2.74L3 12" />
-        <path d="M3 3v9h9" />
-        <path d="M12 7v5l4 2" />
-      </svg>
-    );
-  }

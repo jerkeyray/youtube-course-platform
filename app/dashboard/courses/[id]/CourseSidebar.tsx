@@ -148,15 +148,9 @@ export default function CourseSidebar({
   };
 
   const totalVideos = course.videos.length;
-  const [showFullOutline, setShowFullOutline] = useState(false);
   
-  // Determine visible lessons: current + next 2-3 lessons by default
-  const visibleEnd = showFullOutline 
-    ? totalVideos 
-    : Math.min(totalVideos, localCurrentVideoIndex + 3);
-  const visibleVideos = course.videos.slice(0, visibleEnd);
-  
-  const hasMoreLessons = !showFullOutline && visibleEnd < totalVideos;
+  // Show all lessons
+  const visibleVideos = course.videos;
 
   return (
     <div className="pt-4">
@@ -229,16 +223,6 @@ export default function CourseSidebar({
                 </button>
               );
             })}
-            
-            {/* Show full outline toggle */}
-            {hasMoreLessons && (
-              <button
-                onClick={() => setShowFullOutline(!showFullOutline)}
-                className="w-full px-4 py-2 text-xs text-neutral-500 hover:text-neutral-400 hover:bg-white/3 transition-colors text-left"
-              >
-                {showFullOutline ? "Show current section" : `Show full outline (${totalVideos} lessons)`}
-              </button>
-            )}
           </div>
         </div>
       </div>
