@@ -128,6 +128,7 @@ model VideoProgress {
   userId    String
   videoId   String
   completed Boolean  @default(false)
+  lastWatchedSeconds Int @default(0)
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   video     Video    @relation(fields: [videoId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
@@ -142,6 +143,7 @@ model Bookmark {
   userId    String
   videoId   String
   note      String?  // Optional note for bookmarks
+  timestamp Int?     // Timestamp in seconds
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   video     Video    @relation(fields: [videoId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())

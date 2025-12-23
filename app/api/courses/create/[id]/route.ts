@@ -15,9 +15,10 @@ const updateCourseSchema = z.object({
 
 export async function PATCH(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
@@ -27,7 +28,7 @@ export async function PATCH(
     }
 
     const courseOwner = await prisma.course.findUnique({
-      where: { id: params.id },
+      where: { id },
       select: { userId: true },
     });
 
@@ -46,7 +47,7 @@ export async function PATCH(
     const validatedData = updateCourseSchema.parse(body);
 
     const updatedCourse = await prisma.course.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         ...(validatedData.title && { title: validatedData.title }),
         ...(validatedData.deadline && {
@@ -73,9 +74,10 @@ export async function PATCH(
 
 export async function DELETE(
   _req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
@@ -85,7 +87,7 @@ export async function DELETE(
     }
 
     const courseOwner = await prisma.course.findUnique({
-      where: { id: params.id },
+      where: { id },
       select: { userId: true },
     });
 
@@ -101,7 +103,7 @@ export async function DELETE(
     }
 
     await prisma.course.delete({
-      where: { id: params.id },
+      where: { id },
     });
 
     return NextResponse.json({ success: true });
@@ -116,15 +118,16 @@ export async function DELETE(
 
 export async function POST(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await auth();
     if (!session?.user?.id) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    const playlistId = params.id;
+    const playlistId = id;
     if (!playlistId) {
       return new NextResponse("Playlist ID is required", { status: 400 });
     }
@@ -156,7 +159,12 @@ export async function POST(
           title: video.title || "",
           videoId: video.id || "",
           order: index,
-          duration: videoDetails && typeof videoDetails === 'object' && 'duration' in videoDetails ? (videoDetails as { duration: string }).duration : "PT0M0S",
+          duration:
+            videoDetails &&
+            typeof videoDetails === "object" &&
+            "duration" in videoDetails
+              ? (videoDetails as { duration: string }).duration
+              : "PT0M0S",
           courseId: course.id,
         };
       })

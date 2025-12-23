@@ -32,6 +32,8 @@ export async function GET() {
         youtubeId: bookmark.video.videoId,
         courseTitle: bookmark.video.course?.title || "Unknown Course",
         courseId: bookmark.video.courseId,
+        timestamp: bookmark.timestamp,
+        createdAt: bookmark.createdAt,
       };
     });
 
@@ -52,7 +54,7 @@ export async function POST(req: Request) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    const { videoId, note } = await req.json();
+    const { videoId, note, timestamp } = await req.json();
     if (!videoId) {
       return new NextResponse("Video ID is required", { status: 400 });
     }
@@ -85,6 +87,7 @@ export async function POST(req: Request) {
         userId: session.user.id,
         videoId,
         note,
+        timestamp,
       },
       include: { video: true },
     });

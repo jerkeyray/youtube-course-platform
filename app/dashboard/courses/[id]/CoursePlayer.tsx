@@ -1,10 +1,11 @@
 // components/CoursePlayer.tsx
 "use client";
 
-import { useState, useCallback, useEffect, useMemo } from "react";
+import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import { Course, Video, VideoProgress } from "@prisma/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import YouTube, { YouTubeProps, YouTubePlayer } from "react-youtube";
 import {
   Tooltip,
   TooltipContent,
@@ -30,7 +31,7 @@ import remarkGfm from "remark-gfm";
 
 type CourseWithProgress = Course & {
   videos: (Video & {
-    progress: VideoProgress[];
+    progress: (VideoProgress & { lastWatchedSeconds: number })[];
   })[];
   completionPercentage: number;
 };
@@ -38,6 +39,7 @@ type CourseWithProgress = Course & {
 interface CoursePlayerProps {
   course: CourseWithProgress;
   initialVideoIndex?: number;
+  initialTimestamp?: number;
 }
 
 // Helper function to clean YouTube titles
@@ -109,8 +111,11 @@ function cleanVideoTitle(
 export default function CoursePlayer({
   course,
   initialVideoIndex = 0,
+  initialTimestamp,
 }: CoursePlayerProps) {
   const [currentVideoIndex, setCurrentVideoIndex] = useState(initialVideoIndex);
+  const playerRef = useRef<YouTubePlayer | null>(null);
+  const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const [watchedVideos, setWatchedVideos] = useState<Set<string>>(
     new Set(
       course.videos
@@ -125,6 +130,15 @@ export default function CoursePlayer({
   const [noteContent, setNoteContent] = useState("");
   const [noteTitle, setNoteTitle] = useState("");
   const queryClient = useQueryClient();
+
+  // Sync video index changes to other components (like Sidebar)
+  useEffect(() => {
+    window.dispatchEvent(
+      new CustomEvent("videoIndexChange", {
+        detail: { videoIndex: currentVideoIndex },
+      })
+    );
+  }, [currentVideoIndex]);
 
   // Listen for video index changes from sidebar
   useEffect(() => {
@@ -181,6 +195,26 @@ export default function CoursePlayer({
           })
         );
 
+        // Auto-remove bookmark if marking as completed
+        if (!isCompleted && bookmarkedVideos.has(videoId)) {
+          const video = course.videos.find((v) => v.id === videoId);
+          if (video) {
+            // We don't await this to not block the UI feedback
+            fetch(`/api/bookmarks/${video.videoId}`, { method: "DELETE" })
+              .then(() => {
+                setBookmarkedVideos((prev) => {
+                  const newSet = new Set(prev);
+                  newSet.delete(videoId);
+                  return newSet;
+                });
+                toast.info("Bookmark removed (completed)");
+              })
+              .catch(() => {
+                // Ignore error
+              });
+          }
+        }
+
         toast.success(
           isCompleted
             ? "Video marked as not completed"
@@ -200,7 +234,7 @@ export default function CoursePlayer({
         toast.error("Failed to update video progress");
       }
     },
-    [watchedVideos]
+    [watchedVideos, bookmarkedVideos, course.videos]
   );
 
   const handleBookmark = useCallback(
@@ -230,6 +264,7 @@ export default function CoursePlayer({
         let response;
         if (newBookmarkStatus) {
           // Add bookmark
+          const currentTime = playerRef.current?.getCurrentTime() || 0;
           response = await fetch("/api/bookmarks", {
             method: "POST",
             headers: {
@@ -239,6 +274,7 @@ export default function CoursePlayer({
               videoId: videoId,
               courseId: course.id,
               courseVideoId: videoId,
+              timestamp: Math.floor(currentTime),
             }),
           });
         } else {
@@ -284,39 +320,110 @@ export default function CoursePlayer({
     return course.videos[currentVideoIndex];
   }, [course.videos, currentVideoIndex]);
 
-  // Memoize the iframe src to prevent unnecessary re-renders
-  const iframeSrc = useMemo(() => {
-    // Use youtube-nocookie.com for privacy-enhanced mode to reduce tracking
-    const baseUrl = `https://www.youtube-nocookie.com/embed/${currentVideo.videoId}`;
-    const params = new URLSearchParams({
-      rel: "0",
-      showinfo: "0",
-      modestbranding: "1",
-      enablejsapi: "1",
-      // Additional privacy parameters
-      iv_load_policy: "3", // Hide video annotations
-      fs: "1", // Allow fullscreen
-      cc_load_policy: "0", // Don't show closed captions by default
-    });
-    return `${baseUrl}?${params.toString()}`;
-  }, [currentVideo.videoId]);
+  const saveProgress = useCallback(
+    async (time: number, completed: boolean = false) => {
+      if (!currentVideo) return;
 
-  // Memoize the iframe component to prevent unnecessary re-renders
-  const videoIframe = useMemo(() => {
-    if (!currentVideo || !iframeSrc) return null;
+      try {
+        await fetch(`/api/videos/${currentVideo.id}/progress`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            completed,
+            lastWatchedSeconds: Math.floor(time),
+          }),
+        });
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error("Failed to save progress", error);
+      }
+    },
+    [currentVideo]
+  );
+
+  // Cleanup interval on unmount
+  useEffect(() => {
+    return () => {
+      if (progressIntervalRef.current) {
+        clearInterval(progressIntervalRef.current);
+      }
+    };
+  }, []);
+
+  const onPlayerReady = (event: { target: YouTubePlayer }) => {
+    playerRef.current = event.target;
+
+    // If we have an initial timestamp and this is the first video loaded
+    if (
+      initialTimestamp &&
+      currentVideoIndex === initialVideoIndex &&
+      initialTimestamp > 0
+    ) {
+      event.target.seekTo(initialTimestamp);
+      event.target.playVideo();
+    } else {
+      // Resume from last watched position if available
+      const progress = currentVideo.progress[0];
+      if (progress?.lastWatchedSeconds && progress.lastWatchedSeconds > 0) {
+        event.target.seekTo(progress.lastWatchedSeconds);
+      }
+    }
+  };
+
+  const onPlayerStateChange = (event: {
+    data: number;
+    target: YouTubePlayer;
+  }) => {
+    // 1 = Playing, 2 = Paused
+    if (event.data === 1) {
+      // Start interval to save progress
+      if (progressIntervalRef.current)
+        clearInterval(progressIntervalRef.current);
+      progressIntervalRef.current = setInterval(() => {
+        const currentTime = event.target.getCurrentTime();
+        saveProgress(currentTime);
+      }, 5000);
+    } else {
+      // Clear interval and save immediately
+      if (progressIntervalRef.current) {
+        clearInterval(progressIntervalRef.current);
+        progressIntervalRef.current = null;
+      }
+      // Only save if we have a valid player instance
+      if (event.target && typeof event.target.getCurrentTime === "function") {
+        const currentTime = event.target.getCurrentTime();
+        saveProgress(currentTime);
+      }
+    }
+  };
+
+  // Memoize the player component to prevent unnecessary re-renders
+  const videoPlayer = useMemo(() => {
+    if (!currentVideo) return null;
+
+    const opts: YouTubeProps["opts"] = {
+      height: "100%",
+      width: "100%",
+      playerVars: {
+        autoplay: 0,
+        modestbranding: 1,
+        rel: 0,
+        iv_load_policy: 3, // Hide video annotations
+        fs: 1, // Allow fullscreen
+      },
+    };
 
     return (
-      <iframe
-        key={currentVideo.videoId}
-        src={iframeSrc}
-        title={currentVideo.title}
-        className="h-full w-full border-0"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-        allowFullScreen
-        loading="lazy"
+      <YouTube
+        videoId={currentVideo.videoId}
+        opts={opts}
+        onReady={onPlayerReady}
+        onStateChange={onPlayerStateChange}
+        className="h-full w-full"
+        iframeClassName="h-full w-full rounded-lg"
       />
     );
-  }, [currentVideo?.videoId, iframeSrc]); // Only depend on video ID and iframe src
+  }, [currentVideo?.videoId]); // Only depend on video ID
 
   // Fetch note for current video only when editor is opened
   const { data: note, isLoading: isNoteLoading } = useQuery({
@@ -433,7 +540,7 @@ export default function CoursePlayer({
 
       {/* Video Player */}
       <div className="aspect-video w-full overflow-hidden rounded-lg bg-black">
-        {videoIframe}
+        {videoPlayer}
       </div>
 
       {/* Video Title Above Buttons */}

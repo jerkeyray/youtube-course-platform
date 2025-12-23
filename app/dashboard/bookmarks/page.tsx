@@ -15,6 +15,8 @@ interface Video {
   youtubeId: string;
   courseTitle: string;
   courseId: string;
+  timestamp?: number | null;
+  createdAt?: string;
 }
 
 async function getBookmarks() {
@@ -60,45 +62,58 @@ export default function BookmarksPage() {
     return <LoadingScreen />;
   }
 
+  const nextVideo = videos[0];
+  const queueVideos = videos.slice(1);
+
   return (
     <div className="min-h-screen bg-black text-white">
-      <div className="p-6 md:p-8">
-        <div className="max-w-7xl mx-auto">
+      <div className="p-8 md:p-12">
+        <div className="max-w-6xl">
           {/* Header */}
-          <div className="mb-8">
-            <div className="flex items-center gap-3 mb-2">
-              <Bookmark className="h-8 w-8 text-blue-500" />
-              <h1 className="text-3xl font-bold text-white">My Bookmarks</h1>
-            </div>
-            <p className="text-gray-400">Your saved videos for quick access</p>
+          <div className="mb-16">
+            <h1 className="text-xl font-medium text-zinc-400">Paused Tasks</h1>
           </div>
 
           {videos.length === 0 ? (
-            <div className="flex items-center justify-center min-h-[60vh]">
-              <div className="text-center space-y-4">
-                <div className="mx-auto w-16 h-16 bg-zinc-900 rounded-full flex items-center justify-center border border-zinc-800">
-                  <Bookmark className="h-8 w-8 text-gray-500" />
-                </div>
-                <div>
-                  <h2 className="text-xl font-medium text-white mb-2">
-                    No bookmarks yet
-                  </h2>
-                  <p className="text-gray-400">
-                    Add bookmarks while watching videos
-                  </p>
-                </div>
-              </div>
+            <div className="py-20">
+              <p className="text-zinc-600 text-lg">
+                No active tasks. You&apos;re all caught up.
+              </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6">
-              {videos.map((video) => (
-                <VideoCard
-                  key={video.id}
-                  video={video}
-                  onRemove={() => refetch()}
-                  type="bookmark"
-                />
-              ))}
+            <div className="space-y-16">
+              {/* Primary/First Bookmark */}
+              <section>
+                <h2 className="text-sm font-medium text-white uppercase tracking-wider mb-6 flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-orange-500"></span>
+                  Next to finish
+                </h2>
+                <div className="max-w-md">
+                  <VideoCard
+                    video={nextVideo}
+                    onRemove={() => refetch()}
+                    type="bookmark"
+                  />
+                </div>
+              </section>
+
+              {queueVideos.length > 0 && (
+                <section>
+                  <h2 className="text-sm font-medium text-zinc-500 uppercase tracking-wider mb-6 pl-1">
+                    In Queue
+                  </h2>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                    {queueVideos.map((video) => (
+                      <VideoCard
+                        key={video.id}
+                        video={video}
+                        onRemove={() => refetch()}
+                        type="bookmark"
+                      />
+                    ))}
+                  </div>
+                </section>
+              )}
             </div>
           )}
         </div>

@@ -5,11 +5,11 @@ import { z } from "zod";
 
 export async function GET(
   req: Request,
-  { params }: { params: { noteId: string } }
+  { params }: { params: Promise<{ noteId: string }> }
 ) {
   try {
     const { userId } = await auth();
-    const { noteId } = params;
+    const { noteId } = await params;
 
     if (!userId) {
       return new NextResponse("Unauthorized", { status: 401 });
@@ -51,11 +51,11 @@ export async function GET(
 
 export async function PATCH(
   req: Request,
-  { params }: { params: { noteId: string } }
+  { params }: { params: Promise<{ noteId: string }> }
 ) {
   try {
     const { userId } = await auth();
-    const { noteId } = params;
+    const { noteId } = await params;
 
     if (!userId) {
       return new NextResponse("Unauthorized", { status: 401 });
@@ -93,11 +93,11 @@ export async function PATCH(
 
 export async function DELETE(
   req: Request,
-  { params }: { params: { noteId: string } }
+  { params }: { params: Promise<{ noteId: string }> }
 ) {
   try {
     const { userId } = await auth();
-    const { noteId } = params;
+    const { noteId } = await params;
 
     if (!userId) {
       return new NextResponse("Unauthorized", { status: 401 });

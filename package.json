@@ -43,6 +43,7 @@
     "react-dom": "^18.2.0",
     "react-icons": "^5.5.0",
     "react-markdown": "^10.1.0",
+    "react-youtube": "^10.1.0",
     "remark-gfm": "^4.0.1",
     "skeleton": "^1.0.0",
     "sonner": "^2.0.3",

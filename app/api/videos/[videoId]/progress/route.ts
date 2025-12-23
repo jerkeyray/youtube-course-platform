@@ -6,23 +6,34 @@ import { z } from "zod";
 
 export async function POST(
   req: Request,
-  { params }: { params: { videoId: string } }
+  { params }: { params: Promise<{ videoId: string }> }
 ) {
   try {
+    const { videoId } = await params;
     const { userId } = await auth();
     if (!userId) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    const { completed } = await req.json();
+    const { completed, lastWatchedSeconds } = await req.json();
 
     // Update video progress
+    const updateData: any = {};
+    if (completed !== undefined) updateData.completed = completed;
+    if (lastWatchedSeconds !== undefined)
+      updateData.lastWatchedSeconds = lastWatchedSeconds;
+
     const progress = await prisma.videoProgress.upsert({
       where: {
-        userId_videoId: { userId, videoId: params.videoId },
+        userId_videoId: { userId, videoId },
       },
-      update: { completed },
-      create: { userId, videoId: params.videoId, completed },
+      update: updateData,
+      create: {
+        userId,
+        videoId,
+        completed: completed || false,
+        lastWatchedSeconds: lastWatchedSeconds || 0,
+      },
     });
 
     // If video is completed, record activity for today and check course completion
@@ -48,7 +59,7 @@ export async function POST(
       }
 
       // Check if course is completed and create certificate if needed
-      await checkAndCreateCertificate(userId, params.videoId);
+      await checkAndCreateCertificate(userId, videoId);
     }
 
     return NextResponse.json(progress);

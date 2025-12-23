@@ -9,9 +9,10 @@ import { prisma } from "@/lib/prisma";
 // GET specific course by ID
 export async function GET(
   req: Request, // Can be NextRequest if specific Next.js functionalities are needed
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await auth();
     if (!session?.user?.id) {
       return new NextResponse("Unauthorized", { status: 401 });
@@ -19,7 +20,7 @@ export async function GET(
 
     const course = await prisma.course.findUnique({
       where: {
-        id: params.id,
+        id,
         userId: session.user.id, // Ensure user owns the course
       },
       include: {
@@ -51,9 +52,10 @@ export async function GET(
 // PUT (update) a specific course by ID
 export async function PUT(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await auth();
     if (!session?.user?.id) {
       return new NextResponse("Unauthorized", { status: 401 });
@@ -67,7 +69,7 @@ export async function PUT(
 
     const course = await prisma.course.updateMany({
       where: {
-        id: params.id,
+        id,
         userId: session.user.id, // Ensure user owns the course
       },
       data: {
@@ -93,7 +95,7 @@ export async function PUT(
 
     // Fetch the updated course to return it
     const updatedCourse = await prisma.course.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     return NextResponse.json(updatedCourse);
@@ -106,16 +108,17 @@ export async function PUT(
 // DELETE a specific course by ID
 export async function DELETE(
   request: Request, // Using generic Request as per original structure
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const { userId } = await auth();
 
     if (!userId) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    const courseId = params.id;
+    const courseId = id;
 
     // Verify course ownership
     const course = await prisma.course.findUnique({
@@ -182,9 +185,10 @@ export async function DELETE(
 
 export async function PATCH(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const { userId } = await auth();
     const body = await request.json();
 
@@ -193,7 +197,7 @@ export async function PATCH(
     }
 
     const course = await prisma.course.update({
-      where: { id: params.id, userId },
+      where: { id, userId },
       data: body,
     });
 

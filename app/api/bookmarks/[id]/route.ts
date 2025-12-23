@@ -4,15 +4,16 @@ import { prisma } from "@/lib/prisma";
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await auth();
     if (!session?.user?.id) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    const youtubeId = params.id;
+    const youtubeId = id;
 
     // Find the video record in your database using the YouTube video ID
     const videoRecord = await prisma.video.findFirst({

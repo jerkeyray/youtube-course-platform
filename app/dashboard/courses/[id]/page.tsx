@@ -18,6 +18,7 @@ interface CoursePageProps {
   }>;
   searchParams: Promise<{
     videoId?: string;
+    t?: string;
   }>;
 }
 
@@ -32,7 +33,7 @@ export default async function CoursePage({
   }
 
   const { id: courseId } = await params;
-  const { videoId } = await searchParams;
+  const { videoId, t } = await searchParams;
 
   const course = await db.course.findUnique({
     where: {
@@ -91,6 +92,7 @@ export default async function CoursePage({
               <CoursePlayer
                 course={courseWithProgress}
                 initialVideoIndex={initialVideoIndex}
+                initialTimestamp={t ? parseInt(t) : undefined}
               />
             </div>
 

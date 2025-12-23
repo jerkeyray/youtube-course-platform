@@ -5,8 +5,9 @@ import { prisma } from "@/lib/prisma";
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const { userId } = await auth();
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -18,7 +19,7 @@ export async function POST(
     // Verify the course belongs to the user
     const course = await prisma.course.findUnique({
       where: {
-        id: params.id,
+        id,
         userId,
       },
     });
@@ -31,7 +32,7 @@ export async function POST(
     const video = await prisma.video.findFirst({
       where: {
         id: videoId,
-        courseId: params.id,
+        courseId: id,
         course: {
           userId,
         },
