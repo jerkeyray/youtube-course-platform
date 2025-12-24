@@ -144,7 +144,7 @@ export default function LandingPage({ session }: LandingPageProps) {
         <div className="max-w-7xl mx-auto relative z-10 w-full">
           <div className="text-center max-w-3xl mx-auto mb-0 sm:mb-16 md:mb-20">
             <FadeIn>
-              <h1 className="text-4xl sm:text-5xl md:text-7xl font-medium tracking-tighter text-white mb-6 sm:mb-8 leading-[0.95]">
+              <h1 className="text-5xl sm:text-6xl md:text-8xl font-medium tracking-tighter text-white mb-6 sm:mb-8 leading-[0.95]">
                 Escape the algorithm. <br />
                 Finish the course.
               </h1>
