@@ -15,10 +15,10 @@ export function DashboardSidebarToggle({
     <Button
       variant="ghost"
       size="icon"
-      className="h-10 w-10 rounded-full hover:bg-white/10 transition-all duration-200"
+      className="group h-10 w-10 rounded-full bg-transparent text-neutral-400 hover:bg-transparent hover:text-neutral-200 transition-colors duration-200"
       onClick={onToggle}
     >
-      <Menu className="h-5 w-5 text-neutral-400" />
+      <Menu className="h-5 w-5 transition-colors duration-200" />
     </Button>
   );
 }

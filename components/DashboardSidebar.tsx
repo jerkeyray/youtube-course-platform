@@ -71,10 +71,6 @@ export function DashboardSidebar({ isCollapsed }: DashboardSidebarProps) {
                   isCollapsed ? "justify-center px-2" : ""
                 )}
               >
-                {/* Left accent bar for active */}
-                {isActive && (
-                  <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-white" />
-                )}
                 {/* Background for active and hover */}
                 <div
                   className={cn(
@@ -101,7 +97,7 @@ export function DashboardSidebar({ isCollapsed }: DashboardSidebarProps) {
         </div>
 
         {/* Divider */}
-        <div className="my-2 border-t border-white/5" />
+        <div className="my-2" />
 
         {/* Tools section */}
         <div className="space-y-1">
@@ -120,10 +116,6 @@ export function DashboardSidebar({ isCollapsed }: DashboardSidebarProps) {
                   isCollapsed ? "justify-center px-2" : ""
                 )}
               >
-                {/* Left accent bar for active */}
-                {isActive && (
-                  <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-white" />
-                )}
                 {/* Background for active and hover */}
                 <div
                   className={cn(
@@ -151,7 +143,7 @@ export function DashboardSidebar({ isCollapsed }: DashboardSidebarProps) {
       </div>
 
       {/* Bottom Section - Profile */}
-      <div className="px-3 pt-2 border-t border-white/5">
+      <div className="px-3 pt-2">
         {/* Profile Section with Dropdown */}
         {session?.user && (
           <DropdownMenu>

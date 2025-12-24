@@ -60,12 +60,17 @@ export default function HomeLayout({
       {status !== "loading" && (
         <div
           className={cn(
-            "hidden h-full md:flex md:flex-col md:fixed md:inset-y-0 z-[80] bg-[#0A0A0A] border-r border-white/5 transition-all duration-200 ease-in-out",
+            "hidden h-full md:flex md:flex-col md:fixed md:inset-y-0 z-[80] bg-[#0A0A0A] transition-all duration-200 ease-in-out",
             isCollapsed ? "md:w-16" : "md:w-64",
             isCoursePage && "opacity-50"
           )}
         >
-          <div className="flex items-center h-16 px-6 border-b border-white/5">
+          <div
+            className={cn(
+              "flex items-center h-16",
+              isCollapsed ? "px-0 justify-center" : "px-3"
+            )}
+          >
             <DashboardSidebarToggle
               isCollapsed={isCollapsed}
               onToggle={handleSidebarToggle}
