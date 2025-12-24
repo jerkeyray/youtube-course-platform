@@ -1,5 +1,3 @@
-import { NoteEditor } from "@/components/note-editor";
-
 export default function ChapterPage({
   params,
 }: {
@@ -24,9 +22,6 @@ export default function ChapterPage({
               loading="lazy"
             />
           </div>
-
-          {/* Notes Section */}
-          <NoteEditor videoId={video.id} courseId={params.courseId} />
 
           {/* Video Title and Description */}
         </div>

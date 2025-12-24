@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import Image from "next/image";
 
-import { BookOpen, Bookmark, User, Pencil, LogOut, Home } from "lucide-react";
+import { BookOpen, Bookmark, User, LogOut, Home } from "lucide-react";
 
 const learningRoutes = [
   {
@@ -30,11 +30,6 @@ const learningRoutes = [
 ];
 
 const toolRoutes = [
-  {
-    label: "Notes",
-    icon: Pencil,
-    href: "/home/notes",
-  },
   {
     label: "Bookmarks",
     icon: Bookmark,

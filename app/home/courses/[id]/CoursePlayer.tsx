@@ -4,24 +4,10 @@
 import { useState, useCallback, useEffect, useMemo, useRef, memo } from "react";
 import { Course, Video, VideoProgress } from "@prisma/client";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { YouTubePlayer } from "react-youtube";
 
-import {
-  Check,
-  ChevronLeft,
-  ChevronRight,
-  Bookmark,
-  Pencil,
-  Save,
-  X,
-} from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, Bookmark } from "lucide-react";
 import { toast } from "sonner";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import LoadingScreen from "@/components/LoadingScreen";
-import { Textarea } from "@/components/ui/textarea";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
 import VideoPlayer from "./VideoPlayer";
 
 type CourseWithProgress = Course & {
@@ -152,10 +138,6 @@ export default function CoursePlayer({
   const [bookmarkedVideos, setBookmarkedVideos] = useState<Set<string>>(
     new Set()
   );
-  const [showNoteEditor, setShowNoteEditor] = useState(false);
-  const [noteContent, setNoteContent] = useState("");
-  const [noteTitle, setNoteTitle] = useState("");
-  const queryClient = useQueryClient();
 
   // Sync video index changes to other components (like Sidebar)
   useEffect(() => {
@@ -395,95 +377,6 @@ export default function CoursePlayer({
     playerRef.current = event.target;
   }, []);
 
-  // Fetch note for current video only when editor is opened
-  const { data: note, isLoading: isNoteLoading } = useQuery({
-    queryKey: ["note", currentVideo.id],
-    queryFn: async () => {
-      const response = await fetch(`/api/notes?videoId=${currentVideo.id}`);
-      if (!response.ok) throw new Error("Failed to fetch note");
-      return response.json();
-    },
-    enabled: showNoteEditor,
-    staleTime: 1000 * 60 * 5, // Consider data fresh for 5 minutes
-  });
-
-  // Save note mutation
-  const saveNoteMutation = useMutation({
-    mutationFn: async ({
-      content,
-      title,
-    }: {
-      content: string;
-      title: string;
-    }) => {
-      const response = await fetch("/api/notes", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          videoId: currentVideo.id,
-          courseId: course.id,
-          content,
-          title,
-        }),
-      });
-      if (!response.ok) throw new Error("Failed to save note");
-      return response.json();
-    },
-    onSuccess: () => {
-      toast.success("Note saved successfully");
-      setShowNoteEditor(false);
-      queryClient.invalidateQueries({ queryKey: ["note", currentVideo.id] });
-    },
-    onError: () => {
-      toast.error("Failed to save note");
-    },
-  });
-
-  // Set note content when note changes
-  useEffect(() => {
-    if (note) {
-      setNoteContent(note.content || "");
-      setNoteTitle(note.title || "");
-    }
-  }, [note]);
-
-  // Memoize notes section to prevent unnecessary re-renders
-  const notesSection = useMemo(() => {
-    // Only show notes section if there's actual content
-    if (!note?.content) {
-      return null;
-    }
-
-    return (
-      <Card className="p-6 bg-zinc-900 border-zinc-800">
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-white">Notes</h3>
-          </div>
-
-          {isNoteLoading ? (
-            <div className="flex justify-center py-8">
-              <LoadingScreen variant="contained" />
-            </div>
-          ) : (
-            <div className="prose prose-sm max-w-none rounded-lg border bg-zinc-800 border-zinc-700 p-4 shadow-sm">
-              {note.title && (
-                <h4 className="text-lg font-medium text-white mb-2">
-                  {note.title}
-                </h4>
-              )}
-              <div className="prose-invert">
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                  {note.content}
-                </ReactMarkdown>
-              </div>
-            </div>
-          )}
-        </div>
-      </Card>
-    );
-  }, [isNoteLoading, note?.content, note?.title]);
-
   if (!course.videos.length) {
     return (
       <div className="py-8 text-center">
@@ -515,7 +408,7 @@ export default function CoursePlayer({
         startTime={startTime}
         onReady={onPlayerReady}
         onProgress={saveProgress}
-        isReadingMode={showNoteEditor}
+        isReadingMode={false}
       />
 
       {/* Video Title Above Buttons */}
@@ -570,16 +463,6 @@ export default function CoursePlayer({
           </Button>
 
           <Button
-            onClick={() => setShowNoteEditor((v) => !v)}
-            variant="outline"
-            size="icon"
-            className="flex items-center gap-2 bg-transparent border border-white/10 text-neutral-400 hover:text-white hover:bg-white/5 hover:border-white/20 transition-colors duration-150"
-            title={note?.content ? "Edit Note" : "Capture what you learned"}
-          >
-            <Pencil className="h-4 w-4" />
-          </Button>
-
-          <Button
             onClick={handlePreviousVideo}
             disabled={currentVideoIndex === 0}
             variant="outline"
@@ -602,68 +485,6 @@ export default function CoursePlayer({
           </Button>
         </div>
       </div>
-
-      {/* Note Editor Field (revealed below buttons) */}
-      {showNoteEditor && (
-        <div className="mt-4">
-          <Card className="p-6 bg-[#0D1016] border-white/5">
-            <div className="space-y-4">
-              <input
-                type="text"
-                value={noteTitle}
-                onChange={(e) => setNoteTitle(e.target.value)}
-                placeholder="Note title (optional)"
-                className="w-full rounded-md border px-3 py-2 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-white bg-black/50 border-white/10 text-white placeholder-neutral-500"
-              />
-              <Textarea
-                value={noteContent}
-                onChange={(e) => setNoteContent(e.target.value)}
-                placeholder="Write your notes here... (Markdown supported)"
-                className="min-h-[200px] font-mono text-sm resize-none focus:ring-1 focus:ring-white bg-black/50 border-white/10 text-white placeholder-neutral-500"
-              />
-              <div className="flex gap-3">
-                <Button
-                  onClick={() =>
-                    saveNoteMutation.mutate({
-                      content: noteContent,
-                      title: noteTitle,
-                    })
-                  }
-                  disabled={saveNoteMutation.isPending}
-                  className="flex-1 bg-white text-black hover:bg-neutral-200 font-medium border-0"
-                >
-                  {saveNoteMutation.isPending ? (
-                    <div className="flex items-center gap-2">
-                      <div className="w-4 h-4">
-                        <LoadingScreen variant="inline" />
-                      </div>
-                      <span>Saving...</span>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-2">
-                      <Save className="h-4 w-4" />
-                      <span>Save Note</span>
-                    </div>
-                  )}
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => setShowNoteEditor(false)}
-                  className="flex-1 bg-transparent border border-white/10 text-neutral-300 hover:text-white hover:bg-white/5 hover:border-white/20"
-                >
-                  <div className="flex items-center gap-2">
-                    <X className="h-4 w-4" />
-                    <span>Cancel</span>
-                  </div>
-                </Button>
-              </div>
-            </div>
-          </Card>
-        </div>
-      )}
-
-      {/* Notes Section (display only) */}
-      {!showNoteEditor && notesSection}
     </div>
   );
 }
