@@ -15,6 +15,7 @@ import {
   Play,
   Maximize2,
   ArrowRight,
+  Star,
 } from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -286,20 +287,57 @@ export default function LandingPage({ session }: LandingPageProps) {
             No feeds. No recommendations. No noise.
           </p>
 
-          <div className="pt-4 flex items-center justify-center gap-6 text-xs text-neutral-500">
-            <Link
-              href="/home/why-yudoku"
-              className="hover:text-white transition-colors"
+          <div className="pt-4 flex flex-wrap items-center justify-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              asChild
+              className="h-auto px-2 py-1 text-xs text-neutral-500 hover:text-white"
             >
-              Why Yudoku
-            </Link>
-            <Link
-              href="https://buymeacoffee.com/jerkeyray"
-              target="_blank"
-              className="hover:text-white transition-colors"
+              <Link href="/home/why-yudoku">Why Yudoku</Link>
+            </Button>
+
+            <Button
+              variant="ghost"
+              size="sm"
+              asChild
+              className="h-auto px-2 py-1 text-xs text-neutral-500 hover:text-white"
             >
-              Support the project
-            </Link>
+              <Link href="https://buymeacoffee.com/jerkeyray" target="_blank">
+                Support the project
+              </Link>
+            </Button>
+
+            <Button
+              variant="ghost"
+              size="sm"
+              asChild
+              className="h-auto px-2 py-1 text-xs text-neutral-500 hover:text-white"
+            >
+              <Link
+                href={
+                  process.env.NEXT_PUBLIC_GITHUB_REPO_URL ||
+                  "https://github.com/jerkeyray/youtube-course-platform"
+                }
+                target="_blank"
+              >
+                <span className="inline-flex items-center gap-1.5">
+                  <Star className="h-3.5 w-3.5" aria-hidden="true" />
+                  Star on GitHub
+                </span>
+              </Link>
+            </Button>
+
+            <Button
+              variant="ghost"
+              size="sm"
+              asChild
+              className="h-auto px-2 py-1 text-xs text-neutral-500 hover:text-white"
+            >
+              <Link href="https://jerkeyray.com" target="_blank">
+                Built by Aditya Srivastava
+              </Link>
+            </Button>
           </div>
 
           <p className="pt-6 text-neutral-700 text-xs">
