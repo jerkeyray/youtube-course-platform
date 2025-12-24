@@ -20,13 +20,19 @@ export const metadata: Metadata = {
     siteName: "Yudoku",
     images: [
       {
-        url: "demo.png", // Replace with your image URL
+        url: "/demo.png",
         width: 1200, // Match your image's dimensions
         height: 630, // Match your image's dimensions
         alt: "Yudoku platform thumbnail", // Descriptive alt text
       },
     ],
     type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Yudoku",
+    description: "The Youtube Course Experience Platform",
+    images: ["/demo.png"],
   },
 };
 

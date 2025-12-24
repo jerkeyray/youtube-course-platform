@@ -55,14 +55,16 @@ function ProductMockup() {
           <div className="h-3 w-3 rounded-full bg-neutral-700/50" />
           <div className="h-3 w-3 rounded-full bg-neutral-700/50" />
         </div>
-        <div className="mx-auto flex w-full max-w-sm items-center gap-2 rounded-md bg-[#151921] px-3 py-1 text-xs text-neutral-500 font-mono">
+        <div className="mx-auto flex w-full max-w-[260px] sm:max-w-sm items-center gap-2 rounded-md bg-[#151921] px-3 py-1 text-xs text-neutral-500 font-mono">
           <span className="text-white">yudoku.app</span>
-          /home/course/react-mastery
+          <span className="hidden sm:inline truncate">
+            /home/course/react-mastery
+          </span>
         </div>
       </div>
 
       {/* App Interface */}
-      <div className="flex h-[400px] sm:h-[500px]">
+      <div className="flex h-[320px] sm:h-[400px] md:h-[500px]">
         {/* Sidebar */}
         <div className="hidden w-64 flex-none border-r border-white/5 bg-[#0D1016] p-4 sm:block">
           <div className="mb-6 flex items-center gap-2">
@@ -108,15 +110,15 @@ function ProductMockup() {
             </div>
 
             {/* Player Controls */}
-            <div className="absolute bottom-0 left-0 right-0 p-4 flex items-center gap-4 text-white/70">
+            <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4 flex items-center gap-3 sm:gap-4 text-white/70">
               <Play className="h-4 w-4" fill="currentColor" />
               <div className="h-1 flex-1 bg-white/20 rounded-full overflow-hidden">
                 <div className="h-full w-1/3 bg-white" />
               </div>
-              <span className="text-xs font-mono text-neutral-400">
+              <span className="hidden sm:inline text-xs font-mono text-neutral-400">
                 14:20 / 45:00
               </span>
-              <Maximize2 className="h-4 w-4" />
+              <Maximize2 className="hidden sm:inline h-4 w-4" />
             </div>
           </div>
         </div>
@@ -138,24 +140,24 @@ export default function LandingPage({ session }: LandingPageProps) {
       <div className="fixed inset-0 z-0 opacity-[0.015] pointer-events-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')] brightness-100 contrast-150"></div>
 
       {/* Hero Section */}
-      <section className="relative min-h-screen flex flex-col items-center justify-start pt-32 pb-10 px-6 overflow-hidden md:pt-48">
+      <section className="relative md:min-h-screen flex flex-col items-center justify-start pt-24 pb-12 px-6 overflow-hidden sm:pt-28 md:pt-48">
         <div className="max-w-7xl mx-auto relative z-10 w-full">
-          <div className="text-center max-w-3xl mx-auto mb-20">
+          <div className="text-center max-w-3xl mx-auto mb-0 sm:mb-16 md:mb-20">
             <FadeIn>
-              <h1 className="text-5xl md:text-7xl font-medium tracking-tighter text-white mb-8 leading-[0.95]">
+              <h1 className="text-4xl sm:text-5xl md:text-7xl font-medium tracking-tighter text-white mb-6 sm:mb-8 leading-[0.95]">
                 Escape the algorithm. <br />
                 Finish the course.
               </h1>
-              <p className="text-xl md:text-2xl text-neutral-400 font-light max-w-xl mx-auto leading-relaxed mb-12">
+              <p className="text-lg sm:text-xl md:text-2xl text-neutral-400 font-light max-w-xl mx-auto leading-relaxed mb-10 sm:mb-12">
                 YouTube is built to keep you watching.
                 <br />
                 Yudoku is built to help you finish.
               </p>
 
-              <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
+              <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center items-center">
                 <Button
                   size="lg"
-                  className="h-12 px-8 text-base bg-white text-black hover:bg-neutral-200 rounded-md font-medium transition-colors"
+                  className="h-12 w-full max-w-xs sm:w-auto sm:max-w-none px-8 text-base bg-white text-black hover:bg-neutral-200 rounded-md font-medium transition-colors"
                   asChild
                 >
                   <Link href={getStartedLink}>Continue learning</Link>
@@ -164,7 +166,7 @@ export default function LandingPage({ session }: LandingPageProps) {
             </FadeIn>
           </div>
 
-          <FadeIn delay={0.2} className="relative">
+          <FadeIn delay={0.2} className="relative hidden md:block">
             <div className="text-center mb-6">
               <p className="text-xs font-medium text-neutral-500 uppercase tracking-widest">
                 What learning looks like without the algorithm
@@ -176,9 +178,9 @@ export default function LandingPage({ session }: LandingPageProps) {
       </section>
 
       {/* Features Section - Reduced to 3 Outcome Points */}
-      <section className="py-32 px-6 border-t border-white/5 bg-[#0A0A0A] relative">
+      <section className="py-20 sm:py-24 md:py-32 px-6 border-t border-white/5 bg-[#0A0A0A] relative">
         <div className="max-w-6xl mx-auto relative z-10">
-          <div className="grid md:grid-cols-3 gap-16 text-center md:text-left">
+          <div className="grid md:grid-cols-3 gap-10 sm:gap-12 md:gap-16 text-center md:text-left">
             {[
               {
                 icon: Layout,
@@ -201,10 +203,10 @@ export default function LandingPage({ session }: LandingPageProps) {
                   <div className="inline-flex h-12 w-12 items-center justify-center rounded-lg bg-white/5 border border-white/10 text-white">
                     <item.icon className="h-6 w-6" />
                   </div>
-                  <h3 className="text-xl font-medium text-white tracking-tight">
+                  <h3 className="text-lg sm:text-xl font-medium text-white tracking-tight">
                     {item.title}
                   </h3>
-                  <p className="text-neutral-400 leading-relaxed font-light text-lg">
+                  <p className="text-neutral-400 leading-relaxed font-light text-base sm:text-lg">
                     {item.desc}
                   </p>
                 </div>
@@ -217,10 +219,10 @@ export default function LandingPage({ session }: LandingPageProps) {
       {/* Minimal Flow Section */}
       <section
         id="how-it-works"
-        className="py-32 px-6 border-t border-white/5 relative bg-[#0A0A0A]"
+        className="py-20 sm:py-24 md:py-32 px-6 border-t border-white/5 relative bg-[#0A0A0A]"
       >
         <div className="max-w-4xl mx-auto text-center">
-          <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-8 text-xl md:text-2xl text-neutral-400 font-light">
+          <div className="flex flex-col md:flex-row items-center justify-center gap-3 sm:gap-4 md:gap-8 text-lg sm:text-xl md:text-2xl text-neutral-400 font-light">
             <span className="text-white font-medium">Add a playlist</span>
             <ArrowRight className="h-5 w-5 text-neutral-600 rotate-90 md:rotate-0" />
             <span className="text-white font-medium">Get a course</span>
@@ -231,7 +233,7 @@ export default function LandingPage({ session }: LandingPageProps) {
       </section>
 
       {/* FAQ - Cut Down */}
-      <section className="py-32 px-6 border-t border-white/5 bg-[#0A0A0A]">
+      <section className="py-20 sm:py-24 md:py-32 px-6 border-t border-white/5 bg-[#0A0A0A]">
         <div className="max-w-2xl mx-auto">
           <h2 className="text-2xl font-medium tracking-tight text-white mb-12 text-center">
             Common Questions
