@@ -18,7 +18,7 @@ export default function LoadingScreen({
 }: LoadingScreenProps) {
   const containerVariants = {
     fullscreen:
-      "fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/90 backdrop-blur-sm",
+      "fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-black/90 backdrop-blur-sm",
     contained:
       "w-full h-full min-h-[200px] flex flex-col items-center justify-center bg-neutral-900/50 rounded-lg",
     inline: "flex items-center justify-center py-4",
