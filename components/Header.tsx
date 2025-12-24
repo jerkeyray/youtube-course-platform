@@ -1,6 +1,6 @@
 "use client";
 
-import { useSession, signOut } from "next-auth/react";
+import { signOut } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import Image from "next/image";
@@ -11,10 +11,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { LogOut, User } from "lucide-react";
+import { Session } from "next-auth";
 
-export function Header() {
-  const { data: session, status } = useSession();
-  const isSignedIn = status === "authenticated";
+interface HeaderProps {
+  session: Session | null;
+}
+
+export function Header({ session }: HeaderProps) {
+  const isSignedIn = !!session;
 
   return (
     <header className="flex justify-end items-center p-4 gap-4 h-16 border-b">

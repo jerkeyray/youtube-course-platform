@@ -1,6 +1,6 @@
 "use client";
 
-import { useSession } from "next-auth/react";
+import { Session } from "next-auth";
 import { Card, CardContent } from "@/components/ui/card";
 import { CheckCircle } from "lucide-react";
 import { format } from "date-fns";
@@ -11,11 +11,10 @@ interface CompletedCourseProps {
     title: string;
     completedAt: string;
   };
+  session: Session | null;
 }
 
-export function CompletedCourse({ course }: CompletedCourseProps) {
-  const { data: session } = useSession();
-
+export function CompletedCourse({ course, session }: CompletedCourseProps) {
   if (!session?.user) {
     return null;
   }

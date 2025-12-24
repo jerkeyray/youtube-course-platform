@@ -1,6 +1,6 @@
 "use client";
 
-import { useSession } from "next-auth/react";
+import { Session } from "next-auth";
 import { Flame, Trophy, Calendar, Zap, History } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { format, subDays, differenceInDays } from "date-fns";
@@ -12,11 +12,10 @@ interface StreakDisplayProps {
     date: string;
     completed: boolean;
   }>;
+  session: Session | null;
 }
 
-export function StreakDisplay({ activities }: StreakDisplayProps) {
-  const { data: session } = useSession();
-
+export function StreakDisplay({ activities, session }: StreakDisplayProps) {
   if (!session?.user) {
     return null;
   }

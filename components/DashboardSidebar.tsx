@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { useSession, signOut } from "next-auth/react";
+import { signOut } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 
 import {
@@ -49,13 +49,18 @@ const toolRoutes = [
   },
 ];
 
+import { Session } from "next-auth";
+
 interface DashboardSidebarProps {
   isCollapsed: boolean;
+  session: Session | null;
 }
 
-export function DashboardSidebar({ isCollapsed }: DashboardSidebarProps) {
+export function DashboardSidebar({
+  isCollapsed,
+  session,
+}: DashboardSidebarProps) {
   const pathname = usePathname();
-  const { data: session } = useSession();
 
   const isWhyYudokuActive = pathname === "/home/why-yudoku";
 

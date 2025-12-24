@@ -1,11 +1,13 @@
 import LandingPage from "@/components/LandingPage";
 import { Navbar } from "@/components/Navbar";
+import { auth } from "@/auth";
 
-export default function Home() {
+export default async function Home() {
+  const session = await auth();
   return (
     <div className="light">
-      <Navbar />
-      <LandingPage />
+      <Navbar session={session} />
+      <LandingPage session={session} />
     </div>
   );
 }

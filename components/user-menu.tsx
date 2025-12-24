@@ -1,6 +1,6 @@
 "use client";
 
-import { useSession, signOut } from "next-auth/react";
+import { Session } from "next-auth";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,9 +14,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { User, Settings, LogOut } from "lucide-react";
 import Link from "next/link";
 
-export function UserMenu() {
-  const { data: session } = useSession();
+interface UserMenuProps {
+  session: Session | null;
+}
 
+export function UserMenu({ session }: UserMenuProps) {
   if (!session?.user) {
     return null;
   }

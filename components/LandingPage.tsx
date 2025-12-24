@@ -17,8 +17,8 @@ import {
   ArrowRight,
 } from "lucide-react";
 import Link from "next/link";
-import { useSession } from "next-auth/react";
 import { motion } from "framer-motion";
+import { Session } from "next-auth";
 
 // Reusable FadeIn component for smooth entrances
 function FadeIn({
@@ -124,9 +124,12 @@ function ProductMockup() {
   );
 }
 
-export default function LandingPage() {
-  const { status } = useSession();
-  const getStartedLink = status === "authenticated" ? "/home" : "/sign-in";
+interface LandingPageProps {
+  session: Session | null;
+}
+
+export default function LandingPage({ session }: LandingPageProps) {
+  const getStartedLink = session ? "/home" : "/sign-in";
 
   return (
     <div className="bg-[#0A0A0A] text-white font-sans selection:bg-neutral-700/30">

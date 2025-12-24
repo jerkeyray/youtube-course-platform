@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useSession, signOut } from "next-auth/react";
+import { signOut } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import {
@@ -11,10 +11,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { LogOut, User } from "lucide-react";
+import { Session } from "next-auth";
 
-export function Navbar() {
-  const { data: session, status } = useSession();
-  const isSignedIn = status === "authenticated";
+interface NavbarProps {
+  session: Session | null;
+}
+
+export function Navbar({ session }: NavbarProps) {
+  const isSignedIn = !!session;
 
   return (
     <div className="fixed w-full z-50 border-b border-white/5 bg-[#0A0A0A]/80 backdrop-blur-md">

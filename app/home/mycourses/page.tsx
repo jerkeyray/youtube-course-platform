@@ -116,41 +116,51 @@ export default function MyCoursesPage() {
   return (
     <div className="min-h-screen bg-black text-white">
       <main className="container py-8 px-4 lg:px-6">
-        <div className="mb-8 flex flex-col justify-between gap-4 md:flex-row md:items-center">
-          <div>
-            <h1 className="text-3xl font-bold text-white">My Courses</h1>
-          </div>
+        {sortedCourses.length > 0 && (
+          <div className="mb-8 flex flex-col justify-between gap-4 md:flex-row md:items-center">
+            <div>
+              <h1 className="text-3xl font-bold text-white">My Courses</h1>
+            </div>
 
-          <div className="flex items-center gap-2">
-            <Button
-              className="bg-white text-black hover:bg-neutral-200"
-              asChild
-            >
-              <Link href="/home/courses/create">
-                <PlusCircle className="mr-2 h-5 w-5" />
-                Add Course
-              </Link>
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                className="bg-white text-black hover:bg-neutral-200"
+                asChild
+              >
+                <Link href="/home/courses/create">
+                  <PlusCircle className="mr-2 h-5 w-5" />
+                  Add Course
+                </Link>
+              </Button>
+            </div>
           </div>
-        </div>
+        )}
 
         {sortedCourses.length === 0 ? (
-          <div className="rounded-lg border bg-zinc-900 border-zinc-800 p-8 text-center">
-            <h2 className="mb-2 text-xl font-medium text-white">
-              No courses found
-            </h2>
-            <p className="mb-4 text-gray-400">
-              Create your first course to get started
-            </p>
-            <Button
-              className="bg-white text-black hover:bg-neutral-200"
-              asChild
-            >
-              <Link href="/home/courses/create">
-                <PlusCircle className="mr-2 h-5 w-5" />
-                Create New Course
-              </Link>
-            </Button>
+          <div className="flex min-h-[80vh] flex-col items-center justify-center">
+            <div className="w-full max-w-[360px] space-y-10 -translate-y-[10vh]">
+              <div className="space-y-4">
+                <h2 className="text-[28px] font-medium leading-tight tracking-tight text-white text-center">
+                  Start with one course.
+                </h2>
+                <p className="text-[15px] leading-7 text-zinc-500 text-left">
+                  Yudoku works best when you focus on a single commitment.
+                </p>
+              </div>
+
+              <div className="flex flex-col items-center space-y-8">
+                <Button
+                  className="bg-white text-black hover:bg-neutral-200 px-10 h-10 font-medium w-auto"
+                  asChild
+                >
+                  <Link href="/home/courses/create">Add a playlist</Link>
+                </Button>
+
+                <p className="text-xs text-center text-zinc-500/60 font-medium">
+                  You can add more later. You probably won’t need to.
+                </p>
+              </div>
+            </div>
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
