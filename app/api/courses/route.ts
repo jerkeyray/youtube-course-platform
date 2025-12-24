@@ -2,8 +2,8 @@
 
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { auth } from "@/lib/auth-compat";
-import { prisma } from "@/lib/prisma";
+import { auth } from "@/auth";
+import { db } from "@/lib/db";
 import { extractPlaylistId, fetchPlaylistDetails } from "@/lib/youtube";
 import type { Course, Video, VideoProgress } from "@prisma/client";
 import { z } from "zod";
@@ -22,13 +22,14 @@ type CourseWithVideosAndProgress = Course & {
 };
 
 export async function GET() {
-  const { userId } = await auth();
+  const session = await auth();
+  const userId = session?.user?.id;
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
-    const courses = (await prisma.course.findMany({
+    const courses = (await db.course.findMany({
       where: { userId },
       include: {
         videos: {
@@ -70,7 +71,8 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const { userId } = await auth();
+  const session = await auth();
+  const userId = session?.user?.id;
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -90,7 +92,7 @@ export async function POST(req: NextRequest) {
   try {
     const { title, videos } = await fetchPlaylistDetails(playlistId);
 
-    const course = await prisma.course.create({
+    const course = await db.course.create({
       data: {
         title,
         playlistId,

@@ -1,14 +1,12 @@
 // /app/api/courses/[id]/route.ts
 
 import { NextResponse } from "next/server";
-// import type { NextRequest } from "next/server"; // Keep commented if Request is used
-import { auth } from "@/lib/auth-compat"; // Reverted to original, will fix if it's an issue later
-import { prisma } from "@/lib/prisma";
-// import type { Prisma } from "@prisma/client"; // Keep commented if not used
+import { auth } from "@/auth";
+import { db } from "@/lib/db";
 
 // GET specific course by ID
 export async function GET(
-  req: Request, // Can be NextRequest if specific Next.js functionalities are needed
+  req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
@@ -18,10 +16,10 @@ export async function GET(
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    const course = await prisma.course.findUnique({
+    const course = await db.course.findUnique({
       where: {
         id,
-        userId: session.user.id, // Ensure user owns the course
+        userId: session.user.id,
       },
       include: {
         videos: {
@@ -34,7 +32,6 @@ export async function GET(
             },
           },
         },
-        category: true, // Include category if you have one
       },
     });
 
@@ -62,30 +59,21 @@ export async function PUT(
     }
 
     const body = await req.json();
-    const { title, description, playlistId, categoryId, deadline, isPublic } =
-      body;
+    const { title, playlistId, deadline } = body;
 
-    // Optional: Add validation for the incoming data here
-
-    const course = await prisma.course.updateMany({
+    const course = await db.course.updateMany({
       where: {
         id,
-        userId: session.user.id, // Ensure user owns the course
+        userId: session.user.id,
       },
       data: {
         title,
-        description,
         playlistId,
-        categoryId,
         deadline: deadline ? new Date(deadline) : null,
-        isPublic,
         updatedAt: new Date(),
       },
     });
 
-    // updateMany does not return the updated record directly in the same way as update.
-    // It returns a count. If you need the updated record, you might need to fetch it again
-    // or use prisma.course.update if you are sure about the uniqueness for the user.
     if (course.count === 0) {
       return new NextResponse(
         "Course not found or user not authorized to update",
@@ -93,8 +81,7 @@ export async function PUT(
       );
     }
 
-    // Fetch the updated course to return it
-    const updatedCourse = await prisma.course.findUnique({
+    const updatedCourse = await db.course.findUnique({
       where: { id },
     });
 
@@ -107,12 +94,13 @@ export async function PUT(
 
 // DELETE a specific course by ID
 export async function DELETE(
-  request: Request, // Using generic Request as per original structure
+  request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params;
-    const { userId } = await auth();
+    const session = await auth();
+    const userId = session?.user?.id;
 
     if (!userId) {
       return new NextResponse("Unauthorized", { status: 401 });
@@ -121,7 +109,7 @@ export async function DELETE(
     const courseId = id;
 
     // Verify course ownership
-    const course = await prisma.course.findUnique({
+    const course = await db.course.findUnique({
       where: {
         id: courseId,
         userId,
@@ -135,7 +123,7 @@ export async function DELETE(
     }
 
     // Delete course and all related data in a transaction
-    await prisma.$transaction(async (tx) => {
+    await db.$transaction(async (tx) => {
       // First delete all bookmarks for videos in this course
       await tx.bookmark.deleteMany({
         where: {
@@ -189,14 +177,15 @@ export async function PATCH(
 ) {
   try {
     const { id } = await params;
-    const { userId } = await auth();
+    const session = await auth();
+    const userId = session?.user?.id;
     const body = await request.json();
 
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const course = await prisma.course.update({
+    const course = await db.course.update({
       where: { id, userId },
       data: body,
     });

@@ -1,22 +1,16 @@
 // components/CoursePlayer.tsx
 "use client";
 
-import { useState, useCallback, useEffect, useMemo, useRef } from "react";
+import { useState, useCallback, useEffect, useMemo, useRef, memo } from "react";
 import { Course, Video, VideoProgress } from "@prisma/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import YouTube, { YouTubeProps, YouTubePlayer } from "react-youtube";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { YouTubePlayer } from "react-youtube";
+
 import {
   Check,
   ChevronLeft,
   ChevronRight,
-  Play,
   Bookmark,
   Pencil,
   Save,
@@ -28,6 +22,7 @@ import LoadingScreen from "@/components/LoadingScreen";
 import { Textarea } from "@/components/ui/textarea";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import VideoPlayer from "./VideoPlayer";
 
 type CourseWithProgress = Course & {
   videos: (Video & {
@@ -41,6 +36,33 @@ interface CoursePlayerProps {
   initialVideoIndex?: number;
   initialTimestamp?: number;
 }
+
+// Stable container to prevent re-renders of the video player wrapper
+const StableVideoContainer = memo(
+  ({
+    videoId,
+    startTime,
+    onReady,
+    onProgress,
+  }: {
+    videoId: string;
+    startTime: number;
+    onReady: (player: YouTubePlayer) => void;
+    onProgress: (time: number) => void;
+  }) => {
+    return (
+      <div className="aspect-video w-full overflow-hidden rounded-lg bg-black">
+        <VideoPlayer
+          videoId={videoId}
+          initialTimestamp={startTime}
+          onReady={onReady}
+          onProgress={onProgress}
+        />
+      </div>
+    );
+  },
+  (prev, next) => prev.videoId === next.videoId
+);
 
 // Helper function to clean YouTube titles
 function cleanVideoTitle(
@@ -320,6 +342,21 @@ export default function CoursePlayer({
     return course.videos[currentVideoIndex];
   }, [course.videos, currentVideoIndex]);
 
+  const startTime = useMemo(() => {
+    if (
+      initialTimestamp &&
+      currentVideoIndex === initialVideoIndex &&
+      initialTimestamp > 0
+    ) {
+      return initialTimestamp;
+    }
+    const progress = currentVideo.progress[0];
+    if (progress?.lastWatchedSeconds && progress.lastWatchedSeconds > 0) {
+      return progress.lastWatchedSeconds;
+    }
+    return 0;
+  }, [currentVideo, currentVideoIndex, initialTimestamp, initialVideoIndex]);
+
   const saveProgress = useCallback(
     async (time: number, completed: boolean = false) => {
       if (!currentVideo) return;
@@ -350,80 +387,9 @@ export default function CoursePlayer({
     };
   }, []);
 
-  const onPlayerReady = (event: { target: YouTubePlayer }) => {
+  const onPlayerReady = useCallback((event: { target: YouTubePlayer }) => {
     playerRef.current = event.target;
-
-    // If we have an initial timestamp and this is the first video loaded
-    if (
-      initialTimestamp &&
-      currentVideoIndex === initialVideoIndex &&
-      initialTimestamp > 0
-    ) {
-      event.target.seekTo(initialTimestamp);
-      event.target.playVideo();
-    } else {
-      // Resume from last watched position if available
-      const progress = currentVideo.progress[0];
-      if (progress?.lastWatchedSeconds && progress.lastWatchedSeconds > 0) {
-        event.target.seekTo(progress.lastWatchedSeconds);
-      }
-    }
-  };
-
-  const onPlayerStateChange = (event: {
-    data: number;
-    target: YouTubePlayer;
-  }) => {
-    // 1 = Playing, 2 = Paused
-    if (event.data === 1) {
-      // Start interval to save progress
-      if (progressIntervalRef.current)
-        clearInterval(progressIntervalRef.current);
-      progressIntervalRef.current = setInterval(() => {
-        const currentTime = event.target.getCurrentTime();
-        saveProgress(currentTime);
-      }, 5000);
-    } else {
-      // Clear interval and save immediately
-      if (progressIntervalRef.current) {
-        clearInterval(progressIntervalRef.current);
-        progressIntervalRef.current = null;
-      }
-      // Only save if we have a valid player instance
-      if (event.target && typeof event.target.getCurrentTime === "function") {
-        const currentTime = event.target.getCurrentTime();
-        saveProgress(currentTime);
-      }
-    }
-  };
-
-  // Memoize the player component to prevent unnecessary re-renders
-  const videoPlayer = useMemo(() => {
-    if (!currentVideo) return null;
-
-    const opts: YouTubeProps["opts"] = {
-      height: "100%",
-      width: "100%",
-      playerVars: {
-        autoplay: 0,
-        modestbranding: 1,
-        rel: 0,
-        iv_load_policy: 3, // Hide video annotations
-        fs: 1, // Allow fullscreen
-      },
-    };
-
-    return (
-      <YouTube
-        videoId={currentVideo.videoId}
-        opts={opts}
-        onReady={onPlayerReady}
-        onStateChange={onPlayerStateChange}
-        className="h-full w-full"
-        iframeClassName="h-full w-full rounded-lg"
-      />
-    );
-  }, [currentVideo?.videoId]); // Only depend on video ID
+  }, []);
 
   // Fetch note for current video only when editor is opened
   const { data: note, isLoading: isNoteLoading } = useQuery({
@@ -539,9 +505,13 @@ export default function CoursePlayer({
       </p>
 
       {/* Video Player */}
-      <div className="aspect-video w-full overflow-hidden rounded-lg bg-black">
-        {videoPlayer}
-      </div>
+      <StableVideoContainer
+        key={currentVideo.videoId}
+        videoId={currentVideo.videoId}
+        startTime={startTime}
+        onReady={onPlayerReady}
+        onProgress={saveProgress}
+      />
 
       {/* Video Title Above Buttons */}
       <div className="mt-4 mb-2">
