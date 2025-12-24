@@ -14,7 +14,7 @@ interface SignInButtonProps {
 export function SignInButton({ provider }: SignInButtonProps) {
   return (
     <Button
-      onClick={() => signIn(provider.id, { callbackUrl: "/dashboard" })}
+      onClick={() => signIn(provider.id, { callbackUrl: "/home" })}
       className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-sm normal-case"
     >
       {provider.id === "google" && <FcGoogle className="mr-2 h-5 w-5" />}

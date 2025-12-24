@@ -1,7 +1,6 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import {
   Accordion,
   AccordionContent,
@@ -10,281 +9,268 @@ import {
 } from "@/components/ui/accordion";
 import {
   CheckCircle,
-  PlayCircle,
-  Star,
-  ArrowRight,
-  Zap,
-  Target,
+  Layout,
+  Trophy,
   BookOpen,
-  Copy,
+  Play,
+  Maximize2,
+  ArrowRight,
+  Star,
 } from "lucide-react";
 import Link from "next/link";
-import { useSession } from "next-auth/react";
+import { motion } from "framer-motion";
+import { Session } from "next-auth";
 
-export default function LandingPage() {
-  const { status } = useSession();
-  const getStartedLink = status === "authenticated" ? "/dashboard" : "/sign-in";
-  const buttonText =
-    status === "authenticated" ? "Go to Dashboard" : "Get Started";
-
+// Reusable FadeIn component for smooth entrances
+function FadeIn({
+  children,
+  className,
+  delay = 0,
+}: {
+  children: React.ReactNode;
+  className?: string;
+  delay?: number;
+}) {
   return (
-    <div className="bg-[#0D1117] text-slate-200">
-      {/* Hero Section */}
-      <section className="h-screen pt-16 px-6 text-center flex flex-col justify-center items-center relative overflow-hidden">
-        {/* Background Aurora */}
-        <div className="absolute inset-0 z-0">
-          <div className="absolute top-[-20%] left-[-20%] w-[60%] h-[60%] bg-blue-500/10 rounded-full blur-[150px]"></div>
-          <div className="absolute bottom-[-20%] right-[-20%] w-[50%] h-[50%] bg-purple-500/10 rounded-full blur-[150px]"></div>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-50px" }}
+      transition={{ duration: 0.6, ease: "easeOut", delay }}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+// Product Mockup Component
+function ProductMockup() {
+  return (
+    <div className="relative mx-auto max-w-[1000px] rounded-xl border border-white/10 bg-[#0F1117] shadow-2xl shadow-black/50 overflow-hidden">
+      {/* Fake Browser Chrome */}
+      <div className="flex items-center gap-2 border-b border-white/5 bg-[#0B0D12] px-4 py-3">
+        <div className="flex gap-1.5">
+          <div className="h-3 w-3 rounded-full bg-neutral-700/50" />
+          <div className="h-3 w-3 rounded-full bg-neutral-700/50" />
+          <div className="h-3 w-3 rounded-full bg-neutral-700/50" />
+        </div>
+        <div className="mx-auto flex w-full max-w-[260px] sm:max-w-sm items-center gap-2 rounded-md bg-[#151921] px-3 py-1 text-xs text-neutral-500 font-mono">
+          <span className="text-white">yudoku.app</span>
+          <span className="hidden sm:inline truncate">
+            /home/course/react-mastery
+          </span>
+        </div>
+      </div>
+
+      {/* App Interface */}
+      <div className="flex h-[320px] sm:h-[400px] md:h-[500px]">
+        {/* Sidebar */}
+        <div className="hidden w-64 flex-none border-r border-white/5 bg-[#0D1016] p-4 sm:block">
+          <div className="mb-6 flex items-center gap-2">
+            <div className="h-6 w-6 rounded bg-white/10 text-white flex items-center justify-center">
+              <BookOpen className="h-4 w-4" />
+            </div>
+            <span className="text-sm font-medium text-white">
+              React Mastery
+            </span>
+          </div>
+          <div className="space-y-1">
+            {["Fundamentals", "Advanced Hooks", "State Management"].map(
+              (title, i) => (
+                <div
+                  key={i}
+                  className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm ${
+                    i === 1
+                      ? "bg-white/5 text-white"
+                      : "text-neutral-500 hover:bg-white/5 hover:text-neutral-300"
+                  }`}
+                >
+                  {i === 0 ? (
+                    <CheckCircle className="h-4 w-4 text-neutral-500" />
+                  ) : (
+                    <div className="h-4 w-4 rounded-full border border-neutral-700 opacity-40" />
+                  )}
+                  <span className="truncate">
+                    Chapter {i + 1}: {title}
+                  </span>
+                </div>
+              )
+            )}
+          </div>
         </div>
 
-        <div className="max-w-5xl mx-auto space-y-8 relative z-10">
-          <h1 className="text-6xl md:text-8xl font-bold leading-[1.05] tracking-tight bg-gradient-to-br from-white via-slate-300 to-slate-400 bg-clip-text text-transparent">
-            The YouTube Course
-            <br />
-            <span className="bg-gradient-to-r from-blue-400 to-blue-500 bg-clip-text text-transparent">
-              Experience Platform
-            </span>
-          </h1>
+        {/* Main Content */}
+        <div className="flex-1 flex flex-col bg-[#0B0D12]">
+          {/* Video Player Placeholder */}
+          <div className="aspect-video w-full bg-black relative flex items-center justify-center group">
+            {/* Removed gradient overlay for cleaner look */}
+            <div className="h-16 w-16 rounded-full bg-white/5 backdrop-blur-sm flex items-center justify-center border border-white/10 shadow-xl group-hover:scale-105 transition-transform">
+              <Play className="h-6 w-6 text-white ml-1" fill="currentColor" />
+            </div>
 
-          <p className="text-xl md:text-2xl text-slate-400 max-w-3xl mx-auto leading-relaxed">
-            Transform any YouTube playlist into a structured, focused learning
-            experience.
-            <span className="font-semibold text-blue-400"> yudoku</span> removes
-            distractions and keeps you focused on what matters.
-          </p>
-
-          <div className="pt-8 flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Button
-              size="lg"
-              className="text-lg px-10 py-6 bg-blue-600 hover:bg-blue-700 text-white rounded-lg group transition-all duration-300 shadow-lg shadow-blue-900/50 hover:shadow-xl hover:shadow-blue-800/50 transform hover:scale-105"
-              asChild
-            >
-              <Link href={getStartedLink} className="flex items-center gap-2">
-                {buttonText}
-              </Link>
-            </Button>
+            {/* Player Controls */}
+            <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4 flex items-center gap-3 sm:gap-4 text-white/70">
+              <Play className="h-4 w-4" fill="currentColor" />
+              <div className="h-1 flex-1 bg-white/20 rounded-full overflow-hidden">
+                <div className="h-full w-1/3 bg-white" />
+              </div>
+              <span className="hidden sm:inline text-xs font-mono text-neutral-400">
+                14:20 / 45:00
+              </span>
+              <Maximize2 className="hidden sm:inline h-4 w-4" />
+            </div>
           </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+interface LandingPageProps {
+  session: Session | null;
+}
+
+export default function LandingPage({ session }: LandingPageProps) {
+  const getStartedLink = session ? "/home" : "/sign-in";
+
+  return (
+    <div className="bg-[#0A0A0A] text-white font-sans selection:bg-neutral-700/30">
+      {/* Background Noise Texture (Matched to Sign In) */}
+      <div className="fixed inset-0 z-0 opacity-[0.015] pointer-events-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')] brightness-100 contrast-150"></div>
+
+      {/* Hero Section */}
+      <section className="relative md:min-h-screen flex flex-col items-center justify-start pt-24 pb-12 px-6 overflow-hidden sm:pt-28 md:pt-48">
+        <div className="max-w-7xl mx-auto relative z-10 w-full">
+          <div className="text-center max-w-3xl mx-auto mb-0 sm:mb-16 md:mb-20">
+            <FadeIn>
+              <h1 className="text-4xl sm:text-5xl md:text-7xl font-medium tracking-tighter text-white mb-6 sm:mb-8 leading-[0.95]">
+                Escape the algorithm. <br />
+                Finish the course.
+              </h1>
+              <p className="text-lg sm:text-xl md:text-2xl text-neutral-400 font-light max-w-xl mx-auto leading-relaxed mb-10 sm:mb-12">
+                YouTube is built to keep you watching.
+                <br />
+                Yudoku is built to help you finish.
+              </p>
+
+              <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center items-center">
+                <Button
+                  size="lg"
+                  className="h-12 w-full max-w-xs sm:w-auto sm:max-w-none px-8 text-base bg-white text-black hover:bg-neutral-200 rounded-md font-medium transition-colors"
+                  asChild
+                >
+                  <Link href={getStartedLink}>Continue learning</Link>
+                </Button>
+              </div>
+            </FadeIn>
+          </div>
+
+          <FadeIn delay={0.2} className="relative hidden md:block">
+            <div className="text-center mb-6">
+              <p className="text-xs font-medium text-neutral-500 uppercase tracking-widest">
+                What learning looks like without the algorithm
+              </p>
+            </div>
+            <ProductMockup />
+          </FadeIn>
         </div>
       </section>
 
-      {/* Features Section */}
-      <section
-        id="features"
-        className="py-32 px-6 sm:px-8 lg:px-12 relative bg-[#10141B]"
-      >
-        <div className="max-w-7xl mx-auto relative z-10">
-          <div className="text-center mb-20 px-4 sm:px-0">
-            <div className="inline-flex items-center px-4 py-2 bg-blue-950/50 text-blue-400 rounded-full text-sm font-medium mb-6 border border-blue-900">
-              <Star className="w-4 h-4 mr-2" />
-              Powerful Features
-            </div>
-            <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-8 tracking-tight bg-gradient-to-b from-slate-100 to-slate-400 bg-clip-text text-transparent leading-[1.2] py-2">
-              Everything you need to learn effectively
-            </h2>
-            <p className="text-xl text-slate-400 max-w-3xl mx-auto leading-relaxed">
-              Simple yet powerful tools designed to transform your learning
-              experience and help you achieve your goals faster.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8">
+      {/* Features Section - Reduced to 3 Outcome Points */}
+      <section className="py-20 sm:py-24 md:py-32 px-6 border-t border-white/5 bg-[#0A0A0A] relative">
+        <div className="max-w-6xl mx-auto relative z-10">
+          <div className="grid md:grid-cols-3 gap-10 sm:gap-12 md:gap-16 text-center md:text-left">
             {[
               {
-                icon: PlayCircle,
-                title: "Distraction-Free Player",
-                description:
-                  "Watch videos in a clean, focused environment without YouTube's distracting sidebar, comments, or recommendations.",
+                icon: Layout,
+                title: "Distraction-free by default",
+                desc: "No recommendations. No comments. No noise.",
               },
               {
-                icon: Target,
-                title: "Smart Progress Tracking",
-                description:
-                  "Visualize your learning journey with beautiful progress indicators, completion rates, and learning streaks.",
+                icon: Trophy,
+                title: "Progress is explicit",
+                desc: "You always know what's done and what isn't.",
               },
               {
                 icon: BookOpen,
-                title: "Structured Courses",
-                description:
-                  "Transform any playlist into an organized learning path with clear objectives and milestone tracking.",
+                title: "Structure from chaos",
+                desc: "Any playlist becomes a clear, finite course.",
               },
-            ].map((feature, index) => (
-              <Card
-                key={index}
-                className="bg-slate-900/50 border border-slate-800 hover:border-blue-700/80 hover:bg-slate-900 transition-all duration-300 transform hover:-translate-y-2 group"
-              >
-                <CardContent className="p-10 text-center">
-                  <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-blue-800 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg shadow-blue-950">
-                    <feature.icon className="h-8 w-8 text-white" />
+            ].map((item, i) => (
+              <FadeIn key={i} delay={i * 0.1}>
+                <div className="space-y-4">
+                  <div className="inline-flex h-12 w-12 items-center justify-center rounded-lg bg-white/5 border border-white/10 text-white">
+                    <item.icon className="h-6 w-6" />
                   </div>
-                  <h3 className="text-2xl font-bold mb-4 text-slate-100">
-                    {feature.title}
+                  <h3 className="text-lg sm:text-xl font-medium text-white tracking-tight">
+                    {item.title}
                   </h3>
-                  <p className="text-slate-400 leading-relaxed text-lg">
-                    {feature.description}
+                  <p className="text-neutral-400 leading-relaxed font-light text-base sm:text-lg">
+                    {item.desc}
                   </p>
-                </CardContent>
-              </Card>
+                </div>
+              </FadeIn>
             ))}
           </div>
         </div>
       </section>
 
-      {/* How it works */}
-      <section className="py-32 px-6 bg-[#0D1117] text-white relative overflow-hidden">
-        <div className="absolute inset-0 z-0 opacity-50">
-          <div className="absolute top-[10%] left-[-10%] w-[40%] h-[40%] bg-blue-500/20 rounded-full blur-[120px]"></div>
-          <div className="absolute bottom-[10%] right-[-10%] w-[40%] h-[40%] bg-purple-500/20 rounded-full blur-[120px]"></div>
-        </div>
-
-        <div className="max-w-5xl mx-auto relative z-10">
-          <div className="text-center mb-20">
-            <h2 className="text-5xl md:text-6xl font-bold mb-6 tracking-tight bg-gradient-to-b from-slate-100 to-slate-400 bg-clip-text text-transparent">
-              Get started in minutes
-            </h2>
-            <p className="text-xl text-slate-400 max-w-2xl mx-auto leading-relaxed">
-              From YouTube playlist to structured course in just a few simple
-              steps.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-16 items-center">
-            <div className="space-y-8">
-              {[
-                {
-                  step: "01",
-                  title: "Sign up instantly",
-                  description:
-                    "Create your account with Google or email in under 30 seconds.",
-                },
-                {
-                  step: "02",
-                  title: "Add any playlist",
-                  description:
-                    "Paste any YouTube playlist URL and we'll structure it into a course.",
-                },
-                {
-                  step: "03",
-                  title: "Learn distraction-free",
-                  description:
-                    "Watch videos in our clean interface designed for deep learning.",
-                },
-                {
-                  step: "04",
-                  title: "Track your progress",
-                  description:
-                    "Monitor your learning journey and celebrate your achievements.",
-                },
-              ].map((item) => (
-                <div key={item.step} className="flex items-start gap-6 group">
-                  <div className="flex-shrink-0 w-14 h-14 bg-slate-900 border border-slate-800 rounded-xl flex items-center justify-center font-bold text-2xl text-blue-500 shadow-md group-hover:border-blue-600 transition-colors duration-300">
-                    {item.step}
-                  </div>
-                  <div className="pt-1">
-                    <h3 className="text-2xl font-bold mb-2 text-slate-100">
-                      {item.title}
-                    </h3>
-                    <p className="text-slate-400 text-lg leading-relaxed">
-                      {item.description}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div className="relative p-8 bg-slate-900/50 border border-slate-800 rounded-2xl shadow-2xl shadow-slate-950">
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
-                <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-              </div>
-              <div className="bg-slate-950 p-4 rounded-lg">
-                <p className="text-slate-500 font-mono text-sm flex items-center">
-                  <span className="text-blue-500 mr-2">&gt;</span> Add Course
-                </p>
-                <div className="flex items-center gap-2 p-2 mt-2 bg-slate-800/80 rounded">
-                  <span className="text-slate-400 font-mono">
-                    youtube.com/playlist...
-                  </span>
-                  <Copy className="w-4 h-4 text-slate-500 ml-auto cursor-pointer hover:text-white" />
-                </div>
-              </div>
-              <div className="mt-6 space-y-3">
-                <div className="h-4 bg-blue-500/20 rounded-full w-3/4 animate-pulse"></div>
-                <div className="h-4 bg-slate-700/50 rounded-full"></div>
-                <div className="h-4 bg-slate-700/50 rounded-full w-5/6"></div>
-              </div>
-            </div>
+      {/* Minimal Flow Section */}
+      <section
+        id="how-it-works"
+        className="py-20 sm:py-24 md:py-32 px-6 border-t border-white/5 relative bg-[#0A0A0A]"
+      >
+        <div className="max-w-4xl mx-auto text-center">
+          <div className="flex flex-col md:flex-row items-center justify-center gap-3 sm:gap-4 md:gap-8 text-lg sm:text-xl md:text-2xl text-neutral-400 font-light">
+            <span className="text-white font-medium">Add a playlist</span>
+            <ArrowRight className="h-5 w-5 text-neutral-600 rotate-90 md:rotate-0" />
+            <span className="text-white font-medium">Get a course</span>
+            <ArrowRight className="h-5 w-5 text-neutral-600 rotate-90 md:rotate-0" />
+            <span className="text-white font-medium">Finish it</span>
           </div>
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-32 px-6 bg-blue-950/30 text-white relative overflow-hidden">
-        <div className="absolute inset-0 z-0 flex items-center justify-center">
-          <div className="w-[60%] h-[60%] bg-blue-600/30 rounded-full blur-[180px] animate-pulse"></div>
-        </div>
-        <div className="max-w-4xl mx-auto text-center relative z-10">
-          <h2 className="text-5xl md:text-7xl font-bold mb-8 tracking-tight bg-gradient-to-b from-white to-slate-300 bg-clip-text text-transparent">
-            Ready to transform your learning?
+      {/* FAQ - Cut Down */}
+      <section className="py-20 sm:py-24 md:py-32 px-6 border-t border-white/5 bg-[#0A0A0A]">
+        <div className="max-w-2xl mx-auto">
+          <h2 className="text-2xl font-medium tracking-tight text-white mb-12 text-center">
+            Common Questions
           </h2>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Button
-              size="lg"
-              className="text-lg px-10 py-6 bg-blue-600 hover:bg-blue-700 text-white rounded-lg group transition-all duration-300 shadow-lg shadow-blue-900/50 hover:shadow-xl hover:shadow-blue-800/50 transform hover:scale-105 font-bold"
-              asChild
-            >
-              <Link href={getStartedLink} className="flex items-center gap-2">
-                {status === "authenticated"
-                  ? "Go to Dashboard"
-                  : "Start Your Journey"}
-              </Link>
-            </Button>
-          </div>
-
-        </div>
-      </section>
-
-      {/* FAQ Section */}
-      <section className="py-32 px-6 bg-[#10141B]">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-20">
-            <h2 className="text-5xl md:text-6xl font-bold mb-6 tracking-tight bg-gradient-to-b from-slate-100 to-slate-400 bg-clip-text text-transparent">
-              Frequently asked questions
-            </h2>
-          </div>
-
-          <Accordion type="single" collapsible className="w-full space-y-4">
+          <Accordion
+            type="single"
+            collapsible
+            className="w-full space-y-0 border-t border-white/5"
+          >
             {[
               {
-                question: "Why use Yudoku instead of YouTube?",
-                answer:
-                  "Yudoku transforms YouTube into a focused learning platform by organizing educational content into a structured, distraction-free experience. It helps you track progress and stay on track with deadlines.",
+                q: "Why not just use YouTube?",
+                a: "Because YouTube is optimized to keep you watching, not to help you finish. The recommendations, comments, and autoplay aren’t bugs — they’re the product. Yudoku removes those incentives so finishing is the default outcome, not a fight.",
               },
               {
-                question: "How does Yudoku help me track my learning?",
-                answer:
-                  "Yudoku monitors your completion rates and learning streaks, keeping you motivated and aligned with your educational goals.",
+                q: "Is this trying to replace YouTube?",
+                a: "No. Yudoku uses YouTube as a video source. What it replaces is the environment around the video — the algorithm, the noise, and the endless next option.",
               },
               {
-                question: "What content works best with Yudoku?",
-                answer:
-                  "Yudoku is designed for public YouTube playlists, particularly educational ones like tutorials, courses, skill-building videos, and documentaries, creating a seamless learning path.",
+                q: "What makes Yudoku different from other course platforms?",
+                a: "Most platforms optimize for engagement and content discovery. Yudoku optimizes for completion. You commit to one course, see clear progress, and reach an actual finish line.",
               },
               {
-                question: "How does Yudoku reduce distractions?",
-                answer:
-                  "Yudoku offers a clean viewing experience by removing YouTube’s sidebar, recommended videos, and comments, keeping your focus on the content that matters.",
+                q: "Is this free?",
+                a: "Yes. Yudoku is free to use. If it helps you finish something you wouldn’t have otherwise, you can support it — but finishing comes first.",
               },
-            ].map((faq, index) => (
+            ].map((item, i) => (
               <AccordionItem
-                key={index}
-                value={`item-${index + 1}`}
-                className="border border-slate-800 rounded-xl bg-slate-900/50 transition-colors hover:border-slate-700"
+                key={i}
+                value={`item-${i}`}
+                className="border-b border-white/5"
               >
-                <AccordionTrigger className="text-xl font-bold text-slate-200 hover:no-underline p-8 text-left">
-                  {faq.question}
+                <AccordionTrigger className="text-neutral-200 hover:text-white hover:no-underline py-5 text-base font-medium">
+                  {item.q}
                 </AccordionTrigger>
-                <AccordionContent className="text-slate-400 px-8 pb-8 text-lg leading-relaxed">
-                  {faq.answer}
+                <AccordionContent className="text-neutral-400 pb-5 font-light leading-relaxed">
+                  {item.a}
                 </AccordionContent>
               </AccordionItem>
             ))}
@@ -292,19 +278,72 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t border-slate-800 py-16 px-6 bg-[#0D1117]">
-        <div className="max-w-6xl mx-auto text-center">
-          <div className="mb-8">
-            <h3 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-blue-500 bg-clip-text text-transparent mb-2">
-              yudoku
-            </h3>
-            <p className="text-slate-500">
-              The YouTube Course Experience Platform
-            </p>
+      {/* Simple Footer */}
+      <footer className="py-16 px-6 border-t border-white/5 text-center bg-[#0A0A0A]">
+        <div className="space-y-4">
+          <p className="text-neutral-400 text-sm">
+            Yudoku is built for people who want to finish what they start.
+          </p>
+
+          <p className="text-neutral-600 text-xs">
+            No feeds. No recommendations. No noise.
+          </p>
+
+          <div className="pt-4 flex flex-wrap items-center justify-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              asChild
+              className="h-auto px-2 py-1 text-xs text-neutral-500 hover:text-white"
+            >
+              <Link href="/home/why-yudoku">Why Yudoku</Link>
+            </Button>
+
+            <Button
+              variant="ghost"
+              size="sm"
+              asChild
+              className="h-auto px-2 py-1 text-xs text-neutral-500 hover:text-white"
+            >
+              <Link href="https://buymeacoffee.com/jerkeyray" target="_blank">
+                Support the project
+              </Link>
+            </Button>
+
+            <Button
+              variant="ghost"
+              size="sm"
+              asChild
+              className="h-auto px-2 py-1 text-xs text-neutral-500 hover:text-white"
+            >
+              <Link
+                href={
+                  process.env.NEXT_PUBLIC_GITHUB_REPO_URL ||
+                  "https://github.com/jerkeyray/youtube-course-platform"
+                }
+                target="_blank"
+              >
+                <span className="inline-flex items-center gap-1.5">
+                  <Star className="h-3.5 w-3.5" aria-hidden="true" />
+                  Star on GitHub
+                </span>
+              </Link>
+            </Button>
+
+            <Button
+              variant="ghost"
+              size="sm"
+              asChild
+              className="h-auto px-2 py-1 text-xs text-neutral-500 hover:text-white"
+            >
+              <Link href="https://jerkeyray.com" target="_blank">
+                Built by Aditya Srivastava
+              </Link>
+            </Button>
           </div>
-          <p className="text-slate-600">
-            © {new Date().getFullYear()} yudoku. jerkeyray corp.
+
+          <p className="pt-6 text-neutral-700 text-xs">
+            © {new Date().getFullYear()} yudoku
           </p>
         </div>
       </footer>

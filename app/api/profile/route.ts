@@ -130,6 +130,52 @@ export async function GET() {
     const coursesCompleted = updatedUser.certificates.length;
     const totalWatchTime = calculateTotalWatchTime(updatedUser.videoProgress);
 
+    // Get active course (most recently accessed)
+    const recentProgress = await prisma.videoProgress.findFirst({
+      where: { userId: session.user.id },
+      orderBy: { updatedAt: "desc" },
+      include: {
+        video: {
+          include: {
+            course: {
+              include: {
+                videos: {
+                  include: {
+                    progress: {
+                      where: { userId: session.user.id },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    let activeCourse = null;
+    let lastStudied = null;
+
+    if (recentProgress) {
+      lastStudied = recentProgress.updatedAt.toISOString();
+      const course = recentProgress.video.course;
+      const totalVideos = course.videos.length;
+      const completedVideos = course.videos.filter((v) =>
+        v.progress.some((p) => p.completed)
+      ).length;
+      const progressPercentage =
+        totalVideos > 0 ? Math.round((completedVideos / totalVideos) * 100) : 0;
+
+      activeCourse = {
+        id: course.id,
+        title: course.title,
+        progress: progressPercentage,
+        totalVideos,
+        completedVideos,
+        lastWatched: recentProgress.updatedAt.toISOString(),
+      };
+    }
+
     // Get completed courses from certificates with additional data
     const completedCourses = await Promise.all(
       updatedUser.certificates.map(async (certificate) => {
@@ -184,8 +230,16 @@ export async function GET() {
         longestStreak,
         coursesCompleted,
         totalWatchTime,
+        lastStudied,
       },
+      activeCourse,
       completedCourses,
+      activities: user.activities.map((a) => ({
+        ...a,
+        date: a.date, // Ensure date is string
+        createdAt: a.createdAt.toISOString(),
+        updatedAt: a.updatedAt.toISOString(),
+      })),
     });
   } catch (error) {
     console.error("Error fetching profile data:", error);

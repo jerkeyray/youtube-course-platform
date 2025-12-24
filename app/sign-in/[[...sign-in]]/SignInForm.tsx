@@ -2,31 +2,20 @@
 
 import { signIn } from "next-auth/react";
 import { Button } from "@/components/ui/button";
-import { FcGoogle } from "react-icons/fc"; // Google icon
+import { FcGoogle } from "react-icons/fc";
 
 export default function SignInForm() {
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <Button
-        variant="outline"
+        variant="ghost"
         type="button"
-        onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
-        className="w-full flex items-center justify-center gap-3 h-12 text-sm font-medium border border-slate-700 bg-slate-900/50 text-slate-300 hover:border-blue-600 hover:bg-slate-800 hover:text-white transition-all duration-200 rounded-lg shadow-lg hover:shadow-xl"
+        onClick={() => signIn("google", { callbackUrl: "/home" })}
+        className="w-full h-12 bg-white text-black hover:bg-neutral-200 hover:text-black transition-colors rounded-md font-medium text-sm flex items-center justify-center gap-2.5"
       >
         <FcGoogle className="h-5 w-5" />
-        Continue with Google
+        <span>Continue with Google</span>
       </Button>
-
-      <div className="relative">
-        <div className="absolute inset-0 flex items-center">
-          <span className="w-full border-t border-slate-700" />
-        </div>
-        <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-[#0D1117] px-2 text-slate-500">
-            Secure authentication
-          </span>
-        </div>
-      </div>
     </div>
   );
 }

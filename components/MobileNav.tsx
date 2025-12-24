@@ -11,8 +11,13 @@ import {
 import { Button } from "@/components/ui/button";
 import { Menu } from "lucide-react";
 import { DashboardSidebar } from "./DashboardSidebar";
+import { Session } from "next-auth";
 
-export function MobileNav() {
+interface MobileNavProps {
+  session: Session | null;
+}
+
+export function MobileNav({ session }: MobileNavProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -36,7 +41,7 @@ export function MobileNav() {
           </SheetTitle>
         </SheetHeader>
         <div className="text-white">
-          <DashboardSidebar isCollapsed={false} />
+          <DashboardSidebar isCollapsed={false} session={session} />
         </div>
       </SheetContent>
     </Sheet>

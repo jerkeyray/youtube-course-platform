@@ -1,16 +1,18 @@
 "use client";
 
-import { useSession } from "next-auth/react";
+import { Session } from "next-auth";
 import Image from "next/image";
 import { format } from "date-fns";
 
 interface UserProfileDetailsProps {
   createdAt: string;
+  session: Session | null;
 }
 
-export function UserProfileDetails({ createdAt }: UserProfileDetailsProps) {
-  const { data: session } = useSession();
-
+export function UserProfileDetails({
+  createdAt,
+  session,
+}: UserProfileDetailsProps) {
   if (!session?.user) {
     return null;
   }
@@ -24,6 +26,7 @@ export function UserProfileDetails({ createdAt }: UserProfileDetailsProps) {
             alt={session.user.name || "Profile"}
             fill
             className="object-cover"
+            unoptimized
           />
         </div>
       ) : (

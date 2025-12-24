@@ -1,6 +1,6 @@
 "use client";
 
-import { useSession, signOut } from "next-auth/react";
+import { signOut } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import Image from "next/image";
@@ -11,10 +11,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { LogOut, User } from "lucide-react";
+import { Session } from "next-auth";
 
-export function Header() {
-  const { data: session, status } = useSession();
-  const isSignedIn = status === "authenticated";
+interface HeaderProps {
+  session: Session | null;
+}
+
+export function Header({ session }: HeaderProps) {
+  const isSignedIn = !!session;
 
   return (
     <header className="flex justify-end items-center p-4 gap-4 h-16 border-b">
@@ -37,6 +41,7 @@ export function Header() {
                   alt={session.user.name || "Profile"}
                   fill
                   className="object-cover rounded-full"
+                  unoptimized
                 />
               ) : (
                 <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-bold">
@@ -47,7 +52,7 @@ export function Header() {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem asChild>
-              <Link href="/dashboard/profile" className="flex items-center">
+              <Link href="/home/profile" className="flex items-center">
                 <User className="mr-2 h-4 w-4" />
                 Profile
               </Link>

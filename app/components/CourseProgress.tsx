@@ -1,19 +1,20 @@
 "use client";
 
-import { useSession } from "next-auth/react";
+import { Session } from "next-auth";
 import { Progress } from "@/components/ui/progress";
 import { Card, CardContent } from "@/components/ui/card";
 
 interface CourseProgressProps {
   totalVideos: number;
   completedVideos: number;
+  session: Session | null;
 }
 
 export function CourseProgress({
   totalVideos,
   completedVideos,
+  session,
 }: CourseProgressProps) {
-  const { data: session } = useSession();
   const progress = totalVideos > 0 ? (completedVideos / totalVideos) * 100 : 0;
 
   if (!session?.user) {

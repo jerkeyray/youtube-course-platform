@@ -7,20 +7,13 @@ export default auth((req) => {
     req.nextUrl.pathname.startsWith("/sign-in") ||
     req.nextUrl.pathname.startsWith("/auth");
 
-  // If user is authenticated and trying to access auth pages, redirect to dashboard
+  // If user is authenticated and trying to access auth pages, redirect to home
   if (isAuthenticated && isAuthPage) {
-    return NextResponse.redirect(new URL("/dashboard", req.nextUrl));
+    return NextResponse.redirect(new URL("/home", req.nextUrl));
   }
 
-  // Public routes that don't require authentication
-  const isPublicRoute =
-    req.nextUrl.pathname === "/" ||
-    req.nextUrl.pathname.startsWith("/api/auth") ||
-    req.nextUrl.pathname.startsWith("/_next") ||
-    req.nextUrl.pathname.includes("/favicon.ico");
-
   // Protected routes that require authentication
-  const isProtectedRoute = req.nextUrl.pathname.startsWith("/dashboard");
+  const isProtectedRoute = req.nextUrl.pathname.startsWith("/home");
 
   // If user is not authenticated and trying to access protected routes, redirect to sign-in
   if (!isAuthenticated && isProtectedRoute) {
@@ -35,7 +28,11 @@ export default auth((req) => {
 // Match routes for auth middleware
 export const config = {
   matcher: [
-    // Match all paths except static files and API routes
-    "/((?!_next/static|_next/image|favicon.ico).*)",
+    // Only run auth middleware where it's needed:
+    // - protect /home
+    // - redirect logged-in users away from /sign-in and /auth
+    "/home/:path*",
+    "/sign-in/:path*",
+    "/auth/:path*",
   ],
 };

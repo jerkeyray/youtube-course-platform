@@ -4,22 +4,20 @@ import { prisma } from "@/lib/prisma";
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await auth();
     if (!session?.user?.id) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    const youtubeId = params.id;
-
-    // Find the video record in your database using the YouTube video ID
-    const videoRecord = await prisma.video.findFirst({
-      where: {
-        videoId: youtubeId,
-      },
-    });
+    // Prefer treating `id` as the internal Video.id to avoid collisions.
+    // Fallback to legacy behavior where `id` is the YouTube video id.
+    const videoRecord =
+      (await prisma.video.findUnique({ where: { id } })) ??
+      (await prisma.video.findFirst({ where: { videoId: id } }));
 
     if (!videoRecord) {
       return new NextResponse("Video not found in database", { status: 404 });
@@ -47,7 +45,7 @@ export async function DELETE(
     });
 
     return NextResponse.json({ message: "Bookmark deleted" }, { status: 200 });
-  } catch (_error) {
+  } catch {
     // console.error("Error deleting bookmark:", _error);
     return NextResponse.json(
       { error: "Failed to delete bookmark" },
