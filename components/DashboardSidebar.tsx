@@ -14,7 +14,14 @@ import {
 } from "@/components/ui/dropdown-menu";
 import Image from "next/image";
 
-import { BookOpen, Bookmark, User, LogOut, Home } from "lucide-react";
+import {
+  BookOpen,
+  Bookmark,
+  User,
+  LogOut,
+  Home,
+  HelpCircle,
+} from "lucide-react";
 
 const learningRoutes = [
   {
@@ -49,6 +56,8 @@ interface DashboardSidebarProps {
 export function DashboardSidebar({ isCollapsed }: DashboardSidebarProps) {
   const pathname = usePathname();
   const { data: session } = useSession();
+
+  const isWhyYudokuActive = pathname === "/home/why-yudoku";
 
   return (
     <div className="flex flex-col h-full justify-between py-6">
@@ -144,6 +153,36 @@ export function DashboardSidebar({ isCollapsed }: DashboardSidebarProps) {
 
       {/* Bottom Section - Profile */}
       <div className="px-3 pt-2">
+        <Link
+          href="/home/why-yudoku"
+          prefetch={true}
+          className={cn(
+            "mb-2 flex items-center gap-x-3 text-sm px-3 py-2.5 transition-colors duration-150 relative group",
+            isWhyYudokuActive
+              ? "text-white font-medium"
+              : "text-neutral-400 hover:text-neutral-300 font-normal",
+            isCollapsed ? "justify-center px-2" : ""
+          )}
+        >
+          <div
+            className={cn(
+              "absolute inset-0 rounded-md transition-colors",
+              isWhyYudokuActive
+                ? "bg-white/8"
+                : "bg-transparent group-hover:bg-white/5"
+            )}
+          />
+          <HelpCircle
+            className={cn(
+              "h-4 w-4 relative z-10 transition-opacity",
+              isWhyYudokuActive
+                ? "text-white opacity-100"
+                : "text-neutral-400 group-hover:text-neutral-300 group-hover:opacity-100 opacity-90"
+            )}
+          />
+          {!isCollapsed && <span className="relative z-10">Why Yudoku</span>}
+        </Link>
+
         {/* Profile Section with Dropdown */}
         {session?.user && (
           <DropdownMenu>
