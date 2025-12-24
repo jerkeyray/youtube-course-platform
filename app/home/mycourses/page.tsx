@@ -75,7 +75,7 @@ export default function MyCoursesPage() {
                 className="bg-white text-black hover:bg-neutral-200"
                 asChild
               >
-                <Link href="/dashboard/courses/create">
+                <Link href="/home/courses/create">
                   <PlusCircle className="mr-2 h-5 w-5" />
                   Add Course
                 </Link>
@@ -85,25 +85,27 @@ export default function MyCoursesPage() {
 
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
             {[...Array(6)].map((_, i) => (
-              <Card
+              <div
                 key={i}
-                className="bg-zinc-900 border-zinc-800 overflow-hidden"
+                className="bg-[#0D1016] rounded-xl border border-white/10 p-6 space-y-6"
               >
-                <CardContent className="p-6">
-                  <div className="space-y-4">
-                    <Skeleton className="h-4 w-3/4" />
-                    <Skeleton className="h-3 w-1/2" />
-                    <div className="space-y-2">
-                      <Skeleton className="h-2 w-full" />
-                      <Skeleton className="h-2 w-4/5" />
-                    </div>
-                    <div className="flex items-center justify-between pt-2">
-                      <Skeleton className="h-3 w-16" />
-                      <Skeleton className="h-6 w-20" />
-                    </div>
+                <div className="flex items-center justify-between">
+                  <Skeleton className="h-7 w-3/4 bg-zinc-800" />
+                  <Skeleton className="h-8 w-8 rounded-md bg-zinc-800" />
+                </div>
+
+                <Skeleton className="h-4 w-20 bg-zinc-800" />
+
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <Skeleton className="h-3 w-16 bg-zinc-800" />
+                    <Skeleton className="h-3 w-10 bg-zinc-800" />
                   </div>
-                </CardContent>
-              </Card>
+                  <Skeleton className="h-1.5 w-full bg-zinc-800 rounded-full" />
+                </div>
+
+                <Skeleton className="h-10 w-full bg-zinc-800 rounded-md" />
+              </div>
             ))}
           </div>
         </main>

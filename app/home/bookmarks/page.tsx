@@ -4,7 +4,7 @@ import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import VideoCard from "@/components/VideoCard";
-import LoadingScreen from "@/components/LoadingScreen";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Bookmark } from "lucide-react";
 
 interface Video {
@@ -59,7 +59,70 @@ export default function BookmarksPage() {
   }
 
   if (isLoading) {
-    return <LoadingScreen />;
+    return (
+      <div className="min-h-screen bg-black text-white">
+        <div className="p-8 md:p-12">
+          <div className="max-w-6xl">
+            <div className="mb-16">
+              <Skeleton className="h-7 w-32 bg-zinc-900" />
+            </div>
+
+            <div className="space-y-16">
+              <section>
+                <div className="mb-6 flex items-center gap-2">
+                  <Skeleton className="w-1.5 h-1.5 rounded-full bg-zinc-800" />
+                  <Skeleton className="h-4 w-32 bg-zinc-800" />
+                </div>
+                <div className="max-w-md">
+                  <div className="rounded-lg border border-zinc-800 bg-zinc-900/50 overflow-hidden">
+                    <Skeleton className="aspect-[16/9] w-full bg-zinc-800" />
+                    <div className="p-3 space-y-3">
+                      <div className="space-y-2">
+                        <Skeleton className="h-4 w-full bg-zinc-800" />
+                        <Skeleton className="h-4 w-2/3 bg-zinc-800" />
+                      </div>
+                      <Skeleton className="h-3 w-1/3 bg-zinc-800" />
+                      <div className="flex gap-2 pt-2">
+                        <Skeleton className="h-8 flex-1 bg-zinc-800" />
+                        <Skeleton className="h-8 w-8 bg-zinc-800" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <section>
+                <div className="mb-6 flex items-center gap-2">
+                  <Skeleton className="w-1.5 h-1.5 rounded-full bg-zinc-800" />
+                  <Skeleton className="h-4 w-24 bg-zinc-800" />
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {[...Array(3)].map((_, i) => (
+                    <div
+                      key={i}
+                      className="rounded-lg border border-zinc-800 bg-zinc-900/50 overflow-hidden"
+                    >
+                      <Skeleton className="aspect-[16/9] w-full bg-zinc-800" />
+                      <div className="p-3 space-y-3">
+                        <div className="space-y-2">
+                          <Skeleton className="h-4 w-full bg-zinc-800" />
+                          <Skeleton className="h-4 w-2/3 bg-zinc-800" />
+                        </div>
+                        <Skeleton className="h-3 w-1/3 bg-zinc-800" />
+                        <div className="flex gap-2 pt-2">
+                          <Skeleton className="h-8 flex-1 bg-zinc-800" />
+                          <Skeleton className="h-8 w-8 bg-zinc-800" />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   const nextVideo = videos[0];
