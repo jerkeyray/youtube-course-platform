@@ -46,18 +46,18 @@ export default async function NotePage({ params }: NotePageProps) {
   });
 
   if (!note) {
-    return redirect("/dashboard/notes");
+    return redirect("/home/notes");
   }
 
   if (!note.course) {
-    return redirect("/dashboard/notes");
+    return redirect("/home/notes");
   }
 
   return (
     <main className="container py-8">
       <div className="mb-8">
         <div className="flex items-center gap-x-2 mb-6">
-          <Link href="/dashboard/notes">
+          <Link href="/home/notes">
             <Button
               variant="default"
               className="bg-black hover:bg-black/80 text-white"
@@ -70,7 +70,7 @@ export default async function NotePage({ params }: NotePageProps) {
         <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
           <BookOpen className="h-4 w-4" />
           <Link
-            href={`/dashboard/courses/${note.course.id}`}
+            href={`/home/courses/${note.course.id}`}
             className="hover:underline"
           >
             {note.course.title}

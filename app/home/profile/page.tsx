@@ -310,7 +310,7 @@ export default function ProfilePage() {
                     </div>
                   </div>
                   <Link
-                    href={`/dashboard/courses/${profileData.activeCourse.id}`}
+                    href={`/home/courses/${profileData.activeCourse.id}`}
                     className="w-full sm:w-auto"
                   >
                     <Button className="w-full sm:w-auto bg-white text-black hover:bg-zinc-200 font-medium px-8">

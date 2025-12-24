@@ -21,7 +21,9 @@ export function Navbar() {
       <div className="max-w-7xl mx-auto flex justify-between items-center h-16 px-6">
         <div className="flex items-center">
           <Link href="/" className="flex items-center gap-2 group">
-             <span className="font-bold tracking-tight text-lg text-white group-hover:text-indigo-400 transition-colors">yudoku</span>
+            <span className="font-bold tracking-tight text-lg text-white group-hover:text-indigo-400 transition-colors">
+              yudoku
+            </span>
           </Link>
         </div>
         <div className="flex items-center gap-x-3">
@@ -32,7 +34,7 @@ export function Navbar() {
                 asChild
                 className="bg-white/5 border-white/10 text-slate-300 hover:bg-white/10 hover:border-indigo-500/50 hover:text-white font-medium px-4 py-2 rounded-lg transition-all duration-200"
               >
-                <Link href="/dashboard">Dashboard</Link>
+                <Link href="/home">Home</Link>
               </Button>
               <div className="flex flex-col items-end hidden sm:flex">
                 <p className="text-sm font-medium text-slate-200">
@@ -68,7 +70,7 @@ export function Navbar() {
                     asChild
                     className="focus:bg-indigo-500/10 focus:text-indigo-400 cursor-pointer"
                   >
-                    <Link href="/dashboard/profile" className="flex items-center">
+                    <Link href="/home/profile" className="flex items-center">
                       <User className="mr-2 h-4 w-4" />
                       Profile
                     </Link>

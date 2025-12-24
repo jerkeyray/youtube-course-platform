@@ -161,8 +161,8 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, isPrimary }) => {
               <Link
                 href={
                   nextVideo
-                    ? `/dashboard/courses/${course.id}?videoId=${nextVideo.id}`
-                    : `/dashboard/courses/${course.id}`
+                    ? `/home/courses/${course.id}?videoId=${nextVideo.id}`
+                    : `/home/courses/${course.id}`
                 }
               >
                 {isCompleted ? "Review" : isInProgress ? "Resume" : "Start"}

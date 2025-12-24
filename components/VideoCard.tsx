@@ -100,7 +100,7 @@ export default function VideoCard({
       onClick={() => {
         if (video.courseId) {
           router.push(
-            `/dashboard/courses/${video.courseId}?videoId=${video.id}${
+            `/home/courses/${video.courseId}?videoId=${video.id}${
               video.timestamp ? `&t=${video.timestamp}` : ""
             }`
           );
@@ -171,7 +171,7 @@ export default function VideoCard({
                 e.stopPropagation();
                 if (video.courseId) {
                   router.push(
-                    `/dashboard/courses/${video.courseId}?videoId=${video.id}${
+                    `/home/courses/${video.courseId}?videoId=${video.id}${
                       video.timestamp ? `&t=${video.timestamp}` : ""
                     }`
                   );

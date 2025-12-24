@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 import LoadingScreen from "@/components/LoadingScreen";
 import { motion, AnimatePresence } from "framer-motion";
 
-export default function DashboardLayout({
+export default function HomeLayout({
   children,
 }: {
   children: React.ReactNode;

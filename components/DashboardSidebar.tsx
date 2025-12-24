@@ -14,25 +14,18 @@ import {
 } from "@/components/ui/dropdown-menu";
 import Image from "next/image";
 
-import {
-  LayoutDashboard,
-  BookOpen,
-  Bookmark,
-  User,
-  Pencil,
-  LogOut,
-} from "lucide-react";
+import { BookOpen, Bookmark, User, Pencil, LogOut, Home } from "lucide-react";
 
 const learningRoutes = [
   {
-    label: "Dashboard",
-    icon: LayoutDashboard,
-    href: "/dashboard",
+    label: "Home",
+    icon: Home,
+    href: "/home",
   },
   {
     label: "My Courses",
     icon: BookOpen,
-    href: "/dashboard/mycourses",
+    href: "/home/mycourses",
   },
 ];
 
@@ -40,17 +33,17 @@ const toolRoutes = [
   {
     label: "Notes",
     icon: Pencil,
-    href: "/dashboard/notes",
+    href: "/home/notes",
   },
   {
     label: "Bookmarks",
     icon: Bookmark,
-    href: "/dashboard/bookmarks",
+    href: "/home/bookmarks",
   },
   {
     label: "Profile",
     icon: User,
-    href: "/dashboard/profile",
+    href: "/home/profile",
   },
 ];
 

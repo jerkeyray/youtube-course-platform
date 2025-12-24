@@ -56,7 +56,7 @@ function ProductMockup() {
         </div>
         <div className="mx-auto flex w-full max-w-sm items-center gap-2 rounded-md bg-[#151921] px-3 py-1 text-xs text-neutral-500 font-mono">
           <span className="text-white">yudoku.app</span>
-          /dashboard/course/react-mastery
+          /home/course/react-mastery
         </div>
       </div>
 
@@ -126,7 +126,7 @@ function ProductMockup() {
 
 export default function LandingPage() {
   const { status } = useSession();
-  const getStartedLink = status === "authenticated" ? "/dashboard" : "/sign-in";
+  const getStartedLink = status === "authenticated" ? "/home" : "/sign-in";
 
   return (
     <div className="bg-[#0A0A0A] text-white font-sans selection:bg-neutral-700/30">

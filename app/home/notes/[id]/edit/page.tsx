@@ -41,7 +41,7 @@ export default function EditNotePage({ params }: EditNotePageProps) {
         });
       } catch (error) {
         toast.error("Failed to load note");
-        router.push("/dashboard/notes");
+        router.push("/home/notes");
       } finally {
         setIsLoading(false);
       }
@@ -66,7 +66,7 @@ export default function EditNotePage({ params }: EditNotePageProps) {
       if (!response.ok) throw new Error("Failed to save note");
 
       toast.success("Note saved successfully");
-      router.push(`/dashboard/notes/${noteId}`);
+      router.push(`/home/notes/${noteId}`);
     } catch (error) {
       toast.error("Failed to save note");
     } finally {
@@ -90,7 +90,7 @@ export default function EditNotePage({ params }: EditNotePageProps) {
     <main className="container py-8">
       <div className="mb-8">
         <div className="flex items-center gap-x-2 mb-6">
-          <Link href={`/dashboard/notes/${noteId}`}>
+          <Link href={`/home/notes/${noteId}`}>
             <Button
               variant="default"
               className="bg-black hover:bg-black/80 text-white"

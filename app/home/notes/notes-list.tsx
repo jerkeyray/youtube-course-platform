@@ -66,7 +66,7 @@ const NotesList = ({ initialNotes }: NotesListProps) => {
   const handleEdit = (noteId: string, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    window.location.href = `/dashboard/notes/${noteId}/edit`;
+    window.location.href = `/home/notes/${noteId}/edit`;
   };
 
   const filteredAndSortedNotes = useMemo(() => {
@@ -150,7 +150,7 @@ const NotesList = ({ initialNotes }: NotesListProps) => {
           {filteredAndSortedNotes.map((note) => (
             <Link
               key={note.id}
-              href={`/dashboard/notes/${note.id}`}
+              href={`/home/notes/${note.id}`}
               className="block"
             >
               <Card className="h-full hover:shadow-xl transition-all duration-300 bg-zinc-900 border-zinc-800 hover:border-blue-500 relative overflow-hidden group">

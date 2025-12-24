@@ -1,9 +1,9 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
-import DashboardClient from "./DashboardClient";
+import HomeClient from "./HomeClient";
 import { prisma } from "@/lib/prisma";
 
-export default async function DashboardPage() {
+export default async function HomePage() {
   const session = await auth();
 
   if (!session?.user?.id) {
@@ -48,5 +48,5 @@ export default async function DashboardPage() {
     })),
   }));
 
-  return <DashboardClient courses={serializedCourses} />;
+  return <HomeClient courses={serializedCourses} />;
 }

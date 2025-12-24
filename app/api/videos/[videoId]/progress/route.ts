@@ -15,13 +15,19 @@ export async function POST(
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    const { completed, lastWatchedSeconds } = await req.json();
+    const bodySchema = z.object({
+      completed: z.boolean().optional(),
+      lastWatchedSeconds: z.number().optional(),
+    });
+
+    const body = await req.json();
+    const { completed, lastWatchedSeconds } = bodySchema.parse(body);
 
     // Update video progress
     const updateData: any = {};
     if (completed !== undefined) updateData.completed = completed;
     if (lastWatchedSeconds !== undefined)
-      updateData.lastWatchedSeconds = lastWatchedSeconds;
+      updateData.lastWatchedSeconds = Math.floor(lastWatchedSeconds);
 
     const progress = await prisma.videoProgress.upsert({
       where: {
@@ -32,7 +38,9 @@ export async function POST(
         userId,
         videoId,
         completed: completed || false,
-        lastWatchedSeconds: lastWatchedSeconds || 0,
+        lastWatchedSeconds: lastWatchedSeconds
+          ? Math.floor(lastWatchedSeconds)
+          : 0,
       },
     });
 

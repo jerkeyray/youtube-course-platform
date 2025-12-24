@@ -21,25 +21,25 @@ export default function CreateCourse() {
 
   useEffect(() => {
     if (deadline) {
-        setDateInput(format(deadline, "MM/dd/yyyy"));
+      setDateInput(format(deadline, "MM/dd/yyyy"));
     }
   }, [deadline]);
 
   const handleDateInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     setDateInput(val);
-    
+
     // Only attempt to parse if input length is sufficient (e.g., could be a full date)
     if (val.length >= 8) {
-        const parsed = parse(val, "MM/dd/yyyy", new Date());
-        if (isValid(parsed) && !isBefore(parsed, new Date())) {
-            setDeadline(parsed);
-        }
-        // Don't unset deadline on invalid input immediately to avoid jumping UI,
-        // but maybe we should if the user clears it?
-        if (val === "") setDeadline(undefined);
+      const parsed = parse(val, "MM/dd/yyyy", new Date());
+      if (isValid(parsed) && !isBefore(parsed, new Date())) {
+        setDeadline(parsed);
+      }
+      // Don't unset deadline on invalid input immediately to avoid jumping UI,
+      // but maybe we should if the user clears it?
+      if (val === "") setDeadline(undefined);
     } else if (val === "") {
-        setDeadline(undefined);
+      setDeadline(undefined);
     }
   };
 
@@ -72,7 +72,7 @@ export default function CreateCourse() {
 
       const course = await response.json();
       toast.success("Course created successfully!");
-      router.push(`/dashboard/courses/${course.id}`);
+      router.push(`/home/courses/${course.id}`);
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : "Something went wrong"
@@ -93,7 +93,7 @@ export default function CreateCourse() {
               className="text-neutral-400 hover:text-white hover:bg-white/5 -ml-4"
               asChild
             >
-              <Link href="/dashboard" className="flex items-center gap-2">
+              <Link href="/home" className="flex items-center gap-2">
                 <ArrowLeft className="h-4 w-4" />
                 Back
               </Link>
@@ -105,7 +105,8 @@ export default function CreateCourse() {
               Create a course
             </h1>
             <p className="text-neutral-400 font-light text-lg">
-              We'll process your playlist and organize it into a structured learning path. This usually takes a few moments.
+              We'll process your playlist and organize it into a structured
+              learning path. This usually takes a few moments.
             </p>
           </div>
 
@@ -155,7 +156,10 @@ export default function CreateCourse() {
 
                 <div className="space-y-3 flex flex-col">
                   <label className="text-sm font-normal text-neutral-400">
-                    Target Completion Date <span className="text-neutral-500 font-normal ml-1">(Optional)</span>
+                    Target Completion Date{" "}
+                    <span className="text-neutral-500 font-normal ml-1">
+                      (Optional)
+                    </span>
                   </label>
                   <Input
                     placeholder="MM/DD/YYYY"
@@ -166,22 +170,22 @@ export default function CreateCourse() {
                 </div>
 
                 <div className="space-y-3">
-                <Button
-                  type="submit"
-                  className="w-full h-12 bg-white text-black hover:bg-neutral-200 font-medium text-base transition-all border-0"
-                  disabled={isLoading}
-                >
-                  {isLoading ? (
-                    <div className="flex items-center gap-2">
-                      <div className="w-4 h-4">
-                        <LoadingScreen variant="inline" />
+                  <Button
+                    type="submit"
+                    className="w-full h-12 bg-white text-black hover:bg-neutral-200 font-medium text-base transition-all border-0"
+                    disabled={isLoading}
+                  >
+                    {isLoading ? (
+                      <div className="flex items-center gap-2">
+                        <div className="w-4 h-4">
+                          <LoadingScreen variant="inline" />
+                        </div>
+                        <span>Creating...</span>
                       </div>
-                      <span>Creating...</span>
-                    </div>
-                  ) : (
+                    ) : (
                       "Create course"
-                  )}
-                </Button>
+                    )}
+                  </Button>
                   <p className="text-xs text-neutral-500 text-center">
                     You can change details later.
                   </p>

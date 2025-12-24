@@ -7,9 +7,9 @@ export default auth((req) => {
     req.nextUrl.pathname.startsWith("/sign-in") ||
     req.nextUrl.pathname.startsWith("/auth");
 
-  // If user is authenticated and trying to access auth pages, redirect to dashboard
+  // If user is authenticated and trying to access auth pages, redirect to home
   if (isAuthenticated && isAuthPage) {
-    return NextResponse.redirect(new URL("/dashboard", req.nextUrl));
+    return NextResponse.redirect(new URL("/home", req.nextUrl));
   }
 
   // Public routes that don't require authentication
@@ -20,7 +20,7 @@ export default auth((req) => {
     req.nextUrl.pathname.includes("/favicon.ico");
 
   // Protected routes that require authentication
-  const isProtectedRoute = req.nextUrl.pathname.startsWith("/dashboard");
+  const isProtectedRoute = req.nextUrl.pathname.startsWith("/home");
 
   // If user is not authenticated and trying to access protected routes, redirect to sign-in
   if (!isAuthenticated && isProtectedRoute) {

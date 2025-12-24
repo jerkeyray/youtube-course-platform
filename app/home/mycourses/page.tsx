@@ -124,7 +124,7 @@ export default function MyCoursesPage() {
               className="bg-white text-black hover:bg-neutral-200"
               asChild
             >
-              <Link href="/dashboard/courses/create">
+              <Link href="/home/courses/create">
                 <PlusCircle className="mr-2 h-5 w-5" />
                 Add Course
               </Link>
@@ -144,7 +144,7 @@ export default function MyCoursesPage() {
               className="bg-white text-black hover:bg-neutral-200"
               asChild
             >
-              <Link href="/dashboard/courses/create">
+              <Link href="/home/courses/create">
                 <PlusCircle className="mr-2 h-5 w-5" />
                 Create New Course
               </Link>

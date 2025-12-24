@@ -47,7 +47,7 @@ export function Header() {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem asChild>
-              <Link href="/dashboard/profile" className="flex items-center">
+              <Link href="/home/profile" className="flex items-center">
                 <User className="mr-2 h-4 w-4" />
                 Profile
               </Link>
