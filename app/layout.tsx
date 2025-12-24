@@ -7,34 +7,37 @@ import { Analytics } from "@vercel/analytics/next";
 
 const inter = Inter({ subsets: ["latin"] });
 
+const siteUrl = "https://yudoku.jerkeyray.com";
+
 export const metadata: Metadata = {
-  metadataBase: new URL(
-    process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
-  ),
+  metadataBase: new URL(siteUrl),
   title: "Yudoku",
   description: "The Youtube Course Experience Platform",
+
   openGraph: {
     title: "Yudoku",
     description: "The Youtube Course Experience Platform",
-    url: "https://yudoku.jerkeyray.com", // Replace with your site's URL
+    url: siteUrl,
     siteName: "Yudoku",
     images: [
       {
-        url: "/demo.png",
-        width: 1200, // Match your image's dimensions
-        height: 630, // Match your image's dimensions
-        alt: "Yudoku platform thumbnail", // Descriptive alt text
+        url: `${siteUrl}/demo.png`,
+        width: 1200,
+        height: 630,
+        alt: "Yudoku platform thumbnail",
       },
     ],
     type: "website",
   },
+
   twitter: {
     card: "summary_large_image",
     title: "Yudoku",
     description: "The Youtube Course Experience Platform",
-    images: ["/demo.png"],
+    images: [`${siteUrl}/demo.png`],
   },
 };
+
 
 export default function RootLayout({
   children,
