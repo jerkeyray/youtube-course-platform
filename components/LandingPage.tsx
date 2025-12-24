@@ -154,7 +154,7 @@ export default function LandingPage() {
                   className="h-12 px-8 text-base bg-white text-black hover:bg-neutral-200 rounded-md font-medium transition-colors"
                   asChild
                 >
-                  <Link href={getStartedLink}>Start learning</Link>
+                  <Link href={getStartedLink}>Continue learning</Link>
                 </Button>
               </div>
             </FadeIn>
@@ -240,15 +240,19 @@ export default function LandingPage() {
             {[
               {
                 q: "Why not just use YouTube?",
-                a: "YouTube is designed for retention, not completion. Yudoku removes the sidebar, comments, and algorithm to keep you focused.",
+                a: "Because YouTube is optimized to keep you watching, not to help you finish. The recommendations, comments, and autoplay aren’t bugs — they’re the product. Yudoku removes those incentives so finishing is the default outcome, not a fight.",
               },
               {
-                q: "Does this work with any playlist?",
-                a: "It works with any public YouTube playlist.",
+                q: "Is this trying to replace YouTube?",
+                a: "No. Yudoku uses YouTube as a video source. What it replaces is the environment around the video — the algorithm, the noise, and the endless next option.",
+              },
+              {
+                q: "What makes Yudoku different from other course platforms?",
+                a: "Most platforms optimize for engagement and content discovery. Yudoku optimizes for completion. You commit to one course, see clear progress, and reach an actual finish line.",
               },
               {
                 q: "Is this free?",
-                a: "Yes. Yudoku is free to use.",
+                a: "Yes. Yudoku is free to use. If it helps you finish something you wouldn’t have otherwise, you can support it — but finishing comes first.",
               },
             ].map((item, i) => (
               <AccordionItem
@@ -269,10 +273,36 @@ export default function LandingPage() {
       </section>
 
       {/* Simple Footer */}
-      <footer className="py-12 px-6 border-t border-white/5 text-center bg-[#0A0A0A]">
-        <p className="text-neutral-600 text-sm">
-          © {new Date().getFullYear()} yudoku.
-        </p>
+      <footer className="py-16 px-6 border-t border-white/5 text-center bg-[#0A0A0A]">
+        <div className="space-y-4">
+          <p className="text-neutral-400 text-sm">
+            Yudoku is built for people who want to finish what they start.
+          </p>
+
+          <p className="text-neutral-600 text-xs">
+            No feeds. No recommendations. No noise.
+          </p>
+
+          <div className="pt-4 flex items-center justify-center gap-6 text-xs text-neutral-500">
+            <Link
+              href="/home/why-yudoku"
+              className="hover:text-white transition-colors"
+            >
+              Why Yudoku
+            </Link>
+            <Link
+              href="https://buymeacoffee.com/jerkeyray"
+              target="_blank"
+              className="hover:text-white transition-colors"
+            >
+              Support the project
+            </Link>
+          </div>
+
+          <p className="pt-6 text-neutral-700 text-xs">
+            © {new Date().getFullYear()} yudoku
+          </p>
+        </div>
       </footer>
     </div>
   );

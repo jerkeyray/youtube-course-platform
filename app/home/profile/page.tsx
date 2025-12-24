@@ -276,6 +276,7 @@ export default function ProfilePage() {
                     sizes="80px"
                     quality={85}
                     priority
+                    unoptimized
                   />
                 </div>
               ) : (

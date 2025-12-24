@@ -54,6 +54,7 @@ export function Navbar() {
                         alt={session.user.name || "Profile"}
                         fill
                         className="object-cover rounded-full"
+                        unoptimized
                       />
                     ) : (
                       <div className="h-10 w-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold">

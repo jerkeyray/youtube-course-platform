@@ -37,15 +37,11 @@ export default async function SignInPage() {
 
         <div className="relative z-10 max-w-xl">
           <h1 className="text-6xl font-medium tracking-tighter leading-[0.95] mb-8 text-white">
-            Escape the <br />
-            <span className="text-white/40">algorithm.</span>
+            Pick something <br />
+            <span className="text-white/40">worth finishing.</span>
           </h1>
           <p className="text-xl text-neutral-400 font-light leading-relaxed max-w-md">
-            The average completion rate of a YouTube playlist is{" "}
-            <span className="text-white font-medium">under 4%</span>.
-            <br />
-            <br />
-            We built the environment where completion actually happens.
+            We’ll keep everything else out of the way.
           </p>
         </div>
 
@@ -67,15 +63,6 @@ export default async function SignInPage() {
             <Link href="/" className="font-bold tracking-tight text-xl">
               yudoku
             </Link>
-          </div>
-
-          <div className="mb-10">
-            <h2 className="text-2xl font-medium tracking-tight mb-2">
-              Resume learning
-            </h2>
-            <p className="text-neutral-500 text-sm">
-              Your courses are waiting.
-            </p>
           </div>
 
           {/* Glass Card for Form */}
