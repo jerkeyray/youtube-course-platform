@@ -5,6 +5,7 @@ import { useState, useCallback, useEffect, useMemo, useRef, memo } from "react";
 import { Course, Video, VideoProgress } from "@prisma/client";
 import { Button } from "@/components/ui/button";
 import { YouTubePlayer } from "react-youtube";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import { Check, ChevronLeft, ChevronRight, Bookmark } from "lucide-react";
 import { toast } from "sonner";
@@ -125,6 +126,10 @@ export default function CoursePlayer({
   initialVideoIndex = 0,
   initialTimestamp,
 }: CoursePlayerProps) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
   const [currentVideoIndex, setCurrentVideoIndex] = useState(initialVideoIndex);
   const playerRef = useRef<YouTubePlayer | null>(null);
   const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -178,10 +183,47 @@ export default function CoursePlayer({
     );
   }, [currentVideoIndex]);
 
+  const persistCurrentTime = useCallback(async (videoId: string) => {
+    const player = playerRef.current;
+    if (!player || typeof player.getCurrentTime !== "function") return;
+
+    const time = player.getCurrentTime();
+    if (!Number.isFinite(time) || time <= 0) return;
+
+    try {
+      await fetch(`/api/videos/${videoId}/progress`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ lastWatchedSeconds: Math.floor(time) }),
+        keepalive: true,
+      });
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  // Keep the selected video in the URL so refresh lands on it.
+  useEffect(() => {
+    const video = course.videos[currentVideoIndex];
+    if (!video) return;
+
+    const params = new URLSearchParams(searchParams.toString());
+    if (params.get("videoId") === video.id) return;
+
+    params.set("videoId", video.id);
+    // Timestamp comes from saved progress; avoid stale deep-link timestamps.
+    params.delete("t");
+
+    const next = params.toString();
+    router.replace(next ? `${pathname}?${next}` : pathname, { scroll: false });
+  }, [course.videos, currentVideoIndex, pathname, router, searchParams]);
+
   // Listen for video index changes from sidebar
   useEffect(() => {
     const handleVideoIndexChange = (event: CustomEvent) => {
       const { videoIndex } = event.detail;
+      const current = course.videos[currentVideoIndex];
+      if (current) persistCurrentTime(current.id);
       setCurrentVideoIndex(videoIndex);
     };
 
@@ -196,7 +238,7 @@ export default function CoursePlayer({
         handleVideoIndexChange as EventListener
       );
     };
-  }, []);
+  }, [course.videos, currentVideoIndex, persistCurrentTime]);
 
   const handleVideoProgress = useCallback(
     async (videoId: string) => {
@@ -319,12 +361,16 @@ export default function CoursePlayer({
 
   const handlePreviousVideo = () => {
     if (currentVideoIndex > 0) {
+      const current = course.videos[currentVideoIndex];
+      if (current) persistCurrentTime(current.id);
       setCurrentVideoIndex(currentVideoIndex - 1);
     }
   };
 
   const handleNextVideo = () => {
     if (currentVideoIndex < course.videos.length - 1) {
+      const current = course.videos[currentVideoIndex];
+      if (current) persistCurrentTime(current.id);
       setCurrentVideoIndex(currentVideoIndex + 1);
     }
   };
@@ -349,25 +395,41 @@ export default function CoursePlayer({
   }, [currentVideo, currentVideoIndex, initialTimestamp, initialVideoIndex]);
 
   const saveProgress = useCallback(
-    async (time: number, completed: boolean = false) => {
+    async (time: number) => {
       if (!currentVideo) return;
 
       try {
         await fetch(`/api/videos/${currentVideo.id}/progress`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            completed,
-            lastWatchedSeconds: Math.floor(time),
-          }),
+          body: JSON.stringify({ lastWatchedSeconds: Math.floor(time) }),
         });
-      } catch (error) {
-        // eslint-disable-next-line no-console
-        console.error("Failed to save progress", error);
+      } catch {
+        // ignore
       }
     },
     [currentVideo]
   );
+
+  // Save position when tab is hidden or page is unloading.
+  useEffect(() => {
+    const saveNow = () => {
+      const current = course.videos[currentVideoIndex];
+      if (current) persistCurrentTime(current.id);
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "hidden") saveNow();
+    };
+
+    window.addEventListener("beforeunload", saveNow);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener("beforeunload", saveNow);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [course.videos, currentVideoIndex, persistCurrentTime]);
 
   // Cleanup interval on unmount
   useEffect(() => {

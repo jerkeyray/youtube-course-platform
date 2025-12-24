@@ -1,7 +1,7 @@
 import React from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { Trash2, Play, Clock } from "lucide-react";
+import { Trash2, Play } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -39,12 +39,6 @@ export default function VideoCard({
     video.createdAt &&
     new Date().getTime() - new Date(video.createdAt).getTime() >
       7 * 24 * 60 * 60 * 1000; // 7 days old
-
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${mins}:${secs.toString().padStart(2, "0")}`;
-  };
 
   const handleRemove = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -126,10 +120,8 @@ export default function VideoCard({
             );
           }}
         />
-        {isBookmark && video.timestamp
-          ? // Removed badge as requested to avoid YouTube-like visual noise
-            // and rely on the primary action button for context
-            null
+        {isBookmark
+          ? null
           : video.duration && (
               <div className="absolute bottom-2 right-2 rounded bg-black/80 px-2 py-1 text-xs text-white font-medium">
                 {video.duration}
@@ -179,9 +171,7 @@ export default function VideoCard({
               }}
             >
               <Play className="w-3 h-3 mr-2" />
-              {video.timestamp
-                ? `Finish from ${formatTime(video.timestamp)}`
-                : "Start Task"}
+              Continue
             </Button>
             {onRemove && (
               <Button

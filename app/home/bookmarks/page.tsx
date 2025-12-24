@@ -149,7 +149,7 @@ export default function BookmarksPage() {
               <section>
                 <h2 className="text-sm font-medium text-white uppercase tracking-wider mb-6 flex items-center gap-2">
                   <span className="w-1.5 h-1.5 rounded-full bg-orange-500"></span>
-                  Next to finish
+                  Last Viewed
                 </h2>
                 <div className="max-w-md">
                   <VideoCard
