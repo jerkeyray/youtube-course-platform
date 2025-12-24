@@ -4,9 +4,9 @@ import React, { useMemo } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { PlusCircle } from "lucide-react";
 import CourseCard, { SerializedCourse } from "@/components/CourseCard";
-import LoadingScreen from "@/components/LoadingScreen";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 
@@ -91,15 +91,15 @@ export default function MyCoursesPage() {
               >
                 <CardContent className="p-6">
                   <div className="space-y-4">
-                    <div className="h-4 bg-zinc-700 rounded animate-pulse w-3/4"></div>
-                    <div className="h-3 bg-zinc-700 rounded animate-pulse w-1/2"></div>
+                    <Skeleton className="h-4 w-3/4" />
+                    <Skeleton className="h-3 w-1/2" />
                     <div className="space-y-2">
-                      <div className="h-2 bg-zinc-700 rounded animate-pulse"></div>
-                      <div className="h-2 bg-zinc-700 rounded animate-pulse w-4/5"></div>
+                      <Skeleton className="h-2 w-full" />
+                      <Skeleton className="h-2 w-4/5" />
                     </div>
                     <div className="flex items-center justify-between pt-2">
-                      <div className="h-3 bg-zinc-700 rounded animate-pulse w-16"></div>
-                      <div className="h-6 bg-zinc-700 rounded animate-pulse w-20"></div>
+                      <Skeleton className="h-3 w-16" />
+                      <Skeleton className="h-6 w-20" />
                     </div>
                   </div>
                 </CardContent>

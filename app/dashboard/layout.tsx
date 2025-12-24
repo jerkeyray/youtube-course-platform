@@ -18,9 +18,24 @@ export default function DashboardLayout({
 }) {
   const { data: session, status } = useSession();
   const pathname = usePathname();
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(true);
   const [isPageLoading, setIsPageLoading] = useState(false);
-  const isCoursePage = pathname?.includes('/courses/') && pathname.match(/\/courses\/[^\/]+$/);
+  const isCoursePage =
+    pathname?.includes("/courses/") && pathname.match(/\/courses\/[^\/]+$/);
+
+  // Load collapsed state from local storage
+  useEffect(() => {
+    const storedCollapsed = localStorage.getItem("sidebarCollapsed");
+    if (storedCollapsed !== null) {
+      setIsCollapsed(storedCollapsed === "true");
+    }
+  }, []);
+
+  const handleSidebarToggle = () => {
+    const newState = !isCollapsed;
+    setIsCollapsed(newState);
+    localStorage.setItem("sidebarCollapsed", String(newState));
+  };
 
   // Show loading state for page transitions
   useEffect(() => {
@@ -53,7 +68,7 @@ export default function DashboardLayout({
           <div className="flex items-center h-16 px-6 border-b border-white/5">
             <DashboardSidebarToggle
               isCollapsed={isCollapsed}
-              onToggle={() => setIsCollapsed(!isCollapsed)}
+              onToggle={handleSidebarToggle}
             />
             {!isCollapsed && (
               <Link

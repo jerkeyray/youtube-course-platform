@@ -29,7 +29,7 @@ export function StreakDisplay({ activities }: StreakDisplayProps) {
   let currentStreak = 0;
   let longestStreak = 0;
   let tempStreak = 0;
-  
+
   // Create a map of dates with activity
   const activityDates = new Map<string, boolean>();
   let lastActiveDate: Date | null = null;
@@ -92,11 +92,14 @@ export function StreakDisplay({ activities }: StreakDisplayProps) {
       for (let i = sortedDates.length - 1; i > 0; i--) {
         const currDate = sortedDates[i];
         const prevDate = sortedDates[i - 1];
-        
+
         const expectedPrevDate = new Date(currDate);
         expectedPrevDate.setDate(expectedPrevDate.getDate() - 1);
-        
-        if (format(prevDate, "yyyy-MM-dd") === format(expectedPrevDate, "yyyy-MM-dd")) {
+
+        if (
+          format(prevDate, "yyyy-MM-dd") ===
+          format(expectedPrevDate, "yyyy-MM-dd")
+        ) {
           currentStreakCount++;
         } else {
           break;
@@ -120,22 +123,23 @@ export function StreakDisplay({ activities }: StreakDisplayProps) {
   return (
     <div className="grid grid-cols-2 gap-4 w-full">
       <Card className="bg-[#0D1016] border-white/5">
-        <CardContent className="p-4 flex items-center justify-between">
-          <div>
-            <p className="text-sm text-neutral-500 font-medium">Best streak</p>
-            <p className="text-xl font-medium text-white">{longestStreak} days</p>
-          </div>
-          <Trophy className="h-4 w-4 text-neutral-600" />
+        <CardContent className="p-4 flex flex-col justify-center h-full">
+          <p className="text-xs text-neutral-500 font-medium uppercase tracking-wide mb-1">
+            Last Studied
+          </p>
+          <p className="text-lg font-medium text-white">{lastActiveString}</p>
         </CardContent>
       </Card>
 
       <Card className="bg-[#0D1016] border-white/5">
-        <CardContent className="p-4 flex items-center justify-between">
-          <div>
-            <p className="text-sm text-neutral-500 font-medium">Current streak</p>
-            <p className="text-xl font-medium text-white">{currentStreak} days</p>
-          </div>
-          <Flame className={`h-4 w-4 ${currentStreak > 0 ? "text-white" : "text-neutral-600"}`} />
+        <CardContent className="p-4 flex flex-col justify-center h-full">
+          <p className="text-xs text-neutral-500 font-medium uppercase tracking-wide mb-1">
+            Longest Streak
+          </p>
+          <p className="text-lg font-medium text-neutral-300">
+            {longestStreak}{" "}
+            <span className="text-sm text-neutral-600 font-normal">days</span>
+          </p>
         </CardContent>
       </Card>
     </div>

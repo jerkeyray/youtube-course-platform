@@ -44,11 +44,13 @@ const StableVideoContainer = memo(
     startTime,
     onReady,
     onProgress,
+    isReadingMode,
   }: {
     videoId: string;
     startTime: number;
     onReady: (player: YouTubePlayer) => void;
     onProgress: (time: number) => void;
+    isReadingMode: boolean;
   }) => {
     return (
       <div className="aspect-video w-full overflow-hidden rounded-lg bg-black">
@@ -57,11 +59,13 @@ const StableVideoContainer = memo(
           initialTimestamp={startTime}
           onReady={onReady}
           onProgress={onProgress}
+          isReadingMode={isReadingMode}
         />
       </div>
     );
   },
-  (prev, next) => prev.videoId === next.videoId
+  (prev, next) =>
+    prev.videoId === next.videoId && prev.isReadingMode === next.isReadingMode
 );
 
 // Helper function to clean YouTube titles
@@ -511,6 +515,7 @@ export default function CoursePlayer({
         startTime={startTime}
         onReady={onPlayerReady}
         onProgress={saveProgress}
+        isReadingMode={showNoteEditor}
       />
 
       {/* Video Title Above Buttons */}

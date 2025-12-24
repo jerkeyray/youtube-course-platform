@@ -47,6 +47,11 @@ const toolRoutes = [
     icon: Bookmark,
     href: "/dashboard/bookmarks",
   },
+  {
+    label: "Profile",
+    icon: User,
+    href: "/dashboard/profile",
+  },
 ];
 
 interface DashboardSidebarProps {

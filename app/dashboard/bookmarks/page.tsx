@@ -71,7 +71,7 @@ export default function BookmarksPage() {
         <div className="max-w-6xl">
           {/* Header */}
           <div className="mb-16">
-            <h1 className="text-xl font-medium text-zinc-400">Paused Tasks</h1>
+            <h1 className="text-xl font-medium text-zinc-400">Bookmarks</h1>
           </div>
 
           {videos.length === 0 ? (

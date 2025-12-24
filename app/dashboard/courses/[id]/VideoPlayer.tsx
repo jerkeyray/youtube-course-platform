@@ -6,12 +6,21 @@ interface VideoPlayerProps {
   initialTimestamp?: number;
   onReady: (player: YouTubePlayer) => void;
   onProgress: (time: number) => void;
+  isReadingMode?: boolean;
 }
 
 const VideoPlayer = memo(
-  ({ videoId, initialTimestamp, onReady, onProgress }: VideoPlayerProps) => {
+  ({
+    videoId,
+    initialTimestamp,
+    onReady,
+    onProgress,
+    isReadingMode = false,
+  }: VideoPlayerProps) => {
     const playerRef = useRef<YouTubePlayer | null>(null);
     const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
+    const previousPlaybackRateRef = useRef<number>(1);
+    const isSoftPausedRef = useRef(false);
 
     // Freeze videoId and initialTimestamp to prevent updates during lifecycle
     const videoIdRef = useRef(videoId);
@@ -69,6 +78,29 @@ const VideoPlayer = memo(
       },
       []
     );
+
+    // Handle reading mode (soft pause)
+    useEffect(() => {
+      const player = playerRef.current;
+      if (!player || typeof player.getPlaybackRate !== "function") return;
+
+      if (isReadingMode) {
+        // Enter reading mode: soft pause
+        // Only apply if currently playing to avoid unpausing a real pause
+        if (player.getPlayerState() === 1) {
+          const currentRate = player.getPlaybackRate();
+          previousPlaybackRateRef.current = currentRate;
+          player.setPlaybackRate(0);
+          isSoftPausedRef.current = true;
+        }
+      } else {
+        // Exit reading mode: resume
+        if (isSoftPausedRef.current) {
+          player.setPlaybackRate(previousPlaybackRateRef.current);
+          isSoftPausedRef.current = false;
+        }
+      }
+    }, [isReadingMode]);
 
     const opts: YouTubeProps["opts"] = useMemo(
       () => ({

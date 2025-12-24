@@ -31,15 +31,6 @@ export default async function DashboardPage() {
     },
   });
 
-  const activities = await prisma.userActivity.findMany({
-    where: {
-      userId: session.user.id,
-    },
-    orderBy: {
-      date: "desc",
-    },
-  });
-
   // Serialize the data to match the expected types
   const serializedCourses = courses.map((course) => ({
     ...course,
@@ -57,16 +48,5 @@ export default async function DashboardPage() {
     })),
   }));
 
-  const serializedActivities = activities.map((activity) => ({
-    ...activity,
-    createdAt: activity.createdAt.toISOString(),
-    updatedAt: activity.updatedAt.toISOString(),
-  }));
-
-  return (
-    <DashboardClient
-      courses={serializedCourses}
-      activities={serializedActivities}
-    />
-  );
+  return <DashboardClient courses={serializedCourses} />;
 }
