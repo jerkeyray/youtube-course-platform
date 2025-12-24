@@ -8,21 +8,21 @@ import { Check } from "lucide-react";
 function cleanSidebarTitle(title: string): string {
   // Remove common YouTube patterns
   let cleaned = title
-    .replace(/^(Lecture|Video|Episode|Part|Chapter)\s*\d+[\.\-\:]?\s*/i, '')
-    .replace(/^Statistics\s+(Lecture|Video|Lec)?\s*\d+[\.\-\:]?\s*/i, '')
+    .replace(/^(Lecture|Video|Episode|Part|Chapter)\s*\d+[\.\-\:]?\s*/i, "")
+    .replace(/^Statistics\s+(Lecture|Video|Lec)?\s*\d+[\.\-\:]?\s*/i, "")
     .trim();
-  
+
   // Extract meaningful part after colon or dash
   const colonMatch = cleaned.match(/^[^:]+:\s*(.+)$/);
   if (colonMatch) {
     return colonMatch[1].trim();
   }
-  
+
   const dashMatch = cleaned.match(/^[^-]+-\s*(.+)$/);
   if (dashMatch) {
     return dashMatch[1].trim();
   }
-  
+
   return cleaned || title;
 }
 
@@ -148,7 +148,7 @@ export default function CourseSidebar({
   };
 
   const totalVideos = course.videos.length;
-  
+
   // Show all lessons
   const visibleVideos = course.videos;
 
@@ -164,7 +164,7 @@ export default function CourseSidebar({
             Lesson {localCurrentVideoIndex + 1} of {totalVideos}
           </p>
         </div>
-        
+
         {/* Lesson list */}
         <div
           ref={playlistContainerRef}
@@ -172,21 +172,19 @@ export default function CourseSidebar({
         >
           <div>
             {visibleVideos.map((video) => {
-              const index = course.videos.findIndex(v => v.id === video.id);
+              const index = course.videos.findIndex((v) => v.id === video.id);
               const isActive = localCurrentVideoIndex === index;
               const isCompleted = localWatchedVideos.has(video.id);
               const isUpcoming = index > localCurrentVideoIndex;
               const cleanedTitle = cleanSidebarTitle(video.title);
-              
+
               return (
                 <button
                   key={video.id}
                   data-video-index={index}
                   onClick={() => handleVideoClick(index)}
                   className={`w-full relative text-left transition-colors border-b border-white/10 ${
-                    isActive
-                      ? "bg-white/10"
-                      : "hover:bg-white/5"
+                    isActive ? "bg-white/10" : "hover:bg-white/5"
                   }`}
                   title={video.title}
                 >
@@ -195,14 +193,18 @@ export default function CourseSidebar({
                     {isActive && (
                       <div className="absolute left-0 top-0 bottom-0 w-1 bg-white" />
                     )}
-                    
+
                     {/* State indicator - only show check for completed, nothing for others */}
                     <div className="flex-shrink-0">
-                      {isCompleted && !isActive && (
-                        <Check className="h-3.5 w-3.5 text-neutral-500" />
+                      {isCompleted && (
+                        <Check
+                          className={`h-3.5 w-3.5 ${
+                            isActive ? "text-white/80" : "text-neutral-500"
+                          }`}
+                        />
                       )}
                     </div>
-                    
+
                     {/* Title */}
                     <div className="flex-1 min-w-0">
                       <p

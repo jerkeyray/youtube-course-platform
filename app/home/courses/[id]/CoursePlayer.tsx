@@ -139,6 +139,36 @@ export default function CoursePlayer({
     new Set()
   );
 
+  // Load existing bookmarks so toggling doesn't fail with "already exists"
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadBookmarks = async () => {
+      try {
+        const res = await fetch("/api/bookmarks");
+        if (!res.ok) return;
+
+        const data = (await res.json()) as Array<{
+          id: string;
+          courseId: string;
+        }>;
+        if (cancelled) return;
+
+        const ids = new Set(
+          data.filter((b) => b.courseId === course.id).map((b) => b.id)
+        );
+        setBookmarkedVideos(ids);
+      } catch {
+        // ignore
+      }
+    };
+
+    loadBookmarks();
+    return () => {
+      cancelled = true;
+    };
+  }, [course.id]);
+
   // Sync video index changes to other components (like Sidebar)
   useEffect(() => {
     window.dispatchEvent(
@@ -203,26 +233,6 @@ export default function CoursePlayer({
           })
         );
 
-        // Auto-remove bookmark if marking as completed
-        if (!isCompleted && bookmarkedVideos.has(videoId)) {
-          const video = course.videos.find((v) => v.id === videoId);
-          if (video) {
-            // We don't await this to not block the UI feedback
-            fetch(`/api/bookmarks/${video.videoId}`, { method: "DELETE" })
-              .then(() => {
-                setBookmarkedVideos((prev) => {
-                  const newSet = new Set(prev);
-                  newSet.delete(videoId);
-                  return newSet;
-                });
-                toast.info("Bookmark removed (completed)");
-              })
-              .catch(() => {
-                // Ignore error
-              });
-          }
-        }
-
         toast.success(
           isCompleted
             ? "Video marked as not completed"
@@ -242,11 +252,11 @@ export default function CoursePlayer({
         toast.error("Failed to update video progress");
       }
     },
-    [watchedVideos, bookmarkedVideos, course.videos]
+    [watchedVideos]
   );
 
   const handleBookmark = useCallback(
-    async (videoId: string, youtubeVideoId: string) => {
+    async (videoId: string) => {
       const isBookmarked = bookmarkedVideos.has(videoId);
       const newBookmarkStatus = !isBookmarked;
 
@@ -261,13 +271,6 @@ export default function CoursePlayer({
         return newSet;
       });
 
-      // Optimistic toast for immediate feedback
-      if (newBookmarkStatus) {
-        toast.success("Video bookmarked");
-      } else {
-        toast.success("Bookmark removed");
-      }
-
       try {
         let response;
         if (newBookmarkStatus) {
@@ -279,15 +282,13 @@ export default function CoursePlayer({
               "Content-Type": "application/json",
             },
             body: JSON.stringify({
-              videoId: videoId,
-              courseId: course.id,
-              courseVideoId: videoId,
+              videoId,
               timestamp: Math.floor(currentTime),
             }),
           });
         } else {
           // Remove bookmark
-          response = await fetch(`/api/bookmarks/${youtubeVideoId}`, {
+          response = await fetch(`/api/bookmarks/${videoId}`, {
             method: "DELETE",
           });
         }
@@ -295,6 +296,10 @@ export default function CoursePlayer({
         if (!response.ok) {
           throw new Error("Failed to update bookmark");
         }
+
+        toast.success(
+          newBookmarkStatus ? "Video bookmarked" : "Bookmark removed"
+        );
       } catch {
         // Revert optimistic update on error
         setBookmarkedVideos((prev) => {
@@ -309,7 +314,7 @@ export default function CoursePlayer({
         toast.error("Failed to update bookmark");
       }
     },
-    [bookmarkedVideos, course.id]
+    [bookmarkedVideos]
   );
 
   const handlePreviousVideo = () => {
@@ -443,9 +448,7 @@ export default function CoursePlayer({
         {/* Secondary actions row */}
         <div className="flex flex-wrap items-center gap-2">
           <Button
-            onClick={() =>
-              handleBookmark(currentVideo.id, currentVideo.videoId)
-            }
+            onClick={() => handleBookmark(currentVideo.id)}
             variant="outline"
             size="icon"
             className={`flex items-center gap-2 bg-transparent border border-white/10 hover:bg-white/5 hover:border-white/20 transition-colors duration-150 ${

@@ -38,8 +38,8 @@ export async function GET() {
     });
 
     return NextResponse.json(formattedBookmarks);
-  } catch (_error) {
-    // console.error("Error fetching bookmarks:", _error);
+  } catch {
+    // console.error("Error fetching bookmarks:", error);
     return NextResponse.json(
       { error: "Failed to fetch bookmarks" },
       { status: 500 }
@@ -68,22 +68,18 @@ export async function POST(req: Request) {
       return new NextResponse("Video not found", { status: 404 });
     }
 
-    // Check if bookmark already exists
-    const existingBookmark = await prisma.bookmark.findUnique({
+    const bookmark = await prisma.bookmark.upsert({
       where: {
         userId_videoId: {
           userId: session.user.id,
           videoId,
         },
       },
-    });
-
-    if (existingBookmark) {
-      return new NextResponse("Bookmark already exists", { status: 400 });
-    }
-
-    const bookmark = await prisma.bookmark.create({
-      data: {
+      update: {
+        note,
+        timestamp,
+      },
+      create: {
         userId: session.user.id,
         videoId,
         note,
@@ -93,11 +89,11 @@ export async function POST(req: Request) {
     });
 
     return NextResponse.json(bookmark);
-  } catch (_error) {
-    // console.error("Error creating bookmark:", _error);
-    if (_error instanceof z.ZodError) {
+  } catch (error) {
+    // console.error("Error creating bookmark:", error);
+    if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: "Validation Error", errors: _error.errors },
+        { error: "Validation Error", errors: error.errors },
         { status: 400 }
       );
     }

@@ -8,24 +8,6 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { DeleteCourseDialog } from "./DeleteCourseDialog";
 
-interface VideoProgress {
-  id: string;
-  userId: string;
-  videoId: string;
-  completed: boolean;
-  updatedAt: string;
-}
-
-interface SerializedVideo {
-  id: string;
-  title: string;
-  videoId: string;
-  order: number;
-  createdAt: string;
-  updatedAt: string;
-  progress: VideoProgress[];
-}
-
 export interface SerializedCourse {
   id: string;
   title: string;
@@ -34,8 +16,10 @@ export interface SerializedCourse {
   deadline: string | null;
   createdAt: string;
   updatedAt: string;
-  videos: SerializedVideo[];
-  completionPercentage?: number;
+  totalVideos: number;
+  completedVideos: number;
+  completionPercentage: number;
+  nextVideoId: string | null;
 }
 
 interface CourseCardProps {
@@ -47,49 +31,12 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, isPrimary }) => {
   const router = useRouter();
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
-  const completedVideos = course.videos.filter(
-    (video) => video.progress?.[0]?.completed
-  ).length;
-
-  const completionPercentage =
-    course.completionPercentage ??
-    Math.round((completedVideos / course.videos.length) * 100);
+  const completionPercentage = course.completionPercentage;
 
   const isCompleted = completionPercentage === 100;
   const isStarted = completionPercentage > 0;
   const isInProgress = isStarted && !isCompleted;
-
-  // Find the next unwatched video
-  const getNextUnwatchedVideo = () => {
-    // Handle edge case: no videos in course
-    if (!course.videos || course.videos.length === 0) {
-      return null;
-    }
-
-    // If no videos are completed, start with the first video
-    if (completedVideos === 0) {
-      return course.videos[0];
-    }
-
-    // Find the last completed video index
-    let lastCompletedIndex = -1;
-    for (let i = course.videos.length - 1; i >= 0; i--) {
-      if (course.videos[i].progress?.[0]?.completed) {
-        lastCompletedIndex = i;
-        break;
-      }
-    }
-
-    // If all videos are completed, return the last video
-    if (lastCompletedIndex === course.videos.length - 1) {
-      return course.videos[course.videos.length - 1];
-    }
-
-    // Return the video after the last completed video
-    return course.videos[lastCompletedIndex + 1];
-  };
-
-  const nextVideo = getNextUnwatchedVideo();
+  const nextVideoId = course.nextVideoId;
 
   const handleDelete = async () => {
     try {
@@ -135,7 +82,7 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, isPrimary }) => {
           </div>
 
           <p className="text-neutral-500 mb-4 font-light text-sm uppercase tracking-wide">
-            {course.videos.length} videos
+            {course.totalVideos} videos
           </p>
 
           {/* Progress bar and percentage */}
@@ -156,12 +103,12 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, isPrimary }) => {
             <Button
               asChild
               className="w-full bg-white text-black hover:bg-neutral-200 shadow-none hover:shadow-lg transition-all duration-200 border-0 font-medium"
-              disabled={!nextVideo}
+              disabled={!nextVideoId}
             >
               <Link
                 href={
-                  nextVideo
-                    ? `/home/courses/${course.id}?videoId=${nextVideo.id}`
+                  nextVideoId
+                    ? `/home/courses/${course.id}?videoId=${nextVideoId}`
                     : `/home/courses/${course.id}`
                 }
               >

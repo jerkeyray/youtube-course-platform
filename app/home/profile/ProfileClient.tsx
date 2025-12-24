@@ -71,7 +71,7 @@ function getLearningIdentity(stats: UserStats) {
     return "Consistent learner focused on deep technical topics.";
   if (stats.totalWatchTime > 600)
     return "Burst learner with long-form sessions.";
-  return "Building a foundation in technical subjects.";
+  return "";
 }
 
 function getLastStudiedText(dateString: string | null) {
@@ -141,9 +141,13 @@ export default function ProfileClient({
               <h1 className="text-3xl font-bold text-white tracking-tight">
                 {session.user.name || "User"}
               </h1>
-              <p className="text-zinc-400 text-lg font-medium">
-                {getLearningIdentity(profileData.stats)}
-              </p>
+              {(profileData.user.bio?.trim() ||
+                getLearningIdentity(profileData.stats)) && (
+                <p className="text-zinc-400 text-lg font-medium">
+                  {profileData.user.bio?.trim() ||
+                    getLearningIdentity(profileData.stats)}
+                </p>
+              )}
               <div className="flex items-center gap-4 text-sm text-zinc-500 pt-1">
                 <div className="flex items-center gap-2">
                   <Calendar className="h-4 w-4" />
