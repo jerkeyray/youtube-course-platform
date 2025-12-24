@@ -4,6 +4,22 @@ import { Button } from "@/components/ui/button";
 import { Play } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+function formatRelativeTime(dateString: string) {
+  const date = new Date(dateString);
+  const diffMs = Date.now() - date.getTime();
+  if (Number.isNaN(diffMs)) return "";
+
+  const diffMinutes = Math.floor(diffMs / (1000 * 60));
+  if (diffMinutes < 1) return "Just now";
+  if (diffMinutes < 60) return `${diffMinutes}m ago`;
+
+  const diffHours = Math.floor(diffMinutes / 60);
+  if (diffHours < 24) return `${diffHours}h ago`;
+
+  const diffDays = Math.floor(diffHours / 24);
+  return `${diffDays}d ago`;
+}
+
 interface SerializedCourse {
   id: string;
   title: string;
@@ -189,11 +205,11 @@ export default function HomeClient({ courses }: HomeClientProps) {
                   href={`/home/courses/${nextTask.courseId}?videoId=${nextTask.videoId}`}
                   className="group block relative overflow-hidden rounded-lg bg-white/5 supports-[backdrop-filter]:bg-white/5 supports-[backdrop-filter]:backdrop-blur-md border border-white/10 ring-1 ring-white/5 border-l-2 border-l-primary/50 shadow-lg shadow-black/30 hover:bg-white/10 hover:border-white/20 transition-colors"
                 >
-                  <div className="p-5 space-y-5">
+                  <div className="p-6 md:p-7 space-y-6">
                     {/* Course Info */}
                     <div className="space-y-3">
                       <div className="flex items-start justify-between gap-4">
-                        <h1 className="text-xl font-medium text-foreground leading-tight">
+                        <h1 className="text-2xl font-medium text-foreground leading-tight">
                           {nextTask.courseTitle}
                         </h1>
                         {nextTask.daysRemaining !== null && (
@@ -295,31 +311,33 @@ export default function HomeClient({ courses }: HomeClientProps) {
 
             {/* 2. SECONDARY ACTIONS */}
             {(recentlyWatchedVideos.length > 0 || courses.length > 0) && (
-              <div className="w-full rounded-lg border border-border bg-card/40 p-4">
+              <div className="w-full rounded-lg border border-border bg-card/40 p-5">
                 <div className="space-y-5">
                   {/* Recent Activity (Muted / Collapsible) */}
                   {recentlyWatchedVideos.length > 0 && (
                     <details className="group" open>
                       <summary className="list-none cursor-pointer select-none px-1 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors uppercase tracking-wider">
-                        Recent Activity
+                        Recent Activity ({recentlyWatchedVideos.length})
                       </summary>
-                      <div className="mt-3 border-l border-border/60 pl-4 ml-1 space-y-1">
+                      <div className="mt-3 space-y-2">
                         {recentlyWatchedVideos.map((video) => (
                           <Link
                             key={video.id}
                             href={`/home/courses/${video.courseId}?videoId=${video.id}`}
-                            className="flex items-center justify-between py-2 pr-2 rounded hover:bg-accent/40 transition-colors group/item -ml-2 pl-2"
+                            className="flex items-start justify-between gap-4 rounded-md border border-border/60 bg-background/30 px-3 py-2.5 hover:bg-accent/40 transition-colors group/item"
                           >
-                            <div className="flex items-center gap-3 overflow-hidden">
-                              <div className="flex flex-col min-w-0">
-                                <span className="text-sm text-muted-foreground group-hover/item:text-foreground/90 transition-colors truncate">
-                                  {video.title}
-                                </span>
-                                <span className="text-xs text-muted-foreground/70 truncate group-hover/item:text-muted-foreground transition-colors">
-                                  {video.courseTitle}
-                                </span>
-                              </div>
+                            <div className="flex min-w-0 flex-col">
+                              <span className="text-sm font-medium text-foreground/90 group-hover/item:text-foreground transition-colors truncate">
+                                {video.title}
+                              </span>
+                              <span className="text-xs text-muted-foreground truncate">
+                                {video.courseTitle}
+                              </span>
                             </div>
+
+                            <span className="shrink-0 text-xs text-muted-foreground tabular-nums">
+                              {formatRelativeTime(video.updatedAt)}
+                            </span>
                           </Link>
                         ))}
                       </div>
