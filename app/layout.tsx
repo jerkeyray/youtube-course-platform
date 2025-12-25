@@ -34,7 +34,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Yudoku",
     description: "The Youtube Course Experience Platform",
-    images: [`${siteUrl}/demo.png`],
+    images: [`${siteUrl}/og.png`],
   },
 };
 
