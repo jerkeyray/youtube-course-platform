@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     siteName: "Yudoku",
     images: [
       {
-        url: `${siteUrl}/demo.png`,
+        url: `${siteUrl}/og.png`,
         width: 1200,
         height: 630,
         alt: "Yudoku platform thumbnail",
@@ -37,7 +37,6 @@ export const metadata: Metadata = {
     images: [`${siteUrl}/og.png`],
   },
 };
-
 
 export default function RootLayout({
   children,
