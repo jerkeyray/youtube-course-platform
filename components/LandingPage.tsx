@@ -144,14 +144,14 @@ export default function LandingPage({ session }: LandingPageProps) {
         <div className="max-w-7xl mx-auto relative z-10 w-full">
           <div className="text-center max-w-3xl mx-auto mb-0 sm:mb-16 md:mb-20">
             <FadeIn>
-              <h1 className="text-5xl sm:text-6xl md:text-8xl font-medium tracking-tighter text-white mb-6 sm:mb-8 leading-[0.95]">
+              <h1 className="text-4xl sm:text-5xl md:text-7xl font-medium tracking-tighter text-white mb-6 sm:mb-8 leading-[0.95]">
                 Escape the algorithm. <br />
-                Finish the course.
+                Complete the course.
               </h1>
               <p className="text-lg sm:text-xl md:text-2xl text-neutral-400 font-light max-w-xl mx-auto leading-relaxed mb-10 sm:mb-12">
                 YouTube is built to keep you watching.
                 <br />
-                Yudoku is built to help you finish.
+                Yudoku is built to help you complete.
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center items-center">
@@ -227,7 +227,7 @@ export default function LandingPage({ session }: LandingPageProps) {
             <ArrowRight className="h-5 w-5 text-neutral-600 rotate-90 md:rotate-0" />
             <span className="text-white font-medium">Get a course</span>
             <ArrowRight className="h-5 w-5 text-neutral-600 rotate-90 md:rotate-0" />
-            <span className="text-white font-medium">Finish it</span>
+            <span className="text-white font-medium">Complete it</span>
           </div>
         </div>
       </section>
@@ -246,7 +246,7 @@ export default function LandingPage({ session }: LandingPageProps) {
             {[
               {
                 q: "Why not just use YouTube?",
-                a: "Because YouTube is optimized to keep you watching, not to help you finish. The recommendations, comments, and autoplay aren’t bugs — they’re the product. Yudoku removes those incentives so finishing is the default outcome, not a fight.",
+                a: "Because YouTube is optimized to keep you watching, not to help you complete. The recommendations, comments, and autoplay aren’t bugs — they’re the product. Yudoku removes those incentives so completing is the default outcome, not a fight.",
               },
               {
                 q: "Is this trying to replace YouTube?",
@@ -258,7 +258,7 @@ export default function LandingPage({ session }: LandingPageProps) {
               },
               {
                 q: "Is this free?",
-                a: "Yes. Yudoku is free to use. If it helps you finish something you wouldn’t have otherwise, you can support it — but finishing comes first.",
+                a: "Yes. Yudoku is free to use. If it helps you complete something you wouldn’t have otherwise, you can support it — but completing comes first.",
               },
             ].map((item, i) => (
               <AccordionItem
@@ -282,7 +282,7 @@ export default function LandingPage({ session }: LandingPageProps) {
       <footer className="py-16 px-6 border-t border-white/5 text-center bg-[#0A0A0A]">
         <div className="space-y-4">
           <p className="text-neutral-400 text-sm">
-            Yudoku is built for people who want to finish what they start.
+            Yudoku is built for people who want to complete what they start.
           </p>
 
           <p className="text-neutral-600 text-xs">
