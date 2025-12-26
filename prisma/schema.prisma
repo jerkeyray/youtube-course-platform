@@ -27,6 +27,7 @@ model User {
   bookmarks     Bookmark[]
   watchLater    WatchLater[]
   activities    UserActivity[]
+  notes         Note[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -96,6 +97,7 @@ model Course {
   userId      String
   user        User         @relation("UserCourses", fields: [userId], references: [id])
   videos      Video[]
+  notes       Note[]
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
   certificates Certificate[]
@@ -114,6 +116,7 @@ model Video {
   progress    VideoProgress[]
   bookmarks   Bookmark[]
   watchLater  WatchLater[]
+  notes       Note[]
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
   @@index([courseId])
@@ -186,6 +189,24 @@ model UserActivity {
   updatedAt DateTime @updatedAt
 
   @@unique([userId, date])
+}
+
+// Note model (timestamped notes)
+model Note {
+  id               String   @id @default(cuid())
+  userId           String
+  courseId         String
+  videoId          String
+  timestampSeconds Int      @default(0)
+  content          String
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  video            Video    @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  course           Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([userId, videoId])
+  @@index([courseId])
 }
 
 

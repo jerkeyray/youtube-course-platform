@@ -17,6 +17,7 @@ import Image from "next/image";
 import {
   BookOpen,
   Bookmark,
+  Clock,
   User,
   LogOut,
   Home,
@@ -37,6 +38,11 @@ const learningRoutes = [
 ];
 
 const toolRoutes = [
+  {
+    label: "Moments",
+    icon: Clock,
+    href: "/home/moments",
+  },
   {
     label: "Bookmarks",
     icon: Bookmark,
@@ -193,6 +199,8 @@ export function DashboardSidebar({
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
+                id="user-menu-trigger"
+                suppressHydrationWarning
                 variant="ghost"
                 className={cn(
                   "flex items-center gap-x-3 text-sm px-3 py-2.5 text-neutral-400 w-full transition-colors duration-150 hover:bg-white/5 hover:text-neutral-300 h-auto relative group",

@@ -85,10 +85,10 @@ export default async function CoursePage({
   return (
     <div className="min-h-screen lg:h-screen bg-black text-white lg:overflow-hidden">
       <div className="bg-black h-full">
-        <main className="container h-full pt-16 lg:pt-6 pb-6 px-4 lg:px-6">
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-12 lg:h-full">
+        <main className="container h-full min-h-0 pt-16 lg:pt-6 pb-6 px-4 lg:px-6">
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-12 lg:h-full min-h-0">
             {/* Course Player - spans 8 columns */}
-            <div className="lg:col-span-8 lg:h-full">
+            <div className="lg:col-span-8 lg:h-full min-h-0 lg:overflow-y-auto">
               <CoursePlayer
                 course={courseWithProgress}
                 initialVideoIndex={initialVideoIndex}
@@ -97,7 +97,7 @@ export default async function CoursePage({
             </div>
 
             {/* Sidebar - spans 4 columns */}
-            <div className="lg:col-span-4 lg:h-full">
+            <div className="lg:col-span-4 lg:h-full min-h-0 lg:overflow-y-auto">
               <CourseSidebar
                 course={courseWithProgress}
                 currentVideoIndex={initialVideoIndex}

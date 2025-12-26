@@ -75,7 +75,7 @@ export default function MyCoursesPage() {
           <div className="w-full max-w-5xl">
             <div className="mb-6 flex flex-col justify-between gap-4 md:flex-row md:items-center">
               <div>
-                <h1 className="text-3xl font-bold text-foreground">
+                <h1 className="text-xl font-medium text-zinc-400">
                   My Courses
                 </h1>
               </div>
@@ -106,7 +106,7 @@ export default function MyCoursesPage() {
           {sortedCourses.length > 0 && (
             <div className="mb-6 flex flex-col justify-between gap-4 md:flex-row md:items-center">
               <div>
-                <h1 className="text-3xl font-bold text-foreground">
+                <h1 className="text-xl font-medium text-zinc-400">
                   My Courses
                 </h1>
               </div>

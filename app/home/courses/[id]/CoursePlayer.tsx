@@ -7,9 +7,16 @@ import { Button } from "@/components/ui/button";
 import { YouTubePlayer } from "react-youtube";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
-import { Check, ChevronLeft, ChevronRight, Bookmark } from "lucide-react";
+import {
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  Bookmark,
+  NotebookPen,
+} from "lucide-react";
 import { toast } from "sonner";
 import VideoPlayer from "./VideoPlayer";
+import { NotesSidebar } from "@/components/NotesSidebar";
 
 type CourseWithProgress = Course & {
   videos: (Video & {
@@ -40,7 +47,7 @@ const StableVideoContainer = memo(
     isReadingMode: boolean;
   }) => {
     return (
-      <div className="aspect-video w-full overflow-hidden rounded-lg bg-black">
+      <div className="w-full h-full bg-black">
         <VideoPlayer
           videoId={videoId}
           initialTimestamp={startTime}
@@ -133,6 +140,8 @@ export default function CoursePlayer({
   const [currentVideoIndex, setCurrentVideoIndex] = useState(initialVideoIndex);
   const playerRef = useRef<YouTubePlayer | null>(null);
   const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const [isNotesOpen, setIsNotesOpen] = useState(false);
+  const [uiTimeSeconds, setUiTimeSeconds] = useState(0);
   const [watchedVideos, setWatchedVideos] = useState<Set<string>>(
     new Set(
       course.videos
@@ -440,8 +449,40 @@ export default function CoursePlayer({
     };
   }, []);
 
-  const onPlayerReady = useCallback((event: { target: YouTubePlayer }) => {
-    playerRef.current = event.target;
+  const onPlayerReady = useCallback((player: YouTubePlayer) => {
+    // VideoPlayer passes the YouTubePlayer directly (not an event object)
+    playerRef.current = player;
+  }, []);
+
+  const getCurrentTime = useCallback(() => {
+    if (
+      playerRef.current &&
+      typeof playerRef.current.getCurrentTime === "function"
+    ) {
+      const t = playerRef.current.getCurrentTime();
+      return Number.isFinite(t) ? t : 0;
+    }
+    return 0;
+  }, []);
+
+  const uiTimeLabel = useMemo(() => {
+    const m = Math.floor(uiTimeSeconds / 60);
+    const s = Math.floor(uiTimeSeconds % 60);
+    return `${m}:${s.toString().padStart(2, "0")}`;
+  }, [uiTimeSeconds]);
+
+  useEffect(() => {
+    const id = window.setInterval(() => {
+      setUiTimeSeconds(getCurrentTime());
+    }, 1000);
+    return () => window.clearInterval(id);
+  }, [getCurrentTime]);
+
+  const seekTo = useCallback((seconds: number) => {
+    if (playerRef.current && typeof playerRef.current.seekTo === "function") {
+      playerRef.current.seekTo(seconds, true);
+      playerRef.current.playVideo();
+    }
   }, []);
 
   if (!course.videos.length) {
@@ -451,7 +492,6 @@ export default function CoursePlayer({
       </div>
     );
   }
-
   const totalVideos = course.videos.length;
   const currentLessonNumber = currentVideoIndex + 1;
   const titleInfo = cleanVideoTitle(
@@ -468,15 +508,19 @@ export default function CoursePlayer({
         Lesson {currentLessonNumber} of {totalVideos}
       </p>
 
-      {/* Video Player */}
-      <StableVideoContainer
-        key={currentVideo.videoId}
-        videoId={currentVideo.videoId}
-        startTime={startTime}
-        onReady={onPlayerReady}
-        onProgress={saveProgress}
-        isReadingMode={false}
-      />
+      {/* Video Player Area */}
+      <div className="relative w-full overflow-hidden rounded-lg bg-black">
+        <div className="relative aspect-video">
+          <StableVideoContainer
+            key={currentVideo.videoId}
+            videoId={currentVideo.videoId}
+            startTime={startTime}
+            onReady={onPlayerReady}
+            onProgress={saveProgress}
+            isReadingMode={false}
+          />
+        </div>
+      </div>
 
       {/* Video Title Above Buttons */}
       <div className="mt-4 mb-2">
@@ -548,7 +592,40 @@ export default function CoursePlayer({
           >
             <ChevronRight className="h-4 w-4" />
           </Button>
+
+          <Button
+            variant="outline"
+            size="icon"
+            className={
+              "bg-transparent border border-white/10 text-neutral-400 hover:text-white hover:bg-white/5 hover:border-white/20 transition-colors duration-150 " +
+              (isNotesOpen ? "text-white border-white/30 bg-white/10" : "")
+            }
+            title={isNotesOpen ? "Close notes" : "Open notes"}
+            aria-label={isNotesOpen ? "Close notes" : "Open notes"}
+            onClick={() => {
+              const next = !isNotesOpen;
+              if (next) {
+                try {
+                  playerRef.current?.pauseVideo?.();
+                } catch {
+                  // ignore
+                }
+              }
+              setIsNotesOpen(next);
+            }}
+          >
+            <NotebookPen className="h-4 w-4" />
+          </Button>
         </div>
+
+        <NotesSidebar
+          courseId={course.id}
+          videoId={currentVideo.id}
+          getCurrentTime={getCurrentTime}
+          seekTo={seekTo}
+          isOpen={isNotesOpen}
+          onOpenChange={setIsNotesOpen}
+        />
       </div>
     </div>
   );
