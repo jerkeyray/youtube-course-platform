@@ -203,9 +203,9 @@ export default function HomeClient({ courses }: HomeClientProps) {
 
                 <Link
                   href={`/home/courses/${nextTask.courseId}?videoId=${nextTask.videoId}`}
-                  className="group block relative overflow-hidden rounded-lg bg-white/5 supports-[backdrop-filter]:bg-white/5 supports-[backdrop-filter]:backdrop-blur-md border border-white/10 ring-1 ring-white/5 border-l-2 border-l-primary/50 shadow-lg shadow-black/30 hover:bg-white/10 hover:border-white/20 transition-colors"
+                  className="group block relative overflow-hidden rounded-2xl bg-white/[0.04] backdrop-blur-2xl border border-white/[0.08] shadow-2xl shadow-black/50 hover:bg-white/[0.06] hover:border-white/[0.1] transition-all duration-500"
                 >
-                  <div className="p-6 md:p-7 space-y-6">
+                  <div className="p-6 md:p-8 space-y-6">
                     {/* Course Info */}
                     <div className="space-y-3">
                       <div className="flex items-start justify-between gap-4">
@@ -277,7 +277,7 @@ export default function HomeClient({ courses }: HomeClientProps) {
                       </div>
 
                       <div className="flex items-center gap-2 pl-4">
-                        <span className="inline-flex items-center gap-2 rounded-md bg-primary/10 px-2 py-1 text-xs font-medium text-primary group-hover:bg-primary/15 transition-colors">
+                        <span className="inline-flex items-center gap-2 text-xs font-medium text-primary transition-colors">
                           Resume
                           <Play
                             size={14}
@@ -311,7 +311,7 @@ export default function HomeClient({ courses }: HomeClientProps) {
 
             {/* 2. SECONDARY ACTIONS */}
             {(recentlyWatchedVideos.length > 0 || courses.length > 0) && (
-              <div className="w-full rounded-lg border border-border bg-card/40 p-5">
+              <div className="w-full p-5">
                 <div className="space-y-5">
                   {/* Recent Activity (Muted / Collapsible) */}
                   {recentlyWatchedVideos.length > 0 && (
@@ -324,7 +324,7 @@ export default function HomeClient({ courses }: HomeClientProps) {
                           <Link
                             key={video.id}
                             href={`/home/courses/${video.courseId}?videoId=${video.id}`}
-                            className="flex items-start justify-between gap-4 rounded-md border border-border/60 bg-background/30 px-3 py-2.5 hover:bg-accent/40 transition-colors group/item"
+                            className="flex items-start justify-between gap-4 rounded-md px-3 py-2.5 hover:bg-white/5 transition-colors group/item"
                           >
                             <div className="flex min-w-0 flex-col">
                               <span className="text-sm font-medium text-foreground/90 group-hover/item:text-foreground transition-colors truncate">
@@ -345,7 +345,7 @@ export default function HomeClient({ courses }: HomeClientProps) {
                   )}
 
                   {/* Library Link */}
-                  <div className="flex items-center justify-between pt-4 border-t border-border/60">
+                  <div className="flex items-center justify-between pt-4">
                     <span className="text-xs text-muted-foreground">
                       {courses.length} total courses
                     </span>
