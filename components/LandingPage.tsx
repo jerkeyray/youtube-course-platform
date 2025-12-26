@@ -140,15 +140,15 @@ export default function LandingPage({ session }: LandingPageProps) {
       <div className="fixed inset-0 z-0 opacity-[0.015] pointer-events-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')] brightness-100 contrast-150"></div>
 
       {/* Hero Section */}
-      <section className="relative md:min-h-screen flex flex-col items-center justify-start pt-24 pb-12 px-6 overflow-hidden sm:pt-28 md:pt-48">
+      <section className="relative min-h-[100dvh] md:min-h-screen flex flex-col items-center justify-center sm:justify-start pt-24 pb-12 px-4 sm:px-6 overflow-hidden sm:pt-28 md:pt-48">
         <div className="max-w-7xl mx-auto relative z-10 w-full">
-          <div className="text-center max-w-3xl mx-auto mb-0 sm:mb-16 md:mb-20">
+          <div className="text-center max-w-3xl mx-auto mb-8 sm:mb-16 md:mb-20">
             <FadeIn>
-              <h1 className="text-4xl sm:text-5xl md:text-7xl font-medium tracking-tighter text-white mb-6 sm:mb-8 leading-[0.95]">
+              <h1 className="text-3xl sm:text-5xl md:text-7xl font-medium tracking-tighter text-white mb-3 sm:mb-8 leading-[1.1] sm:leading-[0.95]">
                 Escape the algorithm. <br />
                 Complete the course.
               </h1>
-              <p className="text-lg sm:text-xl md:text-2xl text-neutral-400 font-light max-w-xl mx-auto leading-relaxed mb-10 sm:mb-12">
+              <p className="text-base sm:text-xl md:text-2xl text-neutral-400 font-light max-w-xl mx-auto leading-relaxed mb-5 sm:mb-12">
                 YouTube is built to keep you watching.
                 <br />
                 Yudoku is built to help you complete.
@@ -157,7 +157,7 @@ export default function LandingPage({ session }: LandingPageProps) {
               <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center items-center">
                 <Button
                   size="lg"
-                  className="h-12 w-full max-w-xs sm:w-auto sm:max-w-none px-8 text-base bg-white text-black hover:bg-neutral-200 rounded-md font-medium transition-colors"
+                  className="h-10 sm:h-12 w-full max-w-xs sm:w-auto sm:max-w-none px-8 text-sm sm:text-base bg-white text-black hover:bg-neutral-200 rounded-md font-medium transition-colors"
                   asChild
                 >
                   <Link href={getStartedLink}>Continue learning</Link>
@@ -178,9 +178,9 @@ export default function LandingPage({ session }: LandingPageProps) {
       </section>
 
       {/* Features Section - Reduced to 3 Outcome Points */}
-      <section className="py-20 sm:py-24 md:py-32 px-6 border-t border-white/5 bg-[#0A0A0A] relative">
+      <section className="py-10 sm:py-24 md:py-32 px-4 sm:px-6 border-t border-white/5 bg-[#0A0A0A] relative">
         <div className="max-w-6xl mx-auto relative z-10">
-          <div className="grid md:grid-cols-3 gap-10 sm:gap-12 md:gap-16 text-center md:text-left">
+          <div className="grid md:grid-cols-3 gap-6 sm:gap-12 md:gap-16 text-center md:text-left">
             {[
               {
                 icon: Layout,
@@ -199,14 +199,14 @@ export default function LandingPage({ session }: LandingPageProps) {
               },
             ].map((item, i) => (
               <FadeIn key={i} delay={i * 0.1}>
-                <div className="space-y-4">
+                <div className="space-y-2 sm:space-y-4">
                   <div className="inline-flex h-12 w-12 items-center justify-center rounded-lg bg-white/5 border border-white/10 text-white">
                     <item.icon className="h-6 w-6" />
                   </div>
-                  <h3 className="text-lg sm:text-xl font-medium text-white tracking-tight">
+                  <h3 className="text-base sm:text-xl font-medium text-white tracking-tight">
                     {item.title}
                   </h3>
-                  <p className="text-neutral-400 leading-relaxed font-light text-base sm:text-lg">
+                  <p className="text-neutral-400 leading-relaxed font-light text-sm sm:text-lg">
                     {item.desc}
                   </p>
                 </div>
@@ -219,10 +219,10 @@ export default function LandingPage({ session }: LandingPageProps) {
       {/* Minimal Flow Section */}
       <section
         id="how-it-works"
-        className="py-20 sm:py-24 md:py-32 px-6 border-t border-white/5 relative bg-[#0A0A0A]"
+        className="py-10 sm:py-24 md:py-32 px-4 sm:px-6 border-t border-white/5 relative bg-[#0A0A0A]"
       >
         <div className="max-w-4xl mx-auto text-center">
-          <div className="flex flex-col md:flex-row items-center justify-center gap-3 sm:gap-4 md:gap-8 text-lg sm:text-xl md:text-2xl text-neutral-400 font-light">
+          <div className="flex flex-col md:flex-row items-center justify-center gap-6 sm:gap-4 md:gap-8 text-base sm:text-xl md:text-2xl text-neutral-400 font-light">
             <span className="text-white font-medium">Add a playlist</span>
             <ArrowRight className="h-5 w-5 text-neutral-600 rotate-90 md:rotate-0" />
             <span className="text-white font-medium">Get a course</span>
@@ -233,9 +233,9 @@ export default function LandingPage({ session }: LandingPageProps) {
       </section>
 
       {/* FAQ - Cut Down */}
-      <section className="py-20 sm:py-24 md:py-32 px-6 border-t border-white/5 bg-[#0A0A0A]">
+      <section className="py-10 sm:py-24 md:py-32 px-4 sm:px-6 border-t border-white/5 bg-[#0A0A0A]">
         <div className="max-w-2xl mx-auto">
-          <h2 className="text-2xl font-medium tracking-tight text-white mb-12 text-center">
+          <h2 className="text-xl sm:text-2xl font-medium tracking-tight text-white mb-6 sm:mb-12 text-center">
             Common Questions
           </h2>
           <Accordion
@@ -266,10 +266,10 @@ export default function LandingPage({ session }: LandingPageProps) {
                 value={`item-${i}`}
                 className="border-b border-white/5"
               >
-                <AccordionTrigger className="text-neutral-200 hover:text-white hover:no-underline py-5 text-base font-medium">
+                <AccordionTrigger className="text-neutral-200 hover:text-white hover:no-underline py-4 sm:py-5 text-sm sm:text-base font-medium">
                   {item.q}
                 </AccordionTrigger>
-                <AccordionContent className="text-neutral-400 pb-5 font-light leading-relaxed">
+                <AccordionContent className="text-neutral-400 pb-5 font-light leading-relaxed text-sm sm:text-base">
                   {item.a}
                 </AccordionContent>
               </AccordionItem>
@@ -279,7 +279,7 @@ export default function LandingPage({ session }: LandingPageProps) {
       </section>
 
       {/* Simple Footer */}
-      <footer className="py-16 px-6 border-t border-white/5 text-center bg-[#0A0A0A]">
+      <footer className="py-8 sm:py-16 px-4 sm:px-6 border-t border-white/5 text-center bg-[#0A0A0A]">
         <div className="space-y-4">
           <p className="text-neutral-400 text-sm">
             Yudoku is built for people who want to complete what they start.
