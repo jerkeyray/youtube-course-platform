@@ -102,7 +102,7 @@ export function DashboardSidebar({
                 />
                 <route.icon
                   className={cn(
-                    "h-4 w-4 relative z-10 transition-opacity",
+                    "h-[18px] w-[18px] relative z-10 transition-opacity",
                     isActive
                       ? "text-white opacity-100"
                       : "text-neutral-400 group-hover:text-neutral-300 group-hover:opacity-100 opacity-90"
@@ -147,7 +147,7 @@ export function DashboardSidebar({
                 />
                 <route.icon
                   className={cn(
-                    "h-4 w-4 relative z-10 transition-opacity",
+                    "h-[18px] w-[18px] relative z-10 transition-opacity",
                     isActive
                       ? "text-white opacity-100"
                       : "text-neutral-400 group-hover:text-neutral-300 group-hover:opacity-100 opacity-90"
@@ -185,7 +185,7 @@ export function DashboardSidebar({
           />
           <HelpCircle
             className={cn(
-              "h-4 w-4 relative z-10 transition-opacity",
+              "h-[18px] w-[18px] relative z-10 transition-opacity",
               isWhyYudokuActive
                 ? "text-white opacity-100"
                 : "text-neutral-400 group-hover:text-neutral-300 group-hover:opacity-100 opacity-90"

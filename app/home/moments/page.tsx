@@ -6,6 +6,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
+import LoadingScreen from "@/components/LoadingScreen";
 
 type Moment = {
   id: string;
@@ -144,9 +145,7 @@ export default function MomentsPage() {
           </div>
 
           {isLoading ? (
-            <div className="py-16">
-              <p className="text-zinc-600">Loading…</p>
-            </div>
+            <LoadingScreen />
           ) : grouped.length === 0 ? (
             <div className="py-20">
               <p className="text-zinc-600 text-lg">No moments yet.</p>

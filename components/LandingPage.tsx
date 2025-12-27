@@ -253,6 +253,10 @@ export default function LandingPage({ session }: LandingPageProps) {
                 a: "No. Yudoku uses YouTube as a video source. What it replaces is the environment around the video — the algorithm, the noise, and the endless next option.",
               },
               {
+                q: "Does it work with unlisted playlists?",
+                a: "Yes — it works with public and unlisted playlists.",
+              },
+              {
                 q: "What makes Yudoku different from other course platforms?",
                 a: "Most platforms optimize for engagement and content discovery. Yudoku optimizes for completion. You commit to one course, see clear progress, and reach an actual finish line.",
               },
@@ -294,7 +298,7 @@ export default function LandingPage({ session }: LandingPageProps) {
               variant="ghost"
               size="sm"
               asChild
-              className="h-auto px-2 py-1 text-xs text-neutral-500 hover:text-white"
+              className="h-auto px-2 py-1 text-sm text-neutral-500 hover:text-white hover:bg-transparent"
             >
               <Link href="/home/why-yudoku">Why Yudoku</Link>
             </Button>
@@ -303,7 +307,7 @@ export default function LandingPage({ session }: LandingPageProps) {
               variant="ghost"
               size="sm"
               asChild
-              className="h-auto px-2 py-1 text-xs text-neutral-500 hover:text-white"
+              className="h-auto px-2 py-1 text-sm text-neutral-500 hover:text-white hover:bg-transparent"
             >
               <Link href="https://buymeacoffee.com/jerkeyray" target="_blank">
                 Support the project
@@ -314,7 +318,7 @@ export default function LandingPage({ session }: LandingPageProps) {
               variant="ghost"
               size="sm"
               asChild
-              className="h-auto px-2 py-1 text-xs text-neutral-500 hover:text-white"
+              className="h-auto px-2 py-1 text-sm text-neutral-500 hover:text-white hover:bg-transparent"
             >
               <Link
                 href={
@@ -334,7 +338,7 @@ export default function LandingPage({ session }: LandingPageProps) {
               variant="ghost"
               size="sm"
               asChild
-              className="h-auto px-2 py-1 text-xs text-neutral-500 hover:text-white"
+              className="h-auto px-2 py-1 text-sm text-neutral-500 hover:text-white hover:bg-transparent"
             >
               <Link href="https://jerkeyray.com" target="_blank">
                 Built by Aditya Srivastava

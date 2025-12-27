@@ -1,86 +1,83 @@
 # Yudoku
 
-Yudoku is a learning platform that transforms YouTube playlists into structured courses. It provides tools for progress tracking, note-taking, and habit building to enhance the self-learning experience from video content.
+Yudoku is a focused way to learn from YouTube — without getting trapped in the algorithm.
 
-## Philosophy
+It turns playlists into structured courses so you can actually finish what you start.
 
-Most learning tools are designed to keep you watching, not finishing. Yudoku is built to help you finish.
+No feeds.  
+No recommendations.  
+No endless scrolling.
 
-While other platforms optimize for engagement with algorithmic feeds and endless recommendations, Yudoku optimizes for completion.
+Just progress.
 
-- **No algorithmic feed**
-- **No endless recommendations**
-- **One active commitment at a time**
-- **Clear progress, visible finish lines**
+---
 
-The goal is not to discover more content. The goal is to actually get through the content you already chose.
+## Why Yudoku Exists
 
-## Features
+Most learning platforms optimize for attention, not completion.
 
-### Course Management
+You open a video to learn one thing and end up watching ten more you never planned to. Yudoku exists to break that loop.
 
-- **Playlist Conversion**: Import YouTube playlists to create structured courses.
-- **Deadline Setting**: Set personal deadlines for course completion to stay on track.
-- **Progress Tracking**: Monitor completion status for individual videos and overall courses.
+It’s built around a simple idea:
 
-### Learning Tools
+**Learning should have an end.**
 
-- **Smart Bookmarks**: Save specific timestamps in videos for quick reference.
-- **Notes System**: Add context-aware notes to bookmarks and courses.
-- **Watch Later**: Organize content for future viewing.
+---
 
-### Activity & Gamification
+## What Yudoku Does
 
-- **Activity Heatmap**: Visualize daily learning activity and consistency.
-- **Streak Tracking**: Maintain learning streaks to build consistent habits.
-- **Certificates**: Earn recognition upon completing courses.
+### Turns playlists into courses  
+Any YouTube playlist becomes a structured course with clear progress.
 
-### User Experience
+### Tracks real progress  
+You always know what you’ve finished and what’s left. No fake productivity.
 
-- **Profile Customization**: Manage user profiles with bios and learning history.
-- **Responsive Design**: Optimized interface for various devices.
-- **Dark Mode**: Built-in theme support.
+### Saves moments, not noise  
+Save timestamps to return to important moments later.  
+Not notes. Not essays. Just context you can jump back to.
 
-## Tech Stack
+### Removes distractions  
+No recommendations.  
+No algorithmic feed.  
+No infinite scroll.
 
-### Core
+---
 
-- **Framework**: Next.js 16 (App Router)
-- **Language**: TypeScript
-- **Database**: PostgreSQL
-- **ORM**: Prisma
+## What Yudoku Is Not
 
-### Frontend
+- Not a note-taking app  
+- Not a second brain  
+- Not another content platform  
 
-- **Styling**: Tailwind CSS
-- **Components**: Shadcn UI, Radix UI
-- **Animations**: Framer Motion
-- **Icons**: Lucide React
+It’s a focused layer on top of YouTube that helps you *finish* what you start.
 
-### Backend & Services
+---
 
-- **Authentication**: Auth.js (NextAuth)
-- **Data Fetching**: TanStack Query (React Query)
-- **External APIs**: YouTube Data API
+## Built With
 
-## Project Structure
+- Next.js  
+- TypeScript  
+- Tailwind CSS  
+- Prisma  
+- PostgreSQL  
 
-The project follows the Next.js App Router architecture:
+---
 
-- `app/`: Application routes and pages.
-  - `api/`: Backend API endpoints for courses, users, and activity.
-  - `home/`: Main dashboard views including courses and profile.
-  - `auth/`: Authentication related pages.
-- `components/`: Reusable UI components.
-  - `ui/`: Base design system components (Shadcn UI).
-- `lib/`: Utility functions, database clients, and shared logic.
-- `prisma/`: Database schema and migration history.
-- `types/`: TypeScript type definitions.
+## About
 
-## Author
+Yudoku was built out of frustration with half-finished courses and the illusion of productivity.
 
-Yudoku is built and maintained by [Aditya Srivastava](https://jerkeyray.com).
+If it helps you finish something you would’ve otherwise abandoned, it’s doing its job.
 
-It’s shaped by repeated frustration with half-finished playlists, fake productivity, and tools that confuse motion with progress.
+---
 
-If Yudoku helped you finish something you would’ve otherwise dropped, you can [support its continued development here](https://buymeacoffee.com/jerkeyray).
+## Support
+
+If Yudoku helped you, you can support its development here:
+
+**https://buymeacoffee.com/jerkeyray**
+
+---
+
+Built by Aditya Srivastava  
+https://jerkeyray.com

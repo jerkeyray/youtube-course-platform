@@ -69,35 +69,7 @@ export default function MyCoursesPage() {
   }
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-black text-white">
-        <div className="p-8 md:p-12">
-          <div className="max-w-6xl">
-            <div className="mb-16 flex flex-col justify-between gap-4 md:flex-row md:items-center">
-              <div>
-                <h1 className="text-xl font-medium text-zinc-400">
-                  My Courses
-                </h1>
-              </div>
-              <div className="flex items-center gap-2">
-                <Button
-                  asChild
-                  variant="outline"
-                  className="border-zinc-800 text-zinc-200 hover:bg-white/5 hover:text-white"
-                >
-                  <Link href="/home/courses/create">
-                    <PlusCircle className="mr-2 h-5 w-5" />
-                    Add Course
-                  </Link>
-                </Button>
-              </div>
-            </div>
-
-            <LoadingScreen variant="contained" text="Loading courses" />
-          </div>
-        </div>
-      </div>
-    );
+    return <LoadingScreen />;
   }
 
   return (
