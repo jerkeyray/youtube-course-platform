@@ -148,7 +148,7 @@ export default function BookmarksPage() {
               {/* Primary/First Bookmark */}
               <section>
                 <h2 className="text-sm font-medium text-white uppercase tracking-wider mb-6 flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-orange-500"></span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
                   Last Viewed
                 </h2>
                 <div className="max-w-md">

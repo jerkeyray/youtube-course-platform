@@ -8,87 +8,116 @@ export default function WhyYudokuPage() {
           Why Yudoku
         </h1>
 
-        <div className="mt-10 text-[15px] leading-7">
+        <div className="mt-10 text-[15px] leading-7 space-y-8">
           <section className="space-y-4">
             <p>
               Yudoku exists because most learning tools are designed to keep you
               watching, not finishing.
             </p>
-            <p>This one is built to help you finish.</p>
 
-            <div className="h-px bg-white/10 my-8" />
+            <p>
+              They reward attention, not progress. They make starting easy and
+              finishing optional.
+            </p>
 
+            <p>
+              Yudoku is built for the opposite goal.
+            </p>
+          </section>
+
+          <div className="h-px bg-white/10" />
+
+          <section className="space-y-4">
             <p>Most platforms optimize for engagement.</p>
-            <p>More recommendations. More choices. More noise.</p>
+            <p>More recommendations. More distractions. More noise.</p>
+
             <p>Yudoku optimizes for completion.</p>
 
             <ul className="list-disc pl-5 space-y-1">
               <li>No algorithmic feed</li>
               <li>No endless recommendations</li>
-              <li>One active commitment at a time</li>
-              <li>Clear progress, visible finish lines</li>
+              <li>One active course at a time</li>
+              <li>Clear progress and a visible finish</li>
             </ul>
 
             <p>
-              The goal is not to discover more content.
+              The goal isn’t discovery.
               <br />
-              The goal is to actually get through the content you already chose.
+              The goal is to actually finish what you started.
             </p>
+          </section>
 
-            <div className="h-px bg-white/10 my-8" />
+          <div className="h-px bg-white/10" />
 
-            <p>Things Yudoku intentionally does not do:</p>
-
-            <ul className="list-disc pl-5 space-y-1">
-              <li>It doesn’t try to guess what you should watch next</li>
-              <li>It doesn’t optimize for watch time</li>
-              <li>It doesn’t push unrelated content</li>
-              <li>It doesn’t pretend “starting” equals learning</li>
-            </ul>
-
-            <p>If a feature makes finishing harder, it doesn’t belong here.</p>
-
-            <div className="h-px bg-white/10 my-10" />
-
-            <p>Yudoku is built and maintained by a single developer.</p>
+          <section className="space-y-4">
             <p>
-              It’s shaped by repeated frustration with half-finished playlists,
-              fake productivity, and tools that confuse motion with progress.
+              Yudoku is intentionally quiet.
             </p>
 
-            <div className="h-px bg-white/10 my-10" />
+            <p>
+              The interface is designed to get out of your way — no feeds, no
+              visual noise, no constant decisions.
+            </p>
 
-            <p>You can find my other work here:</p>
+            <p>
+              The UI fades into the background so the work can stay in focus.
+              You’re not meant to think about the app. You’re meant to finish the
+              thing you came to learn.
+            </p>
+          </section>
+
+          <div className="h-px bg-white/10" />
+
+          <section className="space-y-4">
+            <p>
+              Yudoku is built by a single developer who got tired of half-finished
+              playlists and tools that confuse motion with progress.
+            </p>
+
+            <p>
+              It’s for people who want fewer tools, fewer tabs, and fewer
+              decisions — and more things actually done.
+            </p>
+          </section>
+
+          <div className="h-px bg-white/10" />
+
+          <section className="space-y-4">
+            <p>You can find more of my work here:</p>
+
             <p>
               <Link
                 href="https://jerkeyray.com"
                 target="_blank"
                 className="underline underline-offset-4 hover:text-white"
               >
-                jerkeyray.com — Aditya Srivastava
+                jerkeyray.com
               </Link>
             </p>
+          </section>
 
-            <div className="h-px bg-white/10 my-12" />
+          <div className="h-px bg-white/10" />
 
+          <section className="space-y-4">
             <p>
               If Yudoku helped you finish something you would’ve otherwise
-              dropped, you can support its continued development here.
+              dropped, you can support its development here:
             </p>
+
             <p>
               <Link
                 href="https://buymeacoffee.com/jerkeyray"
                 target="_blank"
                 className="underline underline-offset-4 hover:text-white"
               >
-                Buy me a coffee
+                buy me a coffee
               </Link>
             </p>
-
-            <p className="pt-6 text-xs text-neutral-500">
-              Built to reduce noise. Not add to it.
-            </p>
           </section>
+
+          <p className="pt-6 text-xs text-neutral-500">
+            Built to reduce noise. Not add to it.
+          </p>
         </div>
       </div>
     </div>

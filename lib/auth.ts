@@ -15,18 +15,6 @@ const isEdge =
   typeof process.env.NEXT_RUNTIME === "string" &&
   process.env.NEXT_RUNTIME === "edge";
 
-interface ExtendedUser extends User {
-  id: string;
-}
-
-interface ExtendedSession extends DefaultSession {
-  user?: ExtendedUser & DefaultSession["user"];
-}
-
-interface ExtendedToken extends JWT {
-  id?: string;
-}
-
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: isEdge ? undefined : PrismaAdapter(prisma),
   session: { strategy: "jwt" },
@@ -37,27 +25,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
-    session: ({
-      session,
-      token,
-    }: {
-      session: ExtendedSession;
-      token: ExtendedToken;
-    }) => {
-      if (session?.user && token.sub) {
-        session.user.id = token.sub; // token.sub is the user id from JWT
+    session: ({ session, token }) => {
+      if (session.user && token.sub) {
+        session.user.id = token.sub;
       }
       return session;
     },
-    jwt: ({
-      token,
-      user,
-    }: {
-      token: ExtendedToken;
-      user?: ExtendedUser | Account | Profile;
-    }) => {
-      if (user && "id" in user) {
-        // Check if user object has id (for User type)
+    jwt: ({ token, user }) => {
+      if (user) {
         token.id = user.id;
       }
       return token;

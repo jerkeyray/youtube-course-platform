@@ -70,8 +70,27 @@ export default function CreateCourseClient({
       });
 
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Failed to create course");
+        let payload: unknown = null;
+        try {
+          payload = await response.json();
+        } catch {
+          // ignore
+        }
+
+        const message = (() => {
+          if (typeof payload !== "object" || payload === null) {
+            return "Failed to create course";
+          }
+
+          const obj = payload as Record<string, unknown>;
+          if (typeof obj.error === "string" && obj.error.trim())
+            return obj.error;
+          if (typeof obj.message === "string" && obj.message.trim())
+            return obj.message;
+          return "Failed to create course";
+        })();
+
+        throw new Error(message);
       }
 
       const course = await response.json();
@@ -109,8 +128,9 @@ export default function CreateCourseClient({
               Create a course
             </h1>
             <p className="text-neutral-400 font-light text-lg">
-              We'll process your playlist and organize it into a structured
-              learning path. This usually takes a few moments.
+              Paste either a YouTube playlist link, or a single video link.
+              Single videos are automatically split into chapters using the
+              timestamps in the video description.
             </p>
           </div>
 
@@ -138,7 +158,7 @@ export default function CreateCourseClient({
                     htmlFor="playlistUrl"
                     className="text-sm font-medium text-neutral-200"
                   >
-                    YouTube Playlist URL
+                    YouTube playlist or video URL
                   </label>
                   <div className="relative">
                     <div className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500">
@@ -149,12 +169,13 @@ export default function CreateCourseClient({
                       name="playlistUrl"
                       required
                       type="url"
-                      placeholder="https://youtube.com/playlist?list=..."
+                      placeholder="https://youtube.com/watch?v=... or ...playlist?list=..."
                       className="pl-10 bg-[#0A0A0A] border-white/10 text-white placeholder:text-neutral-600 focus-visible:ring-1 focus-visible:ring-white focus-visible:border-white h-12"
                     />
                   </div>
                   <p className="text-xs text-neutral-500 mt-1">
-                    Works with public YouTube playlists.
+                    Works with public and unlisted playlists. For single videos,
+                    timestamps must be in the video description.
                   </p>
                 </div>
 

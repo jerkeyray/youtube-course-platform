@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { motion } from "framer-motion";
+import { motion, Variants } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Loader } from "@/components/ui/loader";
 
@@ -25,7 +25,7 @@ export default function LoadingScreen({
   };
 
   // Animation for the "loading" text
-  const textVariants = {
+  const textVariants: Variants = {
     initial: { opacity: 0.5 },
     animate: {
       opacity: [0.5, 1, 0.5],

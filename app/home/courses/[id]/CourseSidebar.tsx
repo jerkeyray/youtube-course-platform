@@ -158,11 +158,8 @@ export default function CourseSidebar({
         {/* Header */}
         <div className="px-4 pt-3 pb-3 border-b border-white/5">
           <h3 className="text-xs font-medium text-neutral-400 uppercase tracking-wider mb-2">
-            Course outline
+            Chapters
           </h3>
-          <p className="text-xs text-neutral-500">
-            Lesson {localCurrentVideoIndex + 1} of {totalVideos}
-          </p>
         </div>
 
         {/* Lesson list */}

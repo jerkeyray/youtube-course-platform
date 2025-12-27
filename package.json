@@ -3,11 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "prisma generate && next dev",
-    "build": "prisma generate && next build",
-    "start": "next start",
-    "lint": "next lint",
-    "postinstall": "prisma generate"
+    "dev": "bunx prisma generate && bun next dev",
+    "build": "bunx prisma generate && bun next build",
+    "start": "bun next start",
+    "lint": "bun next lint"
   },
   "dependencies": {
     "@auth/core": "^0.39.1",
@@ -21,6 +20,7 @@
     "@radix-ui/react-label": "^2.1.7",
     "@radix-ui/react-popover": "^1.1.14",
     "@radix-ui/react-progress": "^1.1.7",
+    "@radix-ui/react-scroll-area": "^1.2.10",
     "@radix-ui/react-select": "^2.2.5",
     "@radix-ui/react-slot": "^1.2.3",
     "@radix-ui/react-tooltip": "^1.2.7",
@@ -61,7 +61,7 @@
     "eslint": "^9.27.0",
     "eslint-config-next": "14.1.0",
     "postcss": "^8.5.3",
-    "prisma": "^6.8.2",
+    "prisma": "6.8.2",
     "tailwindcss": "^3.4.1",
     "tailwindcss-animate": "^1.0.7",
     "tw-animate-css": "^1.3.0",

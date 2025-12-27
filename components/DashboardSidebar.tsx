@@ -17,6 +17,7 @@ import Image from "next/image";
 import {
   BookOpen,
   Bookmark,
+  Clock,
   User,
   LogOut,
   Home,
@@ -37,6 +38,11 @@ const learningRoutes = [
 ];
 
 const toolRoutes = [
+  {
+    label: "Moments",
+    icon: Clock,
+    href: "/home/moments",
+  },
   {
     label: "Bookmarks",
     icon: Bookmark,
@@ -96,10 +102,10 @@ export function DashboardSidebar({
                 />
                 <route.icon
                   className={cn(
-                    "h-4 w-4 relative z-10 transition-opacity",
+                    "h-[18px] w-[18px] relative z-10 transition-[filter,color,opacity]",
                     isActive
                       ? "text-white opacity-100"
-                      : "text-neutral-400 group-hover:text-neutral-300 group-hover:opacity-100 opacity-90"
+                      : "text-neutral-400 opacity-90 group-hover:text-white group-hover:opacity-100 group-hover:[filter:drop-shadow(0_0_10px_currentColor)_drop-shadow(0_0_10px_currentColor)]"
                   )}
                 />
                 {!isCollapsed && (
@@ -141,10 +147,10 @@ export function DashboardSidebar({
                 />
                 <route.icon
                   className={cn(
-                    "h-4 w-4 relative z-10 transition-opacity",
+                    "h-[18px] w-[18px] relative z-10 transition-[filter,color,opacity]",
                     isActive
                       ? "text-white opacity-100"
-                      : "text-neutral-400 group-hover:text-neutral-300 group-hover:opacity-100 opacity-90"
+                      : "text-neutral-400 opacity-90 group-hover:text-white group-hover:opacity-100 group-hover:[filter:drop-shadow(0_0_10px_currentColor)_drop-shadow(0_0_10px_currentColor)]"
                   )}
                 />
                 {!isCollapsed && (
@@ -179,10 +185,10 @@ export function DashboardSidebar({
           />
           <HelpCircle
             className={cn(
-              "h-4 w-4 relative z-10 transition-opacity",
+              "h-[18px] w-[18px] relative z-10 transition-[filter,color,opacity]",
               isWhyYudokuActive
                 ? "text-white opacity-100"
-                : "text-neutral-400 group-hover:text-neutral-300 group-hover:opacity-100 opacity-90"
+                : "text-neutral-400 opacity-90 group-hover:text-white group-hover:opacity-100 group-hover:[filter:drop-shadow(0_0_10px_currentColor)_drop-shadow(0_0_10px_currentColor)]"
             )}
           />
           {!isCollapsed && <span className="relative z-10">Why Yudoku</span>}
@@ -193,6 +199,8 @@ export function DashboardSidebar({
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
+                id="user-menu-trigger"
+                suppressHydrationWarning
                 variant="ghost"
                 className={cn(
                   "flex items-center gap-x-3 text-sm px-3 py-2.5 text-neutral-400 w-full transition-colors duration-150 hover:bg-white/5 hover:text-neutral-300 h-auto relative group",

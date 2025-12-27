@@ -57,6 +57,16 @@ export async function GET() {
       orderBy: [{ courseId: "asc" }, { order: "asc" }],
     });
 
+    const chapters = await db.chapter.findMany({
+      where: { video: { courseId: { in: courseIds } } },
+      select: {
+        id: true,
+        order: true,
+        video: { select: { courseId: true } },
+      },
+      orderBy: [{ videoId: "asc" }, { order: "asc" }],
+    });
+
     const completedProgress = await db.videoProgress.findMany({
       where: {
         userId,
@@ -65,6 +75,23 @@ export async function GET() {
       },
       select: {
         video: { select: { id: true, courseId: true, order: true } },
+      },
+    });
+
+    const completedChapterProgress = await db.chapterProgress.findMany({
+      where: {
+        userId,
+        completed: true,
+        chapter: { video: { courseId: { in: courseIds } } },
+      },
+      select: {
+        chapter: {
+          select: {
+            id: true,
+            order: true,
+            video: { select: { courseId: true } },
+          },
+        },
       },
     });
 
@@ -94,9 +121,37 @@ export async function GET() {
       });
     }
 
+    const chaptersByCourse = new Map<
+      string,
+      Array<{ id: string; order: number }>
+    >();
+    for (const chapter of chapters) {
+      const courseId = chapter.video.courseId;
+      const list = chaptersByCourse.get(courseId) ?? [];
+      list.push({ id: chapter.id, order: chapter.order });
+      chaptersByCourse.set(courseId, list);
+    }
+
+    const completedChapterAggByCourse = new Map<
+      string,
+      { completedChapters: number }
+    >();
+    for (const row of completedChapterProgress) {
+      const courseId = row.chapter.video.courseId;
+      const prev = completedChapterAggByCourse.get(courseId) ?? {
+        completedChapters: 0,
+      };
+      completedChapterAggByCourse.set(courseId, {
+        completedChapters: prev.completedChapters + 1,
+      });
+    }
+
     const summaries: CourseSummary[] = courses.map((course) => {
       const courseVideos = videosByCourse.get(course.id) ?? [];
       const totalVideos = courseVideos.length;
+      const courseChapters = chaptersByCourse.get(course.id) ?? [];
+      const isSingleVideoChapterCourse =
+        totalVideos === 1 && courseChapters.length > 0;
       const completedAgg = completedAggByCourse.get(course.id) ?? {
         completedVideos: 0,
         lastCompletedOrder: -1,
@@ -107,31 +162,49 @@ export async function GET() {
         totalVideos
       );
 
-      const completionPercentage =
-        totalVideos > 0
-          ? Math.round((completedVideosCount / totalVideos) * 100)
-          : 0;
+      const completedChaptersCount = Math.min(
+        completedChapterAggByCourse.get(course.id)?.completedChapters ?? 0,
+        courseChapters.length
+      );
+
+      const completionPercentage = isSingleVideoChapterCourse
+        ? courseChapters.length > 0
+          ? Math.round((completedChaptersCount / courseChapters.length) * 100)
+          : 0
+        : totalVideos > 0
+        ? Math.round((completedVideosCount / totalVideos) * 100)
+        : 0;
 
       let nextVideoId: string | null = null;
       if (totalVideos > 0) {
         const firstVideo = courseVideos[0];
         const lastVideo = courseVideos[totalVideos - 1];
 
-        if (completedVideosCount === 0) {
+        if (isSingleVideoChapterCourse) {
+          // The course player uses videoId query param even for chapters.
           nextVideoId = firstVideo.id;
-        } else if (completedAgg.lastCompletedOrder >= lastVideo.order) {
-          nextVideoId = lastVideo.id;
         } else {
-          nextVideoId =
-            courseVideos.find((v) => v.order > completedAgg.lastCompletedOrder)
-              ?.id ?? lastVideo.id;
+          if (completedVideosCount === 0) {
+            nextVideoId = firstVideo.id;
+          } else if (completedAgg.lastCompletedOrder >= lastVideo.order) {
+            nextVideoId = lastVideo.id;
+          } else {
+            nextVideoId =
+              courseVideos.find(
+                (v) => v.order > completedAgg.lastCompletedOrder
+              )?.id ?? lastVideo.id;
+          }
         }
       }
 
       return {
         ...course,
-        totalVideos,
-        completedVideos: completedVideosCount,
+        totalVideos: isSingleVideoChapterCourse
+          ? courseChapters.length
+          : totalVideos,
+        completedVideos: isSingleVideoChapterCourse
+          ? completedChaptersCount
+          : completedVideosCount,
         completionPercentage,
         nextVideoId,
       };

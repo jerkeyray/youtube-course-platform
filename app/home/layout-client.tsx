@@ -43,7 +43,7 @@ export default function HomeLayoutClient({
       {/* Desktop Sidebar */}
       <div
         className={cn(
-          "hidden h-full md:flex md:flex-col md:fixed md:inset-y-0 z-[80] bg-[#0A0A0A] transition-all duration-200 ease-in-out",
+          "hidden h-full md:flex md:flex-col md:fixed md:inset-y-0 z-[80] bg-black transition-all duration-200 ease-in-out",
           isCollapsed ? "md:w-16" : "md:w-64",
           isCoursePage && "opacity-50"
         )}

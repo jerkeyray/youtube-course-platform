@@ -51,70 +51,44 @@ export default function MyCoursesPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-background text-foreground selection:bg-primary selection:text-primary-foreground flex flex-col">
-        <main className="flex-1 flex items-center justify-center p-6 md:p-8">
-          <div className="w-full max-w-5xl">
-            <div className="rounded-lg border border-border bg-card/40 p-8 text-center">
+      <div className="min-h-screen bg-black text-white">
+        <div className="p-8 md:p-12">
+          <div className="max-w-6xl">
+            <div className="rounded-lg border border-zinc-800 bg-zinc-900/40 p-8 text-center">
               <h2 className="mb-2 text-xl font-medium text-white">
                 Error loading courses
               </h2>
-              <p className="mb-4 text-gray-400">
+              <p className="mb-4 text-zinc-400">
                 Please try refreshing the page
               </p>
             </div>
           </div>
-        </main>
+        </div>
       </div>
     );
   }
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-background text-foreground selection:bg-primary selection:text-primary-foreground flex flex-col">
-        <main className="flex-1 flex items-center justify-center p-6 md:p-8">
-          <div className="w-full max-w-5xl">
-            <div className="mb-6 flex flex-col justify-between gap-4 md:flex-row md:items-center">
-              <div>
-                <h1 className="text-3xl font-bold text-foreground">
-                  My Courses
-                </h1>
-              </div>
-              <div className="flex items-center gap-2">
-                <Button
-                  className="bg-white text-black hover:bg-neutral-200"
-                  asChild
-                >
-                  <Link href="/home/courses/create">
-                    <PlusCircle className="mr-2 h-5 w-5" />
-                    Add Course
-                  </Link>
-                </Button>
-              </div>
-            </div>
-
-            <LoadingScreen variant="contained" text="Loading courses" />
-          </div>
-        </main>
-      </div>
-    );
+    return <LoadingScreen />;
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground selection:bg-primary selection:text-primary-foreground flex flex-col">
-      <main className="flex-1 flex items-center justify-center p-6 md:p-8">
-        <div className="w-full max-w-5xl">
+    <div className="min-h-screen bg-black text-white">
+      <div className="p-8 md:p-12">
+        <div className="max-w-6xl">
           {sortedCourses.length > 0 && (
-            <div className="mb-6 flex flex-col justify-between gap-4 md:flex-row md:items-center">
+            <div className="mb-16 flex flex-col justify-between gap-4 md:flex-row md:items-center">
               <div>
-                <h1 className="text-3xl font-bold text-foreground">
+                <h1 className="text-xl font-medium text-zinc-400">
                   My Courses
                 </h1>
               </div>
 
               <div className="flex items-center gap-2">
                 <Button
-                  className="bg-white text-black hover:bg-neutral-200"
                   asChild
+                  variant="outline"
+                  className="border-zinc-800 text-zinc-200 hover:bg-white/5 hover:text-white"
                 >
                   <Link href="/home/courses/create">
                     <PlusCircle className="mr-2 h-5 w-5" />
@@ -126,37 +100,27 @@ export default function MyCoursesPage() {
           )}
 
           {sortedCourses.length === 0 ? (
-            <div className="w-full text-center py-12 border border-dashed border-border rounded-lg bg-card/40">
-              <h2 className="text-lg font-medium text-white mb-2">
-                No active courses
-              </h2>
-              <p className="text-sm text-neutral-500 mb-4">
-                Start a new learning journey today.
-              </p>
-              <Button
-                asChild
-                variant="outline"
-                size="sm"
-                className="border-border hover:bg-accent hover:text-foreground"
-              >
-                <Link href="/home/courses/create">Create Course</Link>
-              </Button>
+            <div className="py-20">
+              <p className="text-zinc-600 text-lg">No courses yet.</p>
+              <div className="mt-6">
+                <Button
+                  asChild
+                  variant="outline"
+                  className="border-zinc-800 text-zinc-200 hover:bg-white/5 hover:text-white"
+                >
+                  <Link href="/home/courses/create">Add your first course</Link>
+                </Button>
+              </div>
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {sortedCourses.map((course: SerializedCourse, index: number) => (
-                <CourseCard
-                  key={course.id}
-                  course={course}
-                  isPrimary={
-                    index === 0 && (course.completionPercentage ?? 0) < 100
-                  }
-                />
+              {sortedCourses.map((course: SerializedCourse) => (
+                <CourseCard key={course.id} course={course} />
               ))}
             </div>
           )}
         </div>
-      </main>
+      </div>
     </div>
   );
 }

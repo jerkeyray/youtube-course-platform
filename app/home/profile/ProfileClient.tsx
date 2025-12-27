@@ -123,14 +123,14 @@ export default function ProfileClient({
                     alt={session.user.name || "Profile"}
                     fill
                     className="object-cover"
-                    sizes="80px"
+                    sizes="128px"
                     quality={85}
                     priority
                     unoptimized
                   />
                 </div>
               ) : (
-                <div className="h-20 w-20 rounded-full bg-zinc-900 flex items-center justify-center text-zinc-500 text-2xl font-bold ring-2 ring-zinc-800">
+                <div className="h-32 w-32 rounded-full bg-zinc-900 flex items-center justify-center text-zinc-500 text-4xl font-bold ring-2 ring-zinc-800">
                   {session.user.name?.[0]?.toUpperCase() || "U"}
                 </div>
               )}
@@ -141,13 +141,6 @@ export default function ProfileClient({
               <h1 className="text-3xl font-bold text-white tracking-tight">
                 {session.user.name || "User"}
               </h1>
-              {(profileData.user.bio?.trim() ||
-                getLearningIdentity(profileData.stats)) && (
-                <p className="text-zinc-400 text-lg font-medium">
-                  {profileData.user.bio?.trim() ||
-                    getLearningIdentity(profileData.stats)}
-                </p>
-              )}
               <div className="flex items-center gap-4 text-sm text-zinc-500 pt-1">
                 <div className="flex items-center gap-2">
                   <Calendar className="h-4 w-4" />

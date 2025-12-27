@@ -1,31 +1,35 @@
-export default function ChapterPage({
+import { prisma } from "@/lib/prisma";
+import { CoursePlayer } from "@/components/CoursePlayer";
+import { notFound, redirect } from "next/navigation";
+import { auth } from "@/auth";
+
+export default async function ChapterPage({
   params,
 }: {
-  params: { courseId: string; chapterId: string };
+  params: Promise<{ courseId: string; chapterId: string }>;
 }) {
-  // TODO: Fetch video data using params.chapterId
-  const video = { id: "", videoId: "" }; // Temporary placeholder
+  const session = await auth();
+  if (!session) {
+    redirect("/api/auth/signin");
+  }
+
+  const { courseId, chapterId } = await params;
+
+  const video = await prisma.video.findUnique({
+    where: { id: chapterId },
+  });
+
+  if (!video) {
+    notFound();
+  }
 
   return (
-    <div className="min-h-screen bg-black text-white">
-      <div className="bg-black min-h-screen">
-        <div className="container pt-8 pb-8 px-4 lg:px-6">
-          {/* Video Player */}
-          <div className="aspect-video relative mb-6">
-            <iframe
-              key={video.videoId}
-              src={`https://www.youtube-nocookie.com/embed/${video.videoId}?rel=0&showinfo=0&modestbranding=1&enablejsapi=1&iv_load_policy=3&fs=1&cc_load_policy=0`}
-              title="Video Player"
-              className="w-full h-full rounded-lg border-0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              allowFullScreen
-              loading="lazy"
-            />
-          </div>
-
-          {/* Video Title and Description */}
-        </div>
-      </div>
+    <div className="min-h-screen bg-background">
+      <CoursePlayer
+        videoId={video.videoId}
+        videoDatabaseId={video.id}
+        courseId={courseId}
+      />
     </div>
   );
 }
