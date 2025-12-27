@@ -82,7 +82,8 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, isPrimary }) => {
           </div>
 
           <p className="text-zinc-500 mb-4 font-light text-sm uppercase tracking-wide">
-            {course.totalVideos} videos
+            {course.totalVideos}{" "}
+            {course.totalVideos === 1 ? "lesson" : "lessons"}
           </p>
 
           {/* Progress bar and percentage */}

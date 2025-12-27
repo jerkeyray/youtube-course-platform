@@ -40,7 +40,7 @@ export async function GET(
     }
 
     return NextResponse.json(course);
-  } catch (error) {
+  } catch {
     // console.error("[COURSE_GET_BY_ID]", error);
     return new NextResponse("Internal Error", { status: 500 });
   }
@@ -86,7 +86,7 @@ export async function PUT(
     });
 
     return NextResponse.json(updatedCourse);
-  } catch (error) {
+  } catch {
     // console.error("[COURSE_UPDATE]", error);
     return new NextResponse("Internal Error", { status: 500 });
   }
@@ -124,6 +124,26 @@ export async function DELETE(
 
     // Delete course and all related data in a transaction
     await db.$transaction(async (tx) => {
+      // Delete chapter progress for videos in this course
+      await tx.chapterProgress.deleteMany({
+        where: {
+          chapter: {
+            video: {
+              courseId,
+            },
+          },
+        },
+      });
+
+      // Delete chapters for videos in this course
+      await tx.chapter.deleteMany({
+        where: {
+          video: {
+            courseId,
+          },
+        },
+      });
+
       // First delete all bookmarks for videos in this course
       await tx.bookmark.deleteMany({
         where: {
@@ -165,7 +185,7 @@ export async function DELETE(
     });
 
     return new NextResponse(null, { status: 204 });
-  } catch (error) {
+  } catch {
     // console.error("[COURSE_DELETE]", error);
     return new NextResponse("Internal error", { status: 500 });
   }
@@ -191,7 +211,7 @@ export async function PATCH(
     });
 
     return NextResponse.json(course);
-  } catch (error) {
+  } catch {
     // console.error("[COURSE_PATCH]", error);
     return new NextResponse("Internal error", { status: 500 });
   }

@@ -49,12 +49,10 @@ export function DeleteCourseDialog({
         <div className="py-4">
           <Label
             htmlFor="confirm-text"
-            className="mb-2 block dark:text-blue-200"
+            className="mb-2 block text-muted-foreground"
           >
             Please type{" "}
-            <span className="font-semibold dark:text-blue-100">
-              {courseTitle}
-            </span>{" "}
+            <span className="font-semibold text-foreground">{courseTitle}</span>{" "}
             to confirm deletion
           </Label>
           <Input
@@ -62,22 +60,22 @@ export function DeleteCourseDialog({
             value={confirmText}
             onChange={(e) => setConfirmText(e.target.value)}
             placeholder="Type course name to confirm"
-            className="mt-2 dark:bg-blue-950/50 dark:border-blue-700"
+            className="mt-2"
           />
         </div>
         <DialogFooter>
           <Button
-            variant="outline"
+            variant="ghost"
             onClick={onClose}
-            className="dark:border-blue-700 dark:text-blue-300 dark:hover:bg-blue-900/50"
+            className="text-neutral-300 hover:text-white hover:bg-white/5"
           >
             Cancel
           </Button>
           <Button
-            variant="destructive"
+            variant="outline"
             onClick={handleConfirm}
             disabled={confirmText !== courseTitle}
-            className="dark:bg-red-800 dark:hover:bg-red-700"
+            className="border-white/10 bg-white/5 text-white hover:bg-white/10"
           >
             Delete Course
           </Button>

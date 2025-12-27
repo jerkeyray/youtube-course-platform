@@ -2,7 +2,13 @@
 "use client";
 
 import { useState, useCallback, useEffect, useMemo, useRef, memo } from "react";
-import { Course, Video, VideoProgress } from "@prisma/client";
+import {
+  Chapter,
+  ChapterProgress,
+  Course,
+  Video,
+  VideoProgress,
+} from "@prisma/client";
 import { Button } from "@/components/ui/button";
 import { YouTubePlayer } from "react-youtube";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -13,14 +19,17 @@ import {
   ChevronRight,
   Bookmark,
   NotebookPen,
+  List,
 } from "lucide-react";
 import { toast } from "sonner";
 import VideoPlayer from "./VideoPlayer";
 import { NotesSidebar } from "@/components/NotesSidebar";
+import ChaptersSheet from "./ChaptersSheet";
 
 type CourseWithProgress = Course & {
   videos: (Video & {
     progress: (VideoProgress & { lastWatchedSeconds: number })[];
+    chapters?: (Chapter & { progress: ChapterProgress[] })[];
   })[];
   completionPercentage: number;
 };
@@ -140,8 +149,24 @@ export default function CoursePlayer({
   const [currentVideoIndex, setCurrentVideoIndex] = useState(initialVideoIndex);
   const playerRef = useRef<YouTubePlayer | null>(null);
   const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const suppressAutoChapterUntilRef = useRef<number>(0);
   const [isNotesOpen, setIsNotesOpen] = useState(false);
   const [uiTimeSeconds, setUiTimeSeconds] = useState(0);
+  const [currentChapterIndex, setCurrentChapterIndex] = useState(0);
+  const [chapterCompleteIds, setChapterCompleteIds] = useState<Set<string>>(
+    () => {
+      const ids = new Set<string>();
+      for (const video of course.videos) {
+        for (const chapter of video.chapters ?? []) {
+          if (chapter.progress?.some((p) => p.completed)) {
+            ids.add(chapter.id);
+          }
+        }
+      }
+      return ids;
+    }
+  );
+  const [isChaptersOpen, setIsChaptersOpen] = useState(false);
   const [watchedVideos, setWatchedVideos] = useState<Set<string>>(
     new Set(
       course.videos
@@ -369,6 +394,17 @@ export default function CoursePlayer({
   );
 
   const handlePreviousVideo = () => {
+    if (isSingleVideoChapterCourse) {
+      const nextIndex = Math.max(0, currentChapterIndex - 1);
+      if (nextIndex === currentChapterIndex) return;
+      window.dispatchEvent(
+        new CustomEvent("chapterIndexChange", {
+          detail: { chapterIndex: nextIndex, source: "user" },
+        })
+      );
+      return;
+    }
+
     if (currentVideoIndex > 0) {
       const current = course.videos[currentVideoIndex];
       if (current) persistCurrentTime(current.id);
@@ -377,6 +413,17 @@ export default function CoursePlayer({
   };
 
   const handleNextVideo = () => {
+    if (isSingleVideoChapterCourse) {
+      const nextIndex = Math.min(chapters.length - 1, currentChapterIndex + 1);
+      if (nextIndex === currentChapterIndex) return;
+      window.dispatchEvent(
+        new CustomEvent("chapterIndexChange", {
+          detail: { chapterIndex: nextIndex, source: "user" },
+        })
+      );
+      return;
+    }
+
     if (currentVideoIndex < course.videos.length - 1) {
       const current = course.videos[currentVideoIndex];
       if (current) persistCurrentTime(current.id);
@@ -387,6 +434,14 @@ export default function CoursePlayer({
   const currentVideo = useMemo(() => {
     return course.videos[currentVideoIndex];
   }, [course.videos, currentVideoIndex]);
+
+  const chapters = useMemo(() => {
+    const list = currentVideo?.chapters ?? [];
+    return list.slice().sort((a, b) => a.order - b.order);
+  }, [currentVideo]);
+
+  const isSingleVideoChapterCourse =
+    course.videos.length === 1 && chapters.length > 0;
 
   const startTime = useMemo(() => {
     if (
@@ -402,6 +457,16 @@ export default function CoursePlayer({
     }
     return 0;
   }, [currentVideo, currentVideoIndex, initialTimestamp, initialVideoIndex]);
+
+  // Initialize completed chapters from server-provided progress.
+  useEffect(() => {
+    if (!isSingleVideoChapterCourse) return;
+    const completed = new Set<string>();
+    for (const c of chapters) {
+      if (c.progress?.some((p) => p.completed)) completed.add(c.id);
+    }
+    setChapterCompleteIds(completed);
+  }, [chapters, isSingleVideoChapterCourse]);
 
   const saveProgress = useCallback(
     async (time: number) => {
@@ -478,6 +543,127 @@ export default function CoursePlayer({
     return () => window.clearInterval(id);
   }, [getCurrentTime]);
 
+  // Determine current chapter based on playback time.
+  useEffect(() => {
+    if (!isSingleVideoChapterCourse || chapters.length === 0) return;
+
+    // Avoid a brief "flicker" where the auto-detector fights a user click/seek.
+    if (Date.now() < suppressAutoChapterUntilRef.current) return;
+
+    const t = uiTimeSeconds;
+    const idx = chapters.findIndex((c, i) => {
+      const next = chapters[i + 1];
+      const end = next ? next.startSeconds : c.endSeconds;
+      return t >= c.startSeconds && (end ? t < end : true);
+    });
+    if (idx >= 0 && idx !== currentChapterIndex) {
+      setCurrentChapterIndex(idx);
+      window.dispatchEvent(
+        new CustomEvent("chapterIndexChange", {
+          detail: { chapterIndex: idx, source: "auto" },
+        })
+      );
+    }
+  }, [
+    chapters,
+    currentChapterIndex,
+    isSingleVideoChapterCourse,
+    uiTimeSeconds,
+  ]);
+
+  // Respond to chapter navigation from the sidebar.
+  useEffect(() => {
+    if (!isSingleVideoChapterCourse) return;
+
+    const handler = (event: CustomEvent) => {
+      const { chapterIndex, source } = event.detail as {
+        chapterIndex: number;
+        source?: "auto" | "user";
+      };
+      if (typeof chapterIndex !== "number") return;
+      const chapter = chapters[chapterIndex];
+      if (!chapter) return;
+
+      setCurrentChapterIndex(chapterIndex);
+
+      // Only seek when user intentionally selects a chapter.
+      if (source !== "user") return;
+
+      suppressAutoChapterUntilRef.current = Date.now() + 1250;
+
+      // Update UI time immediately so the highlight feels instant.
+      setUiTimeSeconds(chapter.startSeconds);
+
+      // Seek and autoplay on chapter change.
+      if (playerRef.current && typeof playerRef.current.seekTo === "function") {
+        playerRef.current.seekTo(chapter.startSeconds, true);
+        playerRef.current.playVideo();
+      }
+    };
+
+    window.addEventListener("chapterIndexChange", handler as EventListener);
+    return () =>
+      window.removeEventListener(
+        "chapterIndexChange",
+        handler as EventListener
+      );
+  }, [chapters, isSingleVideoChapterCourse]);
+
+  const markChapterComplete = useCallback(async (chapterId: string) => {
+    if (!chapterId) return;
+    setChapterCompleteIds((prev) => {
+      const next = new Set(prev);
+      next.add(chapterId);
+      return next;
+    });
+
+    window.dispatchEvent(
+      new CustomEvent("chapterProgressUpdate", {
+        detail: { chapterId, completed: true },
+      })
+    );
+
+    try {
+      const res = await fetch(`/api/chapters/${chapterId}/progress`, {
+        method: "POST",
+      });
+      if (!res.ok) throw new Error("Failed to update chapter");
+    } catch {
+      // If the request failed, allow retry by removing optimistic completion.
+      setChapterCompleteIds((prev) => {
+        const next = new Set(prev);
+        next.delete(chapterId);
+        return next;
+      });
+
+      window.dispatchEvent(
+        new CustomEvent("chapterProgressUpdate", {
+          detail: { chapterId, completed: false },
+        })
+      );
+    }
+  }, []);
+
+  // Auto-complete when playback passes chapter end.
+  useEffect(() => {
+    if (!isSingleVideoChapterCourse) return;
+    const current = chapters[currentChapterIndex];
+    if (!current) return;
+    if (chapterCompleteIds.has(current.id)) return;
+
+    // If we have a real end time, mark complete once we pass it.
+    if (current.endSeconds > 0 && uiTimeSeconds >= current.endSeconds) {
+      markChapterComplete(current.id);
+    }
+  }, [
+    chapterCompleteIds,
+    chapters,
+    currentChapterIndex,
+    isSingleVideoChapterCourse,
+    markChapterComplete,
+    uiTimeSeconds,
+  ]);
+
   const seekTo = useCallback((seconds: number) => {
     if (playerRef.current && typeof playerRef.current.seekTo === "function") {
       playerRef.current.seekTo(seconds, true);
@@ -501,11 +687,24 @@ export default function CoursePlayer({
   );
   const isVideoCompleted = watchedVideos.has(currentVideo.id);
 
+  const currentChapter =
+    isSingleVideoChapterCourse && chapters.length > 0
+      ? chapters[Math.min(currentChapterIndex, chapters.length - 1)]
+      : null;
+  const isChapterCompleted = currentChapter
+    ? chapterCompleteIds.has(currentChapter.id) ||
+      Boolean(currentChapter.progress?.[0]?.completed)
+    : false;
+
   return (
     <div className="space-y-4">
       {/* Lesson indicator above video */}
       <p className="text-sm text-neutral-500">
-        Lesson {currentLessonNumber} of {totalVideos}
+        {isSingleVideoChapterCourse
+          ? `Chapter ${Math.min(currentChapterIndex + 1, chapters.length)} of ${
+              chapters.length
+            }`
+          : `Lesson ${currentLessonNumber} of ${totalVideos}`}
       </p>
 
       {/* Video Player Area */}
@@ -527,11 +726,7 @@ export default function CoursePlayer({
         <h2 className="text-xl font-semibold text-white">
           {titleInfo.primary}
         </h2>
-        {titleInfo.secondary && (
-          <p className="text-xs text-neutral-500 mt-1.5">
-            {titleInfo.secondary}
-          </p>
-        )}
+        <p className="text-xs text-neutral-500 mt-1.5">{course.title}</p>
       </div>
 
       {/* Action Buttons with hierarchy */}
@@ -539,15 +734,31 @@ export default function CoursePlayer({
         {/* Primary action: Mark as Completed - conclusion, not a button */}
         <div>
           <Button
-            onClick={() => handleVideoProgress(currentVideo.id)}
+            onClick={() => {
+              if (isSingleVideoChapterCourse && currentChapter) {
+                markChapterComplete(currentChapter.id);
+              } else {
+                handleVideoProgress(currentVideo.id);
+              }
+            }}
             className={`w-full flex items-center justify-center gap-2 font-medium transition-colors duration-150 ${
-              isVideoCompleted
+              (
+                isSingleVideoChapterCourse
+                  ? isChapterCompleted
+                  : isVideoCompleted
+              )
                 ? "bg-white text-black hover:bg-neutral-200 border-0"
                 : "bg-white text-black hover:bg-neutral-200 border-0"
             }`}
           >
             <Check className="h-4 w-4" />
-            {isVideoCompleted ? "Completed" : "Mark as Completed"}
+            {isSingleVideoChapterCourse
+              ? isChapterCompleted
+                ? "Chapter completed"
+                : "Mark chapter as completed"
+              : isVideoCompleted
+              ? "Completed"
+              : "Mark as Completed"}
           </Button>
         </div>
 
@@ -573,25 +784,52 @@ export default function CoursePlayer({
 
           <Button
             onClick={handlePreviousVideo}
-            disabled={currentVideoIndex === 0}
+            disabled={
+              isSingleVideoChapterCourse
+                ? currentChapterIndex === 0
+                : currentVideoIndex === 0
+            }
             variant="outline"
             size="icon"
             className="bg-transparent border border-white/10 text-neutral-400 hover:text-white hover:bg-white/5 hover:border-white/20 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-150"
-            title="Previous lesson"
+            title={
+              isSingleVideoChapterCourse
+                ? "Previous chapter"
+                : "Previous lesson"
+            }
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
 
           <Button
             onClick={handleNextVideo}
-            disabled={currentVideoIndex === course.videos.length - 1}
+            disabled={
+              isSingleVideoChapterCourse
+                ? currentChapterIndex >= chapters.length - 1
+                : currentVideoIndex === course.videos.length - 1
+            }
             variant="outline"
             size="icon"
             className="bg-transparent border border-white/10 text-neutral-400 hover:text-white hover:bg-white/5 hover:border-white/20 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-150"
-            title="Next lesson"
+            title={isSingleVideoChapterCourse ? "Next chapter" : "Next lesson"}
           >
             <ChevronRight className="h-4 w-4" />
           </Button>
+
+          {isSingleVideoChapterCourse && (
+            <Button
+              variant="outline"
+              size="icon"
+              className="lg:hidden bg-transparent border border-white/10 text-neutral-400 hover:text-white hover:bg-white/5 hover:border-white/20 transition-colors duration-150"
+              title="Chapters"
+              aria-label="Open chapters"
+              onClick={() => {
+                setIsChaptersOpen(true);
+              }}
+            >
+              <List className="h-4 w-4" />
+            </Button>
+          )}
 
           <Button
             variant="outline"
@@ -617,6 +855,15 @@ export default function CoursePlayer({
             <NotebookPen className="h-4 w-4" />
           </Button>
         </div>
+
+        {isSingleVideoChapterCourse && (
+          <ChaptersSheet
+            open={isChaptersOpen}
+            onOpenChange={setIsChaptersOpen}
+            chapters={chapters}
+            currentChapterIndex={currentChapterIndex}
+          />
+        )}
 
         <NotesSidebar
           courseId={course.id}

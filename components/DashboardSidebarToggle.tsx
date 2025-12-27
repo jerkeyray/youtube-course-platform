@@ -18,7 +18,7 @@ export function DashboardSidebarToggle({
       className="group h-10 w-10 rounded-full bg-transparent text-neutral-400 hover:bg-transparent hover:text-neutral-200 transition-colors duration-200"
       onClick={onToggle}
     >
-      <Menu className="h-5 w-5 transition-colors duration-200" />
+      <Menu className="h-5 w-5 transition-[filter,color,opacity] hover:[filter:drop-shadow(0_0_10px_currentColor)_drop-shadow(0_0_10px_currentColor)]" />
     </Button>
   );
 }

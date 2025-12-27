@@ -13,6 +13,65 @@ interface PlaylistDetails {
   videos: PlaylistVideo[];
 }
 
+export function extractVideoId(url: string): string | null {
+  try {
+    // Supports:
+    // - https://www.youtube.com/watch?v=VIDEOID
+    // - https://youtu.be/VIDEOID
+    // - https://www.youtube.com/shorts/VIDEOID
+    const u = new URL(url);
+    const host = u.hostname.replace(/^www\./, "");
+
+    if (host === "youtu.be") {
+      const id = u.pathname.split("/").filter(Boolean)[0];
+      return id ? id : null;
+    }
+
+    if (host.endsWith("youtube.com")) {
+      const v = u.searchParams.get("v");
+      if (v) return v;
+
+      const parts = u.pathname.split("/").filter(Boolean);
+      if (parts[0] === "shorts" && parts[1]) return parts[1];
+    }
+
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+function parseIsoDurationToSeconds(duration: string): number {
+  const match = duration.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
+  if (!match) return 0;
+  const hours = match[1] ? parseInt(match[1], 10) : 0;
+  const minutes = match[2] ? parseInt(match[2], 10) : 0;
+  const seconds = match[3] ? parseInt(match[3], 10) : 0;
+  return hours * 3600 + minutes * 60 + seconds;
+}
+
+export async function fetchSingleVideoDetails(videoId: string): Promise<{
+  title: string;
+  description: string;
+  durationSeconds: number;
+}> {
+  const response = await youtube.videos.list({
+    key: process.env.YOUTUBE_API_KEY,
+    part: ["snippet", "contentDetails"],
+    id: [videoId],
+  });
+
+  const item = response.data.items?.[0];
+  if (!item) throw new Error("Video not found");
+
+  const title = item.snippet?.title ?? "Untitled Video";
+  const description = item.snippet?.description ?? "";
+  const duration = item.contentDetails?.duration ?? "PT0S";
+  const durationSeconds = parseIsoDurationToSeconds(duration);
+
+  return { title, description, durationSeconds };
+}
+
 export function extractPlaylistId(url: string): string | null {
   const regex = /[?&]list=([a-zA-Z0-9_-]+)/;
   const match = regex.exec(url);
@@ -72,7 +131,7 @@ export async function fetchPlaylistDetails(
         playlistResponse.data.items[0].snippet?.title ?? "Untitled Playlist",
       videos,
     };
-  } catch (error) {
+  } catch {
     // Handle error silently
     throw new Error("Failed to fetch playlist details");
   }
@@ -91,7 +150,7 @@ export async function getPlaylistTitle(playlistId: string): Promise<string> {
     }
 
     return response.data.items[0].snippet?.title ?? "Untitled Playlist";
-  } catch (error) {
+  } catch {
     // Handle error silently
     throw new Error("Failed to fetch playlist title");
   }
@@ -144,7 +203,7 @@ export async function getPlaylistVideos(playlistUrlOrId: string) {
       (v): v is { id: string; title: string; duration: number } =>
         Boolean(v.id && v.title)
     );
-  } catch (error) {
+  } catch {
     // Handle error silently
     throw new Error("Failed to fetch playlist videos");
   }
@@ -184,7 +243,7 @@ export async function getVideoDetails(videoId: string) {
     return `${formattedMinutes}:${formattedSeconds
       .toString()
       .padStart(2, "0")}`;
-  } catch (error) {
+  } catch {
     // Handle error silently
     return "0:00";
   }

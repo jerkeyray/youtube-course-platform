@@ -2,12 +2,20 @@ import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import CoursePlayer from "./CoursePlayer";
-import type { Course, Video, VideoProgress } from "@prisma/client";
+import type {
+  Chapter,
+  ChapterProgress,
+  Course,
+  Video,
+  VideoProgress,
+} from "@prisma/client";
 import CourseSidebar from "./CourseSidebar";
+import ChaptersSidebar from "./ChaptersSidebar";
 
 type CourseWithProgress = Course & {
   videos: (Video & {
     progress: VideoProgress[];
+    chapters: (Chapter & { progress: ChapterProgress[] })[];
   })[];
   completionPercentage: number;
 };
@@ -51,6 +59,14 @@ export default async function CoursePage({
               userId: session.user.id,
             },
           },
+          chapters: {
+            orderBy: { order: "asc" },
+            include: {
+              progress: {
+                where: { userId: session.user.id },
+              },
+            },
+          },
         },
       },
     },
@@ -69,18 +85,38 @@ export default async function CoursePage({
     }
   }
 
-  const totalVideos = course.videos.length;
-  const completedVideos = course.videos.filter((video) =>
-    video.progress.some((p) => p.completed)
-  ).length;
+  const isSingleVideoChapterCourse =
+    course.videos.length === 1 && course.videos[0].chapters.length > 0;
 
-  const completionPercentage =
-    totalVideos > 0 ? Math.round((completedVideos / totalVideos) * 100) : 0;
+  const completionPercentage = (() => {
+    if (isSingleVideoChapterCourse) {
+      const chapters = course.videos[0].chapters;
+      const total = chapters.length;
+      const completed = chapters.filter((ch) =>
+        ch.progress.some((p) => p.completed)
+      ).length;
+      return total > 0 ? Math.round((completed / total) * 100) : 0;
+    }
+
+    const totalVideos = course.videos.length;
+    const completedVideos = course.videos.filter((video) =>
+      video.progress.some((p) => p.completed)
+    ).length;
+    return totalVideos > 0
+      ? Math.round((completedVideos / totalVideos) * 100)
+      : 0;
+  })();
 
   const courseWithProgress: CourseWithProgress = {
     ...course,
     completionPercentage,
   };
+
+  // Keep a local boolean for rendering branches.
+  // (CoursePlayer also detects this based on fetched chapters.)
+  const renderAsChapterCourse =
+    courseWithProgress.videos.length === 1 &&
+    courseWithProgress.videos[0].chapters.length > 0;
 
   return (
     <div className="min-h-screen lg:h-screen bg-black text-white lg:overflow-hidden">
@@ -101,13 +137,22 @@ export default async function CoursePage({
               className="lg:col-span-4 lg:h-full min-h-0 lg:overflow-y-auto"
               data-course-video-list-panel
             >
-              <CourseSidebar
-                course={courseWithProgress}
-                currentVideoIndex={initialVideoIndex}
-                watchedVideos={courseWithProgress.videos
-                  .filter((video) => video.progress.some((p) => p.completed))
-                  .map((video) => video.id)}
-              />
+              {renderAsChapterCourse ? (
+                <div className="hidden lg:block">
+                  <ChaptersSidebar
+                    chapters={courseWithProgress.videos[0].chapters}
+                    currentChapterIndex={0}
+                  />
+                </div>
+              ) : (
+                <CourseSidebar
+                  course={courseWithProgress}
+                  currentVideoIndex={initialVideoIndex}
+                  watchedVideos={courseWithProgress.videos
+                    .filter((video) => video.progress.some((p) => p.completed))
+                    .map((video) => video.id)}
+                />
+              )}
             </div>
           </div>
         </main>

@@ -80,6 +80,9 @@ export function NotesSidebar({
   const [rightDrawerWidthPx, setRightDrawerWidthPx] = useState<number | null>(
     null
   );
+  const [rightDrawerOffsetPx, setRightDrawerOffsetPx] = useState<number | null>(
+    null
+  );
 
   const { data: notes, isLoading } = useQuery<Note[]>({
     queryKey: ["notes", videoId],
@@ -245,12 +248,23 @@ export function NotesSidebar({
       // Only match the course video's right-column panel on lg+.
       if (!lgMql.matches) {
         setRightDrawerWidthPx(null);
+        setRightDrawerOffsetPx(null);
         return;
       }
 
-      const width = Math.round(panel.getBoundingClientRect().width);
+      const rect = panel.getBoundingClientRect();
+      const width = Math.round(rect.width);
+      // The panel is inside a padded container; SheetContent is fixed to the viewport.
+      // Offset the drawer so its right edge aligns with the panel's right edge.
+      const rightInset = Math.max(
+        0,
+        Math.round(window.innerWidth - rect.right)
+      );
       // Protect against transient 0-width measurements during transitions.
-      if (width >= 280) setRightDrawerWidthPx(width);
+      if (width >= 280) {
+        setRightDrawerWidthPx(width);
+        setRightDrawerOffsetPx(rightInset);
+      }
     };
 
     update();
@@ -275,7 +289,13 @@ export function NotesSidebar({
 
   const rightDrawerStyle =
     sheetSide === "right" && rightDrawerWidthPx
-      ? ({ width: `${rightDrawerWidthPx}px` } as const)
+      ? ({
+          width: `${rightDrawerWidthPx}px`,
+          right:
+            typeof rightDrawerOffsetPx === "number"
+              ? `${rightDrawerOffsetPx}px`
+              : undefined,
+        } as const)
       : undefined;
 
   return (

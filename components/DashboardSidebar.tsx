@@ -102,10 +102,10 @@ export function DashboardSidebar({
                 />
                 <route.icon
                   className={cn(
-                    "h-[18px] w-[18px] relative z-10 transition-opacity",
+                    "h-[18px] w-[18px] relative z-10 transition-[filter,color,opacity]",
                     isActive
                       ? "text-white opacity-100"
-                      : "text-neutral-400 group-hover:text-neutral-300 group-hover:opacity-100 opacity-90"
+                      : "text-neutral-400 opacity-90 group-hover:text-white group-hover:opacity-100 group-hover:[filter:drop-shadow(0_0_10px_currentColor)_drop-shadow(0_0_10px_currentColor)]"
                   )}
                 />
                 {!isCollapsed && (
@@ -147,10 +147,10 @@ export function DashboardSidebar({
                 />
                 <route.icon
                   className={cn(
-                    "h-[18px] w-[18px] relative z-10 transition-opacity",
+                    "h-[18px] w-[18px] relative z-10 transition-[filter,color,opacity]",
                     isActive
                       ? "text-white opacity-100"
-                      : "text-neutral-400 group-hover:text-neutral-300 group-hover:opacity-100 opacity-90"
+                      : "text-neutral-400 opacity-90 group-hover:text-white group-hover:opacity-100 group-hover:[filter:drop-shadow(0_0_10px_currentColor)_drop-shadow(0_0_10px_currentColor)]"
                   )}
                 />
                 {!isCollapsed && (
@@ -185,10 +185,10 @@ export function DashboardSidebar({
           />
           <HelpCircle
             className={cn(
-              "h-[18px] w-[18px] relative z-10 transition-opacity",
+              "h-[18px] w-[18px] relative z-10 transition-[filter,color,opacity]",
               isWhyYudokuActive
                 ? "text-white opacity-100"
-                : "text-neutral-400 group-hover:text-neutral-300 group-hover:opacity-100 opacity-90"
+                : "text-neutral-400 opacity-90 group-hover:text-white group-hover:opacity-100 group-hover:[filter:drop-shadow(0_0_10px_currentColor)_drop-shadow(0_0_10px_currentColor)]"
             )}
           />
           {!isCollapsed && <span className="relative z-10">Why Yudoku</span>}
