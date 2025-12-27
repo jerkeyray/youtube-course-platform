@@ -97,7 +97,10 @@ export default async function CoursePage({
             </div>
 
             {/* Sidebar - spans 4 columns */}
-            <div className="lg:col-span-4 lg:h-full min-h-0 lg:overflow-y-auto">
+            <div
+              className="lg:col-span-4 lg:h-full min-h-0 lg:overflow-y-auto"
+              data-course-video-list-panel
+            >
               <CourseSidebar
                 course={courseWithProgress}
                 currentVideoIndex={initialVideoIndex}

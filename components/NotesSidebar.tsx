@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Sheet,
@@ -11,7 +11,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { Loader2, Plus, Trash2 } from "lucide-react";
+import { Loader2, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -31,6 +31,30 @@ interface NotesSidebarProps {
   className?: string;
 }
 
+const NOTE_MAX_EFFECTIVE_CHARS = 80;
+// Make new lines consume a lot of the budget so users can't add tons of empty lines.
+// With +19, each "\n" counts as 20 total (1 + 19).
+const NOTE_NEWLINE_EXTRA_CHARS = 19;
+
+function effectiveNoteLength(text: string) {
+  const newlines = (text.match(/\n/g) || []).length;
+  return text.length + newlines * NOTE_NEWLINE_EXTRA_CHARS;
+}
+
+function truncateToEffectiveLimit(text: string, maxEffective: number) {
+  let out = "";
+  let effective = 0;
+
+  for (const ch of text) {
+    const add = ch === "\n" ? 1 + NOTE_NEWLINE_EXTRA_CHARS : 1;
+    if (effective + add > maxEffective) break;
+    out += ch;
+    effective += add;
+  }
+
+  return out;
+}
+
 function formatTime(seconds: number) {
   const m = Math.floor(seconds / 60);
   const s = Math.floor(seconds % 60);
@@ -47,12 +71,15 @@ export function NotesSidebar({
   className,
 }: NotesSidebarProps) {
   const queryClient = useQueryClient();
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
   const [newNoteContent, setNewNoteContent] = useState("");
   const [highlightedNoteId, setHighlightedNoteId] = useState<string | null>(
     null
   );
   const [sheetSide, setSheetSide] = useState<"right" | "bottom">("right");
+  const [rightDrawerWidthPx, setRightDrawerWidthPx] = useState<number | null>(
+    null
+  );
 
   const { data: notes, isLoading } = useQuery<Note[]>({
     queryKey: ["notes", videoId],
@@ -198,10 +225,71 @@ export function NotesSidebar({
     return () => mql.removeEventListener("change", apply);
   }, []);
 
+  useEffect(() => {
+    if (sheetSide !== "right") {
+      setRightDrawerWidthPx(null);
+      return;
+    }
+
+    const panel = document.querySelector<HTMLElement>(
+      "[data-course-video-list-panel]"
+    );
+    if (!panel) {
+      setRightDrawerWidthPx(null);
+      return;
+    }
+
+    const lgMql = window.matchMedia("(min-width: 1024px)");
+
+    const update = () => {
+      // Only match the course video's right-column panel on lg+.
+      if (!lgMql.matches) {
+        setRightDrawerWidthPx(null);
+        return;
+      }
+
+      const width = Math.round(panel.getBoundingClientRect().width);
+      // Protect against transient 0-width measurements during transitions.
+      if (width >= 280) setRightDrawerWidthPx(width);
+    };
+
+    update();
+
+    lgMql.addEventListener("change", update);
+
+    if (typeof ResizeObserver === "undefined") {
+      window.addEventListener("resize", update);
+      return () => {
+        lgMql.removeEventListener("change", update);
+        window.removeEventListener("resize", update);
+      };
+    }
+
+    const ro = new ResizeObserver(() => update());
+    ro.observe(panel);
+    return () => {
+      lgMql.removeEventListener("change", update);
+      ro.disconnect();
+    };
+  }, [sheetSide]);
+
+  const rightDrawerStyle =
+    sheetSide === "right" && rightDrawerWidthPx
+      ? ({ width: `${rightDrawerWidthPx}px` } as const)
+      : undefined;
+
   return (
     <Sheet open={isOpen} onOpenChange={onOpenChange}>
-      <SheetContent className={cn("p-0", className)} side={sheetSide}>
-        <SheetHeader className="border-b">
+      <SheetContent
+        className={cn(
+          "p-0",
+          sheetSide === "right" && "sm:max-w-none",
+          className
+        )}
+        side={sheetSide}
+        style={rightDrawerStyle}
+      >
+        <SheetHeader>
           <SheetTitle>Saved moments</SheetTitle>
         </SheetHeader>
 
@@ -234,13 +322,13 @@ export function NotesSidebar({
                       window.setTimeout(() => setHighlightedNoteId(null), 800);
                     }}
                   >
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-start gap-2">
                       <span className="text-[10px] font-mono font-medium text-primary bg-primary/10 px-1.5 py-0.5 rounded">
                         {formatTime(note.timestampSeconds)}
                       </span>
                       <p
                         className={cn(
-                          "text-sm truncate flex-1",
+                          "text-sm flex-1 min-w-0 whitespace-pre-wrap break-words leading-snug",
                           label ? "text-foreground/90" : "text-muted-foreground"
                         )}
                       >
@@ -269,40 +357,38 @@ export function NotesSidebar({
           )}
         </ScrollArea>
 
-        <div className="p-4 border-t bg-background">
-          <div className="flex gap-2">
-            <Input
-              ref={inputRef}
-              placeholder="Type a note…"
-              value={newNoteContent}
-              onChange={(e) => setNewNoteContent(e.target.value)}
-              maxLength={120}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  handleAddNote();
-                }
-              }}
-              className="text-sm"
-            />
-            <Button
-              size="icon"
-              onClick={handleAddNote}
-              disabled={addNoteMutation.isPending}
-              className="shrink-0"
-              aria-label="Save moment"
-              title="Save"
-            >
-              {addNoteMutation.isPending ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Plus className="h-4 w-4" />
-              )}
-            </Button>
+        <div className="p-4 bg-background">
+          <Textarea
+            ref={inputRef}
+            placeholder="Type a note…"
+            value={newNoteContent}
+            onChange={(e) => {
+              const next = e.target.value;
+              if (effectiveNoteLength(next) <= NOTE_MAX_EFFECTIVE_CHARS) {
+                setNewNoteContent(next);
+                return;
+              }
+              setNewNoteContent(
+                truncateToEffectiveLimit(next, NOTE_MAX_EFFECTIVE_CHARS)
+              );
+            }}
+            rows={2}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                handleAddNote();
+              }
+            }}
+            className="text-sm resize-none"
+          />
+          <div className="mt-2 flex items-center justify-between gap-3">
+            <p className="text-[10px] text-muted-foreground">
+              Enter to save • Shift+Enter for new line
+            </p>
+            <p className="text-[10px] text-muted-foreground tabular-nums">
+              {effectiveNoteLength(newNoteContent)}/{NOTE_MAX_EFFECTIVE_CHARS}
+            </p>
           </div>
-          <p className="text-[10px] text-muted-foreground mt-2 text-center">
-            Press Enter to save
-          </p>
         </div>
       </SheetContent>
     </Sheet>

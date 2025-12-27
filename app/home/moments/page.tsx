@@ -17,6 +17,18 @@ type Moment = {
   video?: { id: string; title: string };
 };
 
+const MOMENT_MAX_LINES = 4;
+
+function clampMomentLines(text: string) {
+  const label = text.trim();
+  if (!label) return "";
+  const lines = label.split(/\r\n?|\n/);
+  if (lines.length <= MOMENT_MAX_LINES) return label;
+  const first = lines.slice(0, MOMENT_MAX_LINES);
+  first[MOMENT_MAX_LINES - 1] = first[MOMENT_MAX_LINES - 1].trimEnd() + " …";
+  return first.join("\n");
+}
+
 function formatTime(seconds: number) {
   const m = Math.floor(seconds / 60);
   const s = Math.floor(seconds % 60);
@@ -166,7 +178,9 @@ export default function MomentsPage() {
                               (a, b) => a.timestampSeconds - b.timestampSeconds
                             )
                             .map((moment) => {
-                              const label = moment.content?.trim();
+                              const label = clampMomentLines(
+                                moment.content ?? ""
+                              );
                               const href = `/home/courses/${course.courseId}?videoId=${video.videoId}&t=${moment.timestampSeconds}`;
                               return (
                                 <div
@@ -177,14 +191,14 @@ export default function MomentsPage() {
                                     href={href}
                                     className="flex items-center gap-3 flex-1 min-w-0 px-1 py-1"
                                   >
-                                    <span className="text-[10px] font-mono font-medium text-orange-400 bg-orange-500/10 px-1.5 py-0.5 rounded">
+                                    <span className="text-[10px] font-mono font-medium text-blue-400 bg-blue-500/10 px-1.5 py-0.5 rounded">
                                       {formatTime(moment.timestampSeconds)}
                                     </span>
                                     <span
                                       className={
                                         label
-                                          ? "text-sm text-zinc-200 truncate"
-                                          : "text-sm text-zinc-500 truncate"
+                                          ? "text-sm text-zinc-200 whitespace-pre-wrap break-words leading-snug"
+                                          : "text-sm text-zinc-500"
                                       }
                                     >
                                       {label || "Saved moment"}

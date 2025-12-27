@@ -45,7 +45,8 @@ export default function VideoCard({
     e.stopPropagation();
 
     try {
-      const endpoint = `/api/bookmarks/${video.youtubeId}`;
+      // Use the internal Video.id to avoid collisions (youtubeId can repeat across courses).
+      const endpoint = `/api/bookmarks/${video.id}`;
 
       const response = await fetch(endpoint, {
         method: "DELETE",
@@ -105,6 +106,18 @@ export default function VideoCard({
         }
       }}
     >
+      {isBookmark && onRemove && (
+        <Button
+          variant="ghost"
+          size="icon"
+          className="absolute right-2 top-2 z-10 h-8 w-8 bg-black/40 text-zinc-200 hover:bg-black/60 hover:text-red-400 transition-colors"
+          onClick={handleRemove}
+          title="Remove bookmark"
+          aria-label="Remove bookmark"
+        >
+          <Trash2 className="h-4 w-4" />
+        </Button>
+      )}
       <div className="relative aspect-[16/9] flex-shrink-0">
         <Image
           src={imgSrc}
@@ -158,7 +171,8 @@ export default function VideoCard({
         {isBookmark ? (
           <div className="mt-2 pt-0 flex items-center gap-2">
             <Button
-              className="flex-1 bg-white text-black hover:bg-zinc-200 h-8 text-xs font-medium"
+              variant="outline"
+              className="flex-1 border-zinc-800 bg-transparent text-zinc-200 hover:bg-white/5 hover:text-white h-8 text-xs font-medium"
               onClick={(e) => {
                 e.stopPropagation();
                 if (video.courseId) {
@@ -173,17 +187,6 @@ export default function VideoCard({
               <Play className="w-3 h-3 mr-2" />
               Continue
             </Button>
-            {onRemove && (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 text-zinc-600 hover:text-red-400 hover:bg-red-900/10 transition-colors"
-                onClick={handleRemove}
-                title="Abandon task"
-              >
-                <Trash2 className="h-3.5 w-3.5" />
-              </Button>
-            )}
           </div>
         ) : (
           <div className="flex items-center justify-between mt-3 pt-3 border-t border-zinc-800">

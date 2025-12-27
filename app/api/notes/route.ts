@@ -4,17 +4,44 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 
-const momentLabelSchema = z
+const MOMENT_MAX_EFFECTIVE_CHARS = 80;
+// Make new lines consume a lot of the budget so users can't add tons of empty lines.
+// With +19, each "\n" counts as 20 total (1 + 19).
+const MOMENT_NEWLINE_EXTRA_CHARS = 19;
+
+function normalizeMomentContent(input: string) {
+  const normalized = input.replace(/\r\n?/g, "\n");
+  const rawLines = normalized.split("\n");
+  const lines = rawLines
+    .map((line) => line.replace(/[\t ]+/g, " ").trim())
+    // Trim leading/trailing empty lines
+    .join("\n")
+    .split("\n");
+
+  while (lines.length > 0 && lines[0] === "") lines.shift();
+  while (lines.length > 0 && lines[lines.length - 1] === "") lines.pop();
+
+  return lines.join("\n");
+}
+
+function effectiveMomentLength(text: string) {
+  const newlines = (text.match(/\n/g) || []).length;
+  return text.length + newlines * MOMENT_NEWLINE_EXTRA_CHARS;
+}
+
+const momentContentSchema = z
   .string()
-  .max(120)
-  .transform((s) => s.replace(/\s+/g, " ").trim());
+  .transform(normalizeMomentContent)
+  .refine((s) => effectiveMomentLength(s) <= MOMENT_MAX_EFFECTIVE_CHARS, {
+    message: `Moment note must be at most ${MOMENT_MAX_EFFECTIVE_CHARS} characters (new lines consume more)`,
+  });
 
 const createNoteSchema = z.object({
   courseId: z.string(),
   videoId: z.string(),
   timestampSeconds: z.number().min(0),
-  // Optional one-line label.
-  content: momentLabelSchema.optional().default(""),
+  // Optional multi-line note.
+  content: momentContentSchema.optional().default(""),
 });
 
 export async function POST(req: NextRequest) {
